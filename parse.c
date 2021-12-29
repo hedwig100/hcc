@@ -24,6 +24,16 @@ bool consume(char *op) {
     return true; 
 }
 
+// 次のトークンがidentならidentを返してトークンを一つ読み進める。それ以外の場合はNULLを返す
+Token* consume_ident() {
+    if (token->kind != TK_IDENT) {
+        return NULL; 
+    }
+    Token* tok = token; // ここがおかしい, 参照になってる?
+    token = token->next;  
+    return tok; 
+}
+
 // 次のトークンが期待している記号の時はトークンを一つ読み進める
 // それ以外の場合はエラーを報告する
 void expect(char *op) {
@@ -37,7 +47,6 @@ void expect(char *op) {
 
 // 次のトークンが数値の場合､トークンを一つ読み進めてその数値を返す
 // それ以外の場合はエラーを報告する
-
 int expect_number() {
     if (token->kind != TK_NUM) {
         error_at(token->str,"数ではありません"); 
@@ -81,10 +90,16 @@ Token *tokenize(char *p) {
             continue;
         }
 
-        if (*p == '+' || *p == '-' || *p == '*' || *p == '/' || *p == '(' || *p == ')' || *p == '<' || *p == '>') {
+        if (*p == '+' || *p == '-' || *p == '*' || *p == '/' || *p == '(' || *p == ')' || *p == '<' || *p == '>' || *p == ';' || *p == '=') {
             cur = new_token(TK_RESERVED,cur,p++);
             cur->len = 1; 
             continue; 
+        }
+
+        if ('a' <= *p && *p <= 'z') {
+            cur = new_token(TK_IDENT,cur,p++); 
+            cur->len = 1; 
+            continue;
         }
 
         if (isdigit(*p)) {
@@ -99,6 +114,8 @@ Token *tokenize(char *p) {
     new_token(TK_EOF,cur,p); 
     return head.next; 
 } 
+
+// astを作る
 
 Node *new_node(NodeKind kind,Node* lhs,Node* rhs) {
     Node* node = calloc(1,sizeof(Node)); 
@@ -115,16 +132,30 @@ Node *new_node_num(int val) {
     return node; 
 }
 
-Node* expr();
-Node* equality();
-Node* relational();
-Node* add();
-Node* mul(); 
-Node* unary();
-Node* primary(); 
+void program() {
+    int i = 0; 
+    while (!at_eof()) {
+        code[i++] = stmt(); 
+    }
+    code[i] = NULL;
+}
+
+Node *stmt() {
+    Node* node = expr(); 
+    expect(";"); 
+    return node;
+}
 
 Node *expr() {
-    return equality();
+    return assign();
+}
+
+Node *assign() {
+    Node* node = equality(); 
+    if (consume("=")) {
+        node = new_node(ND_ASSIGN,node,assign()); 
+    }
+    return node;
 }
 
 Node *equality() {
@@ -204,6 +235,16 @@ Node *primary() {
         expect(")"); 
         return node; 
     } 
-    // そうでなければ数値のはず
+
+    // 次のトークンがident 
+    Token* tok = consume_ident(); 
+    if (tok) {
+        Node *node = calloc(1,sizeof(Node)); 
+        node->kind = ND_LVAR;
+        // fprintf(stderr,"%c\n",tok->str[0]);
+        node->offset = (tok->str[0] - 'a' + 1)*8;
+        return node;
+    }
+
     return new_node_num(expect_number()); 
 }
