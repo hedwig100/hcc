@@ -96,6 +96,10 @@ int ident_len(char *p) {
     return len;
 }
 
+bool is_alnum(char c) {
+    return isalnum(c) || (c == '_');
+}
+
 Token *tokenize(char *p) {
     Token head; 
     head.next = NULL; 
@@ -117,6 +121,13 @@ Token *tokenize(char *p) {
             cur = new_token(TK_RESERVED,cur,p++);
             cur->len = 1; 
             continue; 
+        }
+
+        if (strncmp(p,"return",6) == 0 && !isalnum(p[6])) {
+            cur = new_token(TK_RESERVED,cur,p);
+            cur->len = 6;
+            p += 6;
+            continue;
         }
 
         if (isalpha(*p)) {
@@ -165,7 +176,15 @@ void program() {
 }
 
 Node *stmt() {
-    Node* node = expr(); 
+    Node* node;
+
+    if (consume("return")) {
+        node = calloc(1,sizeof(Node));
+        node->kind = ND_RETURN;
+        node->lhs = expr();
+    } else {
+        node = expr();
+    }
     expect(";"); 
     return node;
 }

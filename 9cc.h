@@ -53,6 +53,8 @@ LVar *find_lvar(Token *tok);
 bool at_eof(); 
 Token *new_token(TokenKind kind,Token *cur,char *str); 
 bool startwith(char *p,char *q); 
+int ident_len(char *p);
+bool is_alnum(char c);
 Token *tokenize(char *p); 
 
 
@@ -69,6 +71,7 @@ typedef enum {
     ND_LEQ,    // <= 
     ND_LVAR,   // local variable
     ND_ASSIGN, // assign
+    ND_RETURN  // "return"
 } NodeKind; 
 
 

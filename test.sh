@@ -65,5 +65,6 @@ assert 8 "x=2;y=x+3;z=y*2;z-2;"
 assert 7 "hoge=3;fuga=hoge*3;fuga-2;"
 assert 12 "abc=398;ABC=-352;CC=abc+ABC;CC-34;"
 assert 10 "pwoef=34;goiao=-354+pwoef;garhi=goiao/32;garhi+20;"
+assert 100 "ieii=143;ge=-43;A=ieii+ge;return A;"
 
 echo OK 
