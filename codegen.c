@@ -7,7 +7,7 @@ void error(char* msg) {
 
 void gen_lval(Node *node) {
     if (node->kind != ND_LVAR) {
-        error("代入の左辺値が変数ではありません");
+        error("Left side value of assignment is not variable.");
     }
 
     printf("    mov rax,rbp\n"); 

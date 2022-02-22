@@ -7,11 +7,11 @@
 
 
 // tokenkind
-typedef enum { // enum型
+typedef enum {  
     TK_RESERVED, // operator
-    TK_IDENT, // 識別子
-    TK_NUM, // integer 
-    TK_EOF, // end of input
+    TK_IDENT,    // identifier
+    TK_NUM,      // integer 
+    TK_EOF,      // end of input
 } TokenKind; 
 
 
@@ -20,9 +20,9 @@ typedef struct Token Token;
 
 struct Token {
     TokenKind kind; // token kind 
-    Token *next; // next input token 
-    int val; // if kind is TK_NUM,number
-    char *str; // token string 
+    Token *next;    // next input token 
+    int val;        // if kind is TK_NUM,its number
+    char *str;      // token string 
     int len; 
 }; 
 
@@ -41,17 +41,17 @@ Token *tokenize(char *p);
 
 // nodekind
 typedef enum {
-    ND_ADD,  // + 
-    ND_SUB,  // - 
-    ND_MUL,  // *
-    ND_DIV,  // /
-    ND_NUM,  // 整数
-    ND_EQ,   // ==
-    ND_NEQ,  // != 
-    ND_LT,   // < 
-    ND_LEQ,  // <= 
-    ND_LVAR, // ローカル変数
-    ND_ASSIGN, // 代入
+    ND_ADD,    // + 
+    ND_SUB,    // - 
+    ND_MUL,    // *
+    ND_DIV,    // /
+    ND_NUM,    // integer
+    ND_EQ,     // ==
+    ND_NEQ,    // != 
+    ND_LT,     // < 
+    ND_LEQ,    // <= 
+    ND_LVAR,   // local variable
+    ND_ASSIGN, // assign
 } NodeKind; 
 
 
@@ -60,13 +60,13 @@ typedef struct Node Node;
 
 struct Node {
     NodeKind kind; 
-    Node* lhs; 
-    Node* rhs; 
-    int val; // kindが整数の時のみ利用
-    int offset; // kindがND_LVARの時のみ利用
+    Node* lhs;  // left-hand side
+    Node* rhs;  // right-hand side
+    int val;    // if kind is ND_NUM,its number
+    int offset; // if kind is ND_LVAR,its offset from sp
 };
 
-Node *code[100]; // astの配列
+Node *code[100]; // AST
 
 Node *new_node(NodeKind kind,Node* lhs,Node* rhs); 
 Node *new_node_num(int val); 

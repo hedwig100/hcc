@@ -1,7 +1,8 @@
 #include "9cc.h" 
 
+// error_at reports error
 void error_at(char *loc,char *fmt, ...) {
-    va_list ap; // 可変引数
+    va_list ap;
     va_start(ap,fmt); 
 
     int pos = loc - user_input; 
@@ -13,7 +14,8 @@ void error_at(char *loc,char *fmt, ...) {
     exit(1);
 }
 
-// 次のトークンが期待している記号の時にはトークンを一つ読み進めて真を返す。それ以外の場合は偽を返す
+// consume read a token and return true if next token is expected kind of token,
+// otherwise,return false 
 bool consume(char *op) {
     if (token->kind != TK_RESERVED || 
         token->len != strlen(op) || 
@@ -24,32 +26,33 @@ bool consume(char *op) {
     return true; 
 }
 
-// 次のトークンがidentならidentを返してトークンを一つ読み進める。それ以外の場合はNULLを返す
+// consume_ident read a token and return the token if next token is identifier,
+// otherwise return NULL
 Token* consume_ident() {
     if (token->kind != TK_IDENT) {
         return NULL; 
     }
-    Token* tok = token; // ここがおかしい, 参照になってる?
+    Token* tok = token;
     token = token->next;  
     return tok; 
 }
 
-// 次のトークンが期待している記号の時はトークンを一つ読み進める
-// それ以外の場合はエラーを報告する
+// expect read a token if next token is expected kind of token,
+// otherwise print error
 void expect(char *op) {
     if (token->kind != TK_RESERVED || 
         token->len != strlen(op) || 
         memcmp(token->str,op,token->len)) {
-        error_at(token->str,"'%c'ではありません"); 
+        error_at(token->str,"not '%c'"); 
     }
     token = token->next; 
 }
 
-// 次のトークンが数値の場合､トークンを一つ読み進めてその数値を返す
-// それ以外の場合はエラーを報告する
+// expect_number read a token if next token is number,
+// otherwise print error
 int expect_number() {
     if (token->kind != TK_NUM) {
-        error_at(token->str,"数ではありません"); 
+        error_at(token->str,"not number"); 
     }
     int val = token->val; 
     token = token->next; 
@@ -60,7 +63,7 @@ bool at_eof() {
     return token->kind == TK_EOF;
 }
 
-// 新しいトークンを作成してcurにつなげる
+// new_token create a new token and attach it to cur
 Token *new_token(TokenKind kind,Token *cur,char *str) {
     Token* tok = calloc(1,sizeof(Token)); 
     tok->kind = kind; 
@@ -115,7 +118,7 @@ Token *tokenize(char *p) {
     return head.next; 
 } 
 
-// astを作る
+// construct AST
 
 Node *new_node(NodeKind kind,Node* lhs,Node* rhs) {
     Node* node = calloc(1,sizeof(Node)); 
@@ -229,14 +232,14 @@ Node *unary() {
 }
 
 Node *primary() {
-    // 次のトークンが'('なら'(' expr ')'のはず
+    // if next token is '(', primary should be '(' expr ')'
     if (consume("(")) {
         Node *node = expr();
         expect(")"); 
         return node; 
     } 
 
-    // 次のトークンがident 
+    // next token is an identifier
     Token* tok = consume_ident(); 
     if (tok) {
         Node *node = calloc(1,sizeof(Node)); 
