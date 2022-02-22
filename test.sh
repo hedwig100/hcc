@@ -59,5 +59,8 @@ assert 21 "o=16/1;p=(1-3)*8;q=12;r=-15;o+5;"
 assert 6 "s=1;t=1;u=(10-3)*3*2;v=-15;u/7;"
 assert 3 "u=1;v=1;w=12;w-9;"
 assert 9 "x=1;y=1;z=12;x+8;"
+assert 20 "a=26;b=a-46;c=b/2;c+30;"
+assert 0 "d=-2;e=d*45;f=e*3;g=f+e;h=g+d;h+362;"
+assert 8 "x=2;y=x+3;z=y*2;z-2;"
 
 echo OK 
