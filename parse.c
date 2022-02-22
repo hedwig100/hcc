@@ -141,7 +141,7 @@ Token *tokenize(char *p) {
 
 // construct AST
 
-Node *new_node(NodeKind kind,Node* lhs,Node* rhs) {
+Node *new_node(NodeKind kind,Node *lhs,Node *rhs) {
     Node* node = calloc(1,sizeof(Node)); 
     node->kind = kind; 
     node->lhs = lhs; 
@@ -175,7 +175,7 @@ Node *expr() {
 }
 
 Node *assign() {
-    Node* node = equality(); 
+    Node *node = equality(); 
     if (consume("=")) {
         node = new_node(ND_ASSIGN,node,assign()); 
     }
@@ -261,7 +261,7 @@ Node *primary() {
     } 
 
     // next token is an identifier
-    Token* tok = consume_ident(); 
+    Token *tok = consume_ident(); 
     if (tok) {
         Node *node = calloc(1,sizeof(Node)); 
         node->kind = ND_LVAR;

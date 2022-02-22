@@ -1,6 +1,6 @@
 #include "9cc.h" 
 
-void error(char* msg) {
+void error(char *msg) {
     fprintf(stderr,"%s\n",msg); 
     exit(1);
 }
@@ -15,7 +15,7 @@ void gen_lval(Node *node) {
     printf("    push rax\n");
 }
 
-void gen(Node* node) {
+void gen(Node *node) {
     switch (node->kind) {
     case ND_NUM:
         printf("    push %d\n",node->val); 
