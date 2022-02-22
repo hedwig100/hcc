@@ -101,3 +101,11 @@ Node *primary();
 void error(char *msg);
 void gen_lval(Node *node);
 void gen(Node *node);
+
+
+// log for debug
+int lprintf(FILE *fp, int level, const char *file, int line, const char *func, const char *fmt, ...);
+#define errorf(...) lprintf(stderr, 'E', __FILE__, __LINE__, __func__, __VA_ARGS__)
+#define warnf(...) lprintf(stderr, 'W', __FILE__, __LINE__, __func__, __VA_ARGS__)
+#define infof(...) lprintf(stderr, 'I', __FILE__, __LINE__, __func__, __VA_ARGS__)
+#define debugf(...) lprintf(stderr, 'D', __FILE__, __LINE__, __func__, __VA_ARGS__)
