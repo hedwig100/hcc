@@ -19,11 +19,10 @@ int main(int argc,char **argv) {
     printf(".globl main\n"); 
     printf("main:\n");
 
-    // prologue, allocate space for 26 variables
+    // prologue
     printf("    push rbp\n"); 
-    printf("    mov rbp, rsp\n"); 
-    printf("    sub rsp,208\n");
-
+    printf("    mov rbp,rsp\n");
+    printf("    sub rsp,%d\n",locals->offset);
     
     for (int i = 0;code[i];i++) { // finish if code[i] is NULL
         gen(code[i]);

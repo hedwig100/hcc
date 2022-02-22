@@ -1,3 +1,6 @@
+#ifndef CC_H
+#define CC_H
+
 #include <stdio.h> 
 #include <stdlib.h> 
 #include <ctype.h> 
@@ -71,7 +74,8 @@ typedef enum {
     ND_LEQ,    // <= 
     ND_LVAR,   // local variable
     ND_ASSIGN, // assign
-    ND_RETURN  // "return"
+    ND_RETURN,  // "return"
+    ND_IF,      // "if"
 } NodeKind; 
 
 
@@ -101,6 +105,9 @@ Node *mul();
 Node *unary();
 Node *primary();
 
+
+extern int lend;
+
 void error(char *msg);
 void gen_lval(Node *node);
 void gen(Node *node);
@@ -112,3 +119,5 @@ int lprintf(FILE *fp, int level, const char *file, int line, const char *func, c
 #define warnf(...) lprintf(stderr, 'W', __FILE__, __LINE__, __func__, __VA_ARGS__)
 #define infof(...) lprintf(stderr, 'I', __FILE__, __LINE__, __func__, __VA_ARGS__)
 #define debugf(...) lprintf(stderr, 'D', __FILE__, __LINE__, __func__, __VA_ARGS__)
+
+#endif

@@ -16,8 +16,8 @@ assert() {
     fi 
 }
 
-assert 0 "0;" 
-assert 42 "42;" 
+assert 0 "return 0;" 
+assert 42 "return 42;" 
 assert 21 "5+20-4;"
 assert 24 "4 - 10 + 30;"
 assert 11 "5+2*3;"
@@ -66,5 +66,7 @@ assert 7 "hoge=3;fuga=hoge*3;fuga-2;"
 assert 12 "abc=398;ABC=-352;CC=abc+ABC;CC-34;"
 assert 10 "pwoef=34;goiao=-354+pwoef;garhi=goiao/32;garhi+20;"
 assert 100 "ieii=143;ge=-43;A=ieii+ge;return A;"
+assert 0 "a = 0;if (3 == 4) a = 1; return a;"
+assert 71 "a = 34;b = a + 3; if (b - a == 3) b = b*2;return b-3;"
 
 echo OK 

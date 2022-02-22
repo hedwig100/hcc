@@ -43,7 +43,7 @@ void expect(char *op) {
     if (token->kind != TK_RESERVED || 
         token->len != strlen(op) || 
         memcmp(token->str,op,token->len)) {
-        error_at(token->str,"not '%c'"); 
+        error_at(token->str,"not '%s'"); 
     }
     token = token->next; 
 }
@@ -130,6 +130,13 @@ Token *tokenize(char *p) {
             continue;
         }
 
+        if (strncmp(p,"if",2) == 0 && !isalnum(p[2])) {
+            cur = new_token(TK_RESERVED,cur,p);
+            cur->len = 2;
+            p += 2;
+            continue;
+        }
+
         if (isalpha(*p)) {
             cur = new_token(TK_IDENT,cur,p);
             cur->len = ident_len(p);
@@ -178,13 +185,24 @@ void program() {
 Node *stmt() {
     Node* node;
 
-    if (consume("return")) {
+    if (consume("if")) {
+        expect("(");
+        node = calloc(1,sizeof(Node));
+        node->kind = ND_IF;
+        node->lhs = expr();
+        expect(")");
+        node->rhs = stmt();
+        infof("token: %d,%s",token->kind,token->str);
+        return node;
+    } else if (consume("return")) {
         node = calloc(1,sizeof(Node));
         node->kind = ND_RETURN;
         node->lhs = expr();
-    } else {
-        node = expr();
-    }
+        expect(";");
+        return node;
+    } 
+    
+    node = expr();
     expect(";"); 
     return node;
 }
