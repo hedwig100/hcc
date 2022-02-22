@@ -27,12 +27,29 @@ struct Token {
 }; 
 
 Token *token; 
-char *user_input; 
+
+
+// local variable
+typedef struct LVar LVar;
+
+struct LVar {
+    LVar *next; // next local variable if exists,otherwise NULL
+    char *name; // local variable name
+    int len;    // local variable length
+    int offset; // offset from RBP
+}; 
+
+// local variables
+LVar *locals;
+
+
+char *user_input;
 
 void error_at(char *loc,char *fmt, ...);
 bool consume(char *op); 
 void expect(char *op); 
 int expect_number(); 
+LVar *find_lvar(Token* tok);
 bool at_eof(); 
 Token *new_token(TokenKind kind,Token *cur,char *str); 
 bool startwith(char *p,char *q); 

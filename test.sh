@@ -62,5 +62,8 @@ assert 9 "x=1;y=1;z=12;x+8;"
 assert 20 "a=26;b=a-46;c=b/2;c+30;"
 assert 0 "d=-2;e=d*45;f=e*3;g=f+e;h=g+d;h+362;"
 assert 8 "x=2;y=x+3;z=y*2;z-2;"
+assert 7 "hoge=3;fuga=hoge*3;fuga-2;"
+assert 12 "abc=398;ABC=-352;CC=abc+ABC;CC-34;"
+assert 10 "pwoef=34;goiao=-354+pwoef;garhi=goiao/32;garhi+20;"
 
 echo OK 

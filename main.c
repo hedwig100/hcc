@@ -7,8 +7,13 @@ int main(int argc,char **argv) {
     }
 
     user_input = argv[1];
+    fprintf(stderr,"try to tokenize...\n");
     token = tokenize(user_input);
+    fprintf(stderr,"try to construct AST...\n");
+    locals = calloc(1,sizeof(LVar));
+    locals->offset = 0;
     program();
+    fprintf(stderr,"try to generate assembly...\n");
 
     printf(".intel_syntax noprefix\n"); 
     printf(".globl main\n"); 
