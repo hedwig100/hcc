@@ -18,17 +18,17 @@ bool startwith(char *p,char *q) {
     return memcmp(p,q,strlen(q)) == 0;
 }
 
+bool is_alnum(char c) {
+    return isalnum(c) || (c == '_');
+}
+
 int ident_len(char *p) {
     int len = 0;
-    while (isalpha(*p)) {
+    while (is_alnum(*p)) {
         len++;
         p++;
     }
     return len;
-}
-
-bool is_alnum(char c) {
-    return isalnum(c) || (c == '_');
 }
 
 // new_token create a new token and attach it to cur

@@ -81,5 +81,6 @@ assert 8 "b=0;c=-4;for(i=0;i<4;i=i+1){b=b+1;c=c+2;} return b+c;"
 assert 0 "b=0;c=-4;i=50;while(i<54){i=i+1;b=b+1;c=c+2;} return b-c;"
 assert 100 "ans=0;for(i=0;i<10;i=i+1){for(j=0;j<10;j=j+1){ans=ans+1;}}return ans;"
 assert 24 "ans=0;i=0;while(i<30){if(i<10){ans=ans*2;}else{ans=ans-50;}i=i+1;}return ans;"
+assert 3 "a1=0;b_1=3;return a1+b_1;"
 
 echo OK 
