@@ -4,3 +4,6 @@ tmp*
 a.out
 9cc
 .vscode
+.vscode-server
+.ssh
+.gitconfig
