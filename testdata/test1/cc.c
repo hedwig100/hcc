@@ -7,7 +7,7 @@ int foo() {
 /*
 make
 cc -c testdata/test1/cc.c
-./hcc "foo();return 0;” > tmp.s
+./hcc < testdata/test1/hcc.c > tmp.s
 cc -o tmp tmp.s cc.o
 ./tmp
 
