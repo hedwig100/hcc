@@ -257,10 +257,10 @@ Node *primary() {
             while (!consume(")")) {
                 expect(",");
                 Node *now = expr();
-                now->next = start;
+                now->params = start;
                 start = now;
             }
-            node->next = start;
+            node->params = start;
             return node;
         }
 

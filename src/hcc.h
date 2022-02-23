@@ -103,8 +103,10 @@ struct Node {
     Node *step;
 
     // if kind is ND_BLOCK,its statements
-    // if kind is ND_CALLFUNC,its parameters
     Node *next;
+
+    // if kind is ND_CALLFUNC,its parameters
+    Node *params;
 };
 
 Node *code[100]; // AST

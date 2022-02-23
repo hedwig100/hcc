@@ -25,7 +25,7 @@ const char *PARAM_REG[6] = {"rdi","rsi","rdx","rcx","r8","r9"};
 
 int gen_param(Node *node) {
     int param_cnt = 0;
-    for (Node *now = node->next;now;now = now->next) {
+    for (Node *now = node->params;now;now = now->params) {
         gen_expression(now);
         param_cnt++;
     }
