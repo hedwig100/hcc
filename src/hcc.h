@@ -73,6 +73,7 @@ typedef enum {
     ND_LVAR,    // local variable
     ND_BLOCK,   // { }
     ND_CALLFUNC,// call func()
+    ND_FUNCDEF, // definition of function
     ND_ASSIGN,  // assign
     ND_RETURN,  // "return"
     ND_IF,      // "if"
@@ -89,8 +90,8 @@ struct Node {
     Node *lhs;  // left-hand side
     Node *rhs;  // right-hand side
     int val;    // if kind is ND_NUM,its number
-    int offset; // if kind is ND_LVAR,its offset from sp
-    char *name; // if kind is ND_CALLFUNC,its name
+    int offset; // if kind is ND_LVAR,ND_FUNCDEF,its offset from sp
+    char *name; // if kind is ND_CALLFUNC,ND_FUNCDEF,its name
     int len;    // name's length
 
     // "if" ( cond ) then "else" els
@@ -103,9 +104,11 @@ struct Node {
     Node *step;
 
     // if kind is ND_BLOCK,its statements
+    // if kind is ND_FUNCDEF,its block
     Node *next;
 
-    // if kind is ND_CALLFUNC,its parameters
+    // if kind is ND_CALLFUNC,ND_FUNCDEF, its parameters
+    int n_param;
     Node *params;
 };
 
@@ -113,6 +116,8 @@ Node *code[100]; // AST
 
 
 void program();
+Node *cmp_stmt();
+Node *func_def();
 Node *stmt();
 Node *expr();
 Node *assign();
@@ -132,6 +137,7 @@ int align;
 int gen_param(Node *node);
 void gen_expression(Node *node);
 void gen_statement(Node *node);
+void gen_func_def(Node *node);
 
 /*
     utils.c
@@ -139,6 +145,7 @@ void gen_statement(Node *node);
 
 // log for debug
 int lprintf(FILE *fp, int level, const char *file, int line, const char *func, const char *fmt, ...);
+char *to_str(char *s,int len);
 #define errorf(...) lprintf(stderr, 'E', __FILE__, __LINE__, __func__, __VA_ARGS__)
 #define warnf(...) lprintf(stderr, 'W', __FILE__, __LINE__, __func__, __VA_ARGS__)
 #define infof(...) lprintf(stderr, 'I', __FILE__, __LINE__, __func__, __VA_ARGS__)

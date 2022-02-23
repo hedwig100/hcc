@@ -37,24 +37,20 @@ int main(int argc,char **argv) {
     // construct AST
     infof("try to construct AST...");
     locals = calloc(1,sizeof(LVar));
-    locals->offset = 0;
     program();
 
     // generate code
     infof("try to generate assembly...");
-
     printf(".intel_syntax noprefix\n"); 
-    printf(".globl main\n"); 
-    printf("main:\n");
-
-    // prologue
-    printf("    push rbp\n"); 
-    align++;
-    printf("    mov rbp,rsp\n");
-    printf("    sub rsp,%d\n",locals->offset);
+    printf(".globl ");
+    for (int i = 0;code[i];i++) {
+        if (i == 0) printf("%s",to_str(code[i]->name,code[i]->len));
+        else printf(",%s",to_str(code[i]->name,code[i]->len));
+    }
+    printf("\n");
     
     for (int i = 0;code[i];i++) { // finish if code[i] is NULL
-        gen_statement(code[i]);
+        gen_func_def(code[i]);
     } 
     
     return 0;

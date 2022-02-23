@@ -1,1 +1,4 @@
-foo();return 0;
+main() {
+    foo();
+    return 0;
+}

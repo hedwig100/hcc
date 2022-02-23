@@ -10,3 +10,10 @@ int lprintf(FILE *fp, int level, const char *file, int line, const char *func, c
     n += fprintf(fp, " (%s:%d)\n", file, line);
     return n;
 }
+
+char *to_str(char *s,int len) {
+    char *ret = calloc(len+1,sizeof(char));
+    memcpy(ret,s,len);
+    ret[len] = '\0';
+    return ret;
+}

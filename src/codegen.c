@@ -23,13 +23,14 @@ void gen_lval(Node *node) {
 
 const char *PARAM_REG[6] = {"rdi","rsi","rdx","rcx","r8","r9"};
 
-int gen_param(Node *node) {
-    int param_cnt = 0;
-    for (Node *now = node->params;now;now = now->params) {
+int gen_param_set(Node *node) {
+    int i = 0;
+    for (Node *now = node->params;i < node->n_param;now = now->params) {
+        i++;
+        if (!now) errorf("param count is not valid");
         gen_expression(now);
-        param_cnt++;
     }
-    for (int i = 0;i < param_cnt;i++) {
+    for (i = 0;i < node->n_param;i++) {
         printf("    pop %s\n",PARAM_REG[i]);
         align--;
     }
@@ -40,6 +41,17 @@ int gen_param(Node *node) {
         return 1;
     }
     return 0;
+}
+
+void gen_param_get(Node *node) {
+    int i = 0;
+    for (Node *now = node->params;i < node->n_param;now = now->params) {
+        if (!now) errorf("param count is not valid");
+        printf("    mov rax,rbp\n");
+        printf("    sub rax,%d\n",now->offset);
+        printf("    mov [rax],%s\n",PARAM_REG[i]);
+        i++;
+    }
 }
 
 // gen_expression generates expression 
@@ -68,15 +80,15 @@ void gen_expression(Node *node) {
         align--;
         return;
     case ND_CALLFUNC:
-        is_pop = gen_param(node);
+        is_pop = gen_param_set(node);
         strncpy(ident,node->name,node->len);
         ident[node->len] = '\0';
         printf("    call %s\n",ident);
-        printf("    push rax\n");
         if (is_pop) {
             printf("    pop rdi # for 16byte alignment\n");
             align--;
         }
+        printf("    push rax\n");
         return;
     }
 
@@ -209,6 +221,26 @@ void gen_statement(Node *node) {
         gen_expression(node);
         printf("    pop rax\n");
         align--;
+        return;
+    }
+}
+
+void gen_func_def(Node *node) {
+    switch (node->kind) {
+    case ND_FUNCDEF:
+        align = 0;
+        printf("%s:\n",to_str(node->name,node->len));
+
+        // prologue
+        printf("    push rbp\n"); 
+        align++;
+        printf("    mov rbp,rsp\n");
+        printf("    sub rsp,%d\n",node->offset);
+        gen_param_get(node);
+        gen_statement(node->next);
+        return;
+    default:
+        errorf("not func def");
         return;
     }
 }

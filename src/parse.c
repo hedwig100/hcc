@@ -80,9 +80,86 @@ Node *new_node_num(int val) {
 void program() {
     int i = 0; 
     while (!at_eof()) {
-        code[i++] = stmt(); 
+        locals->offset = 0;
+        code[i] = func_def(); 
+        code[i++]->offset = locals->offset;
     }
     code[i] = NULL;
+}
+
+Node *cmp_stmt() {
+    Node *node = calloc(1,sizeof(Node));
+    node->kind = ND_BLOCK;
+    Node *end = node;
+    expect("{");
+    while (!consume("}")) {
+        end->next = stmt();
+        end = end->next;
+    }
+    return node;
+}
+
+Node *func_def() {
+    Node *node = calloc(1,sizeof(Node));
+    node->kind = ND_FUNCDEF;
+    Token *tok = consume_ident();
+    if (!tok) {
+        error_at(tok->str,"not identifer");
+        return node;
+    }
+    node->name = tok->str;
+    node->len = tok->len;
+    expect("(");
+
+    node->n_param = 0;
+    if (consume(")")) { // 0 parameter
+        node->next = cmp_stmt();
+        return node;
+    }
+
+
+    tok = consume_ident();
+    node->n_param++;
+    if (!tok) {
+        error_at(tok->str,"not identifer");
+        return node;
+    }
+    Node *start = calloc(1,sizeof(Node));
+    start->kind = ND_LVAR;
+    LVar *lvar = calloc(1,sizeof(LVar));
+    lvar->next = locals;
+    lvar->name = tok->str;
+    lvar->len = tok->len;
+    lvar->offset = locals->offset + 8;
+    start->offset = lvar->offset;
+    locals = lvar;
+    
+    while (!consume(")")) {
+        expect(",");
+
+        Token *tok = consume_ident();
+        node->n_param++;
+        if (!tok) {
+            error_at(tok->str,"not identifer");
+            return node;
+        }
+        Node *now = calloc(1,sizeof(Node));
+        now->kind = ND_LVAR;
+        lvar = calloc(1,sizeof(LVar));
+        lvar->next = locals;
+        lvar->name = tok->str;
+        lvar->len = tok->len;
+        lvar->offset = locals->offset + 8;
+        now->offset = lvar->offset;
+        locals = lvar;
+
+        now->params = start;
+        start = now;
+    }
+    node->params = start;
+    node->next = cmp_stmt();
+
+    return node;
 }
 
 Node *stmt() {
@@ -249,14 +326,17 @@ Node *primary() {
             node->name = tok->str;
             node->len = tok->len;
             
+            node->n_param = 0;
             if (consume(")")) {
                 return node;
             }
             
             Node *start = expr();
+            node->n_param++;
             while (!consume(")")) {
                 expect(",");
                 Node *now = expr();
+                node->n_param++;
                 now->params = start;
                 start = now;
             }
