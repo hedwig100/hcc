@@ -28,7 +28,7 @@ int main(int argc,char **argv) {
         exit(1);
     }
 
-    infof("input:%s\n",user_input);
+    infof("input:\n%s\n",user_input);
 
     // tokenize
     infof("try to tokenize...");
@@ -49,6 +49,7 @@ int main(int argc,char **argv) {
 
     // prologue
     printf("    push rbp\n"); 
+    align++;
     printf("    mov rbp,rsp\n");
     printf("    sub rsp,%d\n",locals->offset);
     

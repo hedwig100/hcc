@@ -243,15 +243,28 @@ Node *primary() {
     Token *tok = consume_ident(); 
     if (tok) {
         Node *node = calloc(1,sizeof(Node)); 
+
         if (consume("(")) { // function call
-            expect(")");
             node->kind = ND_CALLFUNC;
             node->name = tok->str;
             node->len = tok->len;
+            
+            if (consume(")")) {
+                return node;
+            }
+            
+            Node *start = expr();
+            while (!consume(")")) {
+                expect(",");
+                Node *now = expr();
+                now->next = start;
+                start = now;
+            }
+            node->next = start;
             return node;
         }
+
         node->kind = ND_LVAR;
-        
         LVar *lvar = find_lvar(tok);
         if (lvar) {
             node->offset = lvar->offset;

@@ -102,6 +102,8 @@ struct Node {
     Node *ini;
     Node *step;
 
+    // if kind is ND_BLOCK,its statements
+    // if kind is ND_CALLFUNC,its parameters
     Node *next;
 };
 
@@ -123,6 +125,10 @@ Node *primary();
     codegen.c
 */
 
+int align;
+
+int gen_param(Node *node);
+void gen_expression(Node *node);
 void gen_statement(Node *node);
 
 /*

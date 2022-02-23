@@ -1,5 +1,8 @@
 #include "hcc.h" 
 
+// for 16byte alignment
+int align = 0;
+
 // counter create unique number
 int counter() {
     static int count = 0;
@@ -15,15 +18,39 @@ void gen_lval(Node *node) {
     printf("    mov rax,rbp # local variable address\n"); 
     printf("    sub rax,%d\n",node->offset); 
     printf("    push rax\n");
+    align++;
+}
+
+const char *PARAM_REG[6] = {"rdi","rsi","rdx","rcx","r8","r9"};
+
+int gen_param(Node *node) {
+    int param_cnt = 0;
+    for (Node *now = node->next;now;now = now->next) {
+        gen_expression(now);
+        param_cnt++;
+    }
+    for (int i = 0;i < param_cnt;i++) {
+        printf("    pop %s\n",PARAM_REG[i]);
+        align--;
+    }
+
+    if (align%2 == 1) {
+        printf("    push 0\n"); // dummy data
+        align++;
+        return 1;
+    }
+    return 0;
 }
 
 // gen_expression generates expression 
 void gen_expression(Node *node) {
     char ident[101]; // TODO: support function name longer than 100
+    int is_pop;
 
     switch (node->kind) {
     case ND_NUM:
-        printf("    push %d # num\n",node->val); 
+        printf("    push %d # num\n",node->val);
+        align++; 
         return; 
     case ND_LVAR:
         gen_lval(node); 
@@ -38,11 +65,18 @@ void gen_expression(Node *node) {
         printf("    pop rax\n"); 
         printf("    mov [rax],rdi\n");
         printf("    push rdi\n");
+        align--;
         return;
     case ND_CALLFUNC:
+        is_pop = gen_param(node);
         strncpy(ident,node->name,node->len);
         ident[node->len] = '\0';
         printf("    call %s\n",ident);
+        printf("    push rax\n");
+        if (is_pop) {
+            printf("    pop rdi\n");
+            align--;
+        }
         return;
     }
 
@@ -51,6 +85,7 @@ void gen_expression(Node *node) {
 
     printf("    pop rdi\n"); 
     printf("    pop rax\n");
+    align-=2;
 
     switch (node->kind) {
     case ND_ADD:
@@ -92,6 +127,7 @@ void gen_expression(Node *node) {
     }
 
     printf("    push rax\n"); 
+    align++;
 }
 
 // gen_statement generates statement
@@ -102,6 +138,7 @@ void gen_statement(Node *node) {
     case ND_IF:
         gen_expression(node->cond);
         printf("    pop rax\n");
+        align--;
         printf("    cmp rax,0\n");
         cnt = counter();
 
@@ -125,12 +162,14 @@ void gen_statement(Node *node) {
         printf("    mov rsp,rbp\n");
         printf("    pop rbp\n");
         printf("    ret\n");
+        align-=2;
         return;
     case ND_WHILE:
         cnt = counter();
         printf(".Lbegin%d: # while\n",cnt);
         gen_expression(node->cond);
         printf("    pop rax\n");
+        align--;
         printf("    cmp rax,0\n");
         printf("    je .Lend%d\n",cnt);
         gen_statement(node->then);
@@ -142,11 +181,13 @@ void gen_statement(Node *node) {
         if (node->ini) {
             gen_expression(node->ini);
             printf("    pop rax\n");
+            align--;
         }
         printf(".Lbegin%d: # for\n",cnt);
         if (node->cond) {
             gen_expression(node->cond);
             printf("    pop rax\n");
+            align--;
             printf("    cmp rax,0\n");
             printf("    je .Lend%d\n",cnt);
         }
@@ -154,6 +195,7 @@ void gen_statement(Node *node) {
         if (node->step) {
             gen_expression(node->step);
             printf("    pop rax\n");
+            align--;
         }
         printf("    jmp .Lbegin%d\n",cnt);
         printf(".Lend%d:\n",cnt);
@@ -166,6 +208,7 @@ void gen_statement(Node *node) {
     default:
         gen_expression(node);
         printf("    pop rax\n");
+        align--;
         return;
     }
 }
