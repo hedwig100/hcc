@@ -111,7 +111,6 @@ Node *primary();
     codegen.c
 */
 
-void error(char *msg);
 void gen_statement(Node *node);
 
 /*

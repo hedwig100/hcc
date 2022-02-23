@@ -1,10 +1,5 @@
 #include "9cc.h" 
 
-void error(char *msg) {
-    fprintf(stderr,"%s\n",msg); 
-    exit(1);
-}
-
 // counter create unique number
 int counter() {
     static int count = 0;
@@ -14,7 +9,7 @@ int counter() {
 // gen_lval generates local variable (expression)
 void gen_lval(Node *node) {
     if (node->kind != ND_LVAR) {
-        error("Left side value of assignment is not variable.");
+        errorf("Left side value of assignment is not variable.");
     }
 
     printf("    mov rax,rbp\n"); 
@@ -85,7 +80,7 @@ void gen_expression(Node *node) {
         printf("    movzb rax,al\n"); 
         break;
     default:
-        error("not type of expression");
+        errorf("not type of expression");
         break;
     }
 
