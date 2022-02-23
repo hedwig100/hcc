@@ -61,22 +61,23 @@ LVar *locals;
 
 // nodekind
 typedef enum {
-    ND_ADD,    // + 
-    ND_SUB,    // - 
-    ND_MUL,    // *
-    ND_DIV,    // /
-    ND_NUM,    // integer
-    ND_EQ,     // ==
-    ND_NEQ,    // != 
-    ND_LT,     // < 
-    ND_LEQ,    // <= 
-    ND_LVAR,   // local variable
-    ND_BLOCK,
-    ND_ASSIGN, // assign
-    ND_RETURN, // "return"
-    ND_IF,     // "if"
-    ND_WHILE,  // "while" 
-    ND_FOR,    // "for"
+    ND_ADD,     // + 
+    ND_SUB,     // - 
+    ND_MUL,     // *
+    ND_DIV,     // /
+    ND_NUM,     // integer
+    ND_EQ,      // ==
+    ND_NEQ,     // != 
+    ND_LT,      // < 
+    ND_LEQ,     // <= 
+    ND_LVAR,    // local variable
+    ND_BLOCK,   // { }
+    ND_CALLFUNC,// call func()
+    ND_ASSIGN,  // assign
+    ND_RETURN,  // "return"
+    ND_IF,      // "if"
+    ND_WHILE,   // "while" 
+    ND_FOR,     // "for"
 } NodeKind; 
 
 
@@ -89,6 +90,8 @@ struct Node {
     Node *rhs;  // right-hand side
     int val;    // if kind is ND_NUM,its number
     int offset; // if kind is ND_LVAR,its offset from sp
+    char *name; // if kind is ND_CALLFUNC,its name
+    int len;    // name's length
 
     // "if" ( cond ) then "else" els
     // "while" ( cond ) then

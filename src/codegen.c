@@ -19,6 +19,8 @@ void gen_lval(Node *node) {
 
 // gen_expression generates expression 
 void gen_expression(Node *node) {
+    char ident[101]; // TODO: support function name longer than 100
+
     switch (node->kind) {
     case ND_NUM:
         printf("    push %d # num\n",node->val); 
@@ -36,6 +38,11 @@ void gen_expression(Node *node) {
         printf("    pop rax\n"); 
         printf("    mov [rax],rdi\n");
         printf("    push rdi\n");
+        return;
+    case ND_CALLFUNC:
+        strncpy(ident,node->name,node->len);
+        ident[node->len] = '\0';
+        printf("    call %s\n",ident);
         return;
     }
 
