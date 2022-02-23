@@ -5,6 +5,13 @@ void error(char *msg) {
     exit(1);
 }
 
+// counter create unique number
+int counter() {
+    static int count = 0;
+    return count++;
+}
+
+// gen_lval generates local variable (expression)
 void gen_lval(Node *node) {
     if (node->kind != ND_LVAR) {
         error("Left side value of assignment is not variable.");
@@ -15,27 +22,9 @@ void gen_lval(Node *node) {
     printf("    push rax\n");
 }
 
-int lend = 0;
-
-void gen(Node *node) {
+// gen_expression generates expression 
+void gen_expression(Node *node) {
     switch (node->kind) {
-    case ND_IF:
-        gen(node->lhs);
-        printf("    pop rax\n");
-        printf("    cmp rax,0\n");
-        printf("    push rax\n");
-        int Lend_now = lend;
-        printf("    je .Lend%d\n",lend++);
-        gen(node->rhs);
-        printf(".Lend%d:\n",Lend_now);
-        return;
-    case ND_RETURN:
-        gen(node->lhs);
-        printf("    pop rax\n");
-        printf("    mov rsp,rbp\n");
-        printf("    pop rbp\n");
-        printf("    ret\n");
-        return;
     case ND_NUM:
         printf("    push %d\n",node->val); 
         return; 
@@ -47,7 +36,7 @@ void gen(Node *node) {
         return; 
     case ND_ASSIGN:
         gen_lval(node->lhs);
-        gen(node->rhs); 
+        gen_expression(node->rhs); 
         printf("    pop rdi\n");
         printf("    pop rax\n"); 
         printf("    mov [rax],rdi\n");
@@ -55,8 +44,8 @@ void gen(Node *node) {
         return;
     }
 
-    gen(node->lhs); 
-    gen(node->rhs); 
+    gen_expression(node->lhs); 
+    gen_expression(node->rhs); 
 
     printf("    pop rdi\n"); 
     printf("    pop rax\n");
@@ -95,7 +84,47 @@ void gen(Node *node) {
         printf("    setle al\n"); 
         printf("    movzb rax,al\n"); 
         break;
+    default:
+        error("not type of expression");
+        break;
     }
 
     printf("    push rax\n"); 
+}
+
+// gen_statement generates statement
+void gen_statement(Node *node) {
+    switch (node->kind) {
+    case ND_IF:
+        gen_expression(node->cond);
+        printf("    pop rax\n");
+        printf("    cmp rax,0\n");
+        int cnt = counter();
+
+        if (node->els) {
+            printf("    je .Lelse%d\n",cnt);
+            gen_statement(node->then);
+            printf("    jmp .Lend%d\n",cnt);
+            printf(".Lelse%d:\n",cnt);
+            gen_statement(node->els);
+            printf(".Lend%d:\n",cnt);
+        } else {
+            printf("    je .Lend%d\n",cnt);
+            gen_statement(node->then);
+            printf(".Lend%d:\n",cnt);
+        }
+
+        return;
+    case ND_RETURN:
+        gen_expression(node->lhs);
+        printf("    pop rax\n");
+        printf("    mov rsp,rbp\n");
+        printf("    pop rbp\n");
+        printf("    ret\n");
+        return;
+    default:
+        gen_expression(node);
+        printf("    pop rax\n");
+        return;
+    }
 }

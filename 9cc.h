@@ -88,6 +88,11 @@ struct Node {
     Node *rhs;  // right-hand side
     int val;    // if kind is ND_NUM,its number
     int offset; // if kind is ND_LVAR,its offset from sp
+
+    // "if" ( cond ) then "else" els
+    Node *cond;
+    Node *then;
+    Node *els;
 };
 
 Node *code[100]; // AST
@@ -106,11 +111,10 @@ Node *unary();
 Node *primary();
 
 
-extern int lend;
-
 void error(char *msg);
 void gen_lval(Node *node);
-void gen(Node *node);
+void gen_expression(Node *node);
+void gen_statement(Node *node);
 
 
 // log for debug

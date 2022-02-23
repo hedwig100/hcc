@@ -7,12 +7,18 @@ int main(int argc,char **argv) {
     }
 
     user_input = argv[1];
+
+    // tokenize
     infof("try to tokenize...");
     token = tokenize(user_input);
+
+    // construct AST
     infof("try to construct AST...");
     locals = calloc(1,sizeof(LVar));
     locals->offset = 0;
     program();
+
+    // generate code
     infof("try to generate assembly...");
 
     printf(".intel_syntax noprefix\n"); 
@@ -25,13 +31,8 @@ int main(int argc,char **argv) {
     printf("    sub rsp,%d\n",locals->offset);
     
     for (int i = 0;code[i];i++) { // finish if code[i] is NULL
-        gen(code[i]);
-        printf("    pop rax\n");
+        gen_statement(code[i]);
     } 
-
-    // epilogue
-    printf("    mov rsp,rbp\n"); 
-    printf("    pop rbp\n"); 
-    printf("    ret\n");
+    
     return 0;
 }
