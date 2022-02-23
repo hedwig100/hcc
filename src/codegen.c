@@ -130,6 +130,27 @@ void gen_statement(Node *node) {
         printf("    jmp .Lbegin%d\n",cnt);
         printf(".Lend%d:\n",cnt);
         return;
+    case ND_FOR:
+        cnt = counter();
+        if (node->ini) {
+            gen_expression(node->ini);
+            printf("    pop rax\n");
+        }
+        printf(".Lbegin%d:\n",cnt);
+        if (node->cond) {
+            gen_expression(node->cond);
+            printf("    pop rax\n");
+            printf("    cmp rax,0\n");
+            printf("    je .Lend%d\n",cnt);
+        }
+        gen_statement(node->then);
+        if (node->step) {
+            gen_expression(node->step);
+            printf("    pop rax\n");
+        }
+        printf("    jmp .Lbegin%d\n",cnt);
+        printf(".Lend%d:\n",cnt);
+        return;
     default:
         gen_expression(node);
         printf("    pop rax\n");

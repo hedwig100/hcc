@@ -75,6 +75,7 @@ typedef enum {
     ND_RETURN, // "return"
     ND_IF,     // "if"
     ND_WHILE,  // "while" 
+    ND_FOR,    // "for"
 } NodeKind; 
 
 
@@ -90,9 +91,12 @@ struct Node {
 
     // "if" ( cond ) then "else" els
     // "while" ( cond ) then
+    // "for" ( ini ";" cond ";" step ) then 
     Node *cond;
     Node *then;
     Node *els;
+    Node *ini;
+    Node *step;
 };
 
 Node *code[100]; // AST

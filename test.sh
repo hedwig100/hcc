@@ -68,12 +68,14 @@ assert 10 "pwoef=34;goiao=-354+pwoef;garhi=goiao/32;return garhi+20;"
 assert 100 "ieii=143;ge=-43;A=ieii+ge;return A;"
 assert 0 "a = 0;if (3 == 4) a = 1; return a;"
 assert 71 "a = 34;b = a + 3; if (b - a == 3) b = b*2;return b-3;"
+
 assert 4 "a=343;b=34;if (a > b) c = 4; else c = 45; return c;"
 assert 34 "a=34;b=-35;if (a + b <= 0) c = 34; else if (a + b <= 10) c = 0; else c = 43; return c;"
 assert 0 "a=40;b=-35;if (a + b <= 0) c = 34; else if (a + b <= 10) c = 0; else c = 43; return c;"
 assert 43 "a=50;b=-35;if (a + b <= 0) c = 34; else if (a + b <= 10) c = 0; else c = 43; return c;"
-
 assert 10 "i=0;while (i<10) i=i+1;return i;"
 assert 0 "i=0;while (i>0) i=i-1;return i;"
+assert 66 "c=2;for (i=0;i<32;i=i+1)c=c+2;return c;"
+assert 64 "ze=1;for (j=10;j>=0;j=j-2)ze=ze*2;return ze;"
 
 echo OK 

@@ -115,6 +115,24 @@ Node *stmt() {
         expect(")");
         node->then = stmt();
         return node;
+    } else if (consume("for")) {
+        expect("(");
+        node = calloc(1,sizeof(Node));
+        node->kind = ND_FOR;
+        if (!consume(";")) {
+            node->ini = expr();
+            consume(";");
+        }
+        if (!consume(";")) {
+            node->cond = expr();
+            consume(";");
+        }
+        if (!consume(")")) {
+            node->step = expr();
+            consume(")");
+        }
+        node->then = stmt();
+        return node;
     }
     
     node = expr();
