@@ -35,7 +35,7 @@ int gen_param(Node *node) {
     }
 
     if (align%2 == 1) {
-        printf("    push 0\n"); // dummy data
+        printf("    push 0 # for 16byte alignment\n"); // dummy data
         align++;
         return 1;
     }
@@ -74,7 +74,7 @@ void gen_expression(Node *node) {
         printf("    call %s\n",ident);
         printf("    push rax\n");
         if (is_pop) {
-            printf("    pop rdi\n");
+            printf("    pop rdi # for 16byte alignment\n");
             align--;
         }
         return;

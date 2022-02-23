@@ -52,8 +52,9 @@ Token *tokenize(char *p) {
         }
 
         if (startwith(p,"==") || startwith(p,"!=") || startwith(p,"<=") || startwith(p,">=")) {
-            cur = new_token(TK_RESERVED,cur,p); p+=2;
+            cur = new_token(TK_RESERVED,cur,p);
             cur->len = 2;
+            p += 2;
             continue;
         }
 
