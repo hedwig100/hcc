@@ -72,8 +72,9 @@ typedef enum {
     ND_LEQ,    // <= 
     ND_LVAR,   // local variable
     ND_ASSIGN, // assign
-    ND_RETURN,  // "return"
-    ND_IF,      // "if"
+    ND_RETURN, // "return"
+    ND_IF,     // "if"
+    ND_WHILE,  // "while" 
 } NodeKind; 
 
 
@@ -88,6 +89,7 @@ struct Node {
     int offset; // if kind is ND_LVAR,its offset from sp
 
     // "if" ( cond ) then "else" els
+    // "while" ( cond ) then
     Node *cond;
     Node *then;
     Node *els;

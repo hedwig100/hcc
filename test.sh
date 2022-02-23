@@ -73,4 +73,7 @@ assert 34 "a=34;b=-35;if (a + b <= 0) c = 34; else if (a + b <= 10) c = 0; else 
 assert 0 "a=40;b=-35;if (a + b <= 0) c = 34; else if (a + b <= 10) c = 0; else c = 43; return c;"
 assert 43 "a=50;b=-35;if (a + b <= 0) c = 34; else if (a + b <= 10) c = 0; else c = 43; return c;"
 
+assert 10 "i=0;while (i<10) i=i+1;return i;"
+assert 0 "i=0;while (i>0) i=i-1;return i;"
+
 echo OK 

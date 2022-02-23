@@ -89,12 +89,14 @@ void gen_expression(Node *node) {
 
 // gen_statement generates statement
 void gen_statement(Node *node) {
+    int cnt;
+
     switch (node->kind) {
     case ND_IF:
         gen_expression(node->cond);
         printf("    pop rax\n");
         printf("    cmp rax,0\n");
-        int cnt = counter();
+        cnt = counter();
 
         if (node->els) {
             printf("    je .Lelse%d\n",cnt);
@@ -116,6 +118,17 @@ void gen_statement(Node *node) {
         printf("    mov rsp,rbp\n");
         printf("    pop rbp\n");
         printf("    ret\n");
+        return;
+    case ND_WHILE:
+        cnt = counter();
+        printf(".Lbegin%d:\n",cnt);
+        gen_expression(node->cond);
+        printf("    pop rax\n");
+        printf("    cmp rax,0\n");
+        printf("    je .Lend%d\n",cnt);
+        gen_statement(node->then);
+        printf("    jmp .Lbegin%d\n",cnt);
+        printf(".Lend%d:\n",cnt);
         return;
     default:
         gen_expression(node);

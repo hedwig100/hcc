@@ -107,7 +107,15 @@ Node *stmt() {
         node->lhs = expr();
         expect(";");
         return node;
-    } 
+    } else if (consume("while")) {
+        expect("(");
+        node = calloc(1,sizeof(Node));
+        node->kind = ND_WHILE;
+        node->cond = expr();
+        expect(")");
+        node->then = stmt();
+        return node;
+    }
     
     node = expr();
     expect(";"); 
