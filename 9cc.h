@@ -8,6 +8,11 @@
 #include <stdbool.h> 
 #include <string.h> 
 
+char *user_input;
+
+/*
+    tokenize.c
+*/
 
 // tokenkind
 typedef enum {  
@@ -29,8 +34,16 @@ struct Token {
     int len; 
 }; 
 
+// token sequence
 Token *token; 
 
+
+void error_at(char *loc,char *fmt, ...);
+Token *tokenize(char *p); 
+
+/*
+    parse.c
+*/
 
 // local variable
 typedef struct LVar LVar;
@@ -44,21 +57,6 @@ struct LVar {
 
 // local variables
 LVar *locals;
-
-
-char *user_input;
-
-void error_at(char *loc,char *fmt, ...);
-bool consume(char *op); 
-void expect(char *op); 
-int expect_number(); 
-LVar *find_lvar(Token *tok);
-bool at_eof(); 
-Token *new_token(TokenKind kind,Token *cur,char *str); 
-bool startwith(char *p,char *q); 
-int ident_len(char *p);
-bool is_alnum(char c);
-Token *tokenize(char *p); 
 
 
 // nodekind
@@ -97,10 +95,9 @@ struct Node {
 
 Node *code[100]; // AST
 
-Node *new_node(NodeKind kind,Node *lhs,Node *rhs); 
-Node *new_node_num(int val); 
-void program(); 
-Node *stmt(); 
+
+void program();
+Node *stmt();
 Node *expr();
 Node *assign();
 Node *equality();
@@ -110,12 +107,16 @@ Node *mul();
 Node *unary();
 Node *primary();
 
+/*
+    codegen.c
+*/
 
 void error(char *msg);
-void gen_lval(Node *node);
-void gen_expression(Node *node);
 void gen_statement(Node *node);
 
+/*
+    utils.c
+*/
 
 // log for debug
 int lprintf(FILE *fp, int level, const char *file, int line, const char *func, const char *fmt, ...);
