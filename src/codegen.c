@@ -151,6 +151,11 @@ void gen_statement(Node *node) {
         printf("    jmp .Lbegin%d\n",cnt);
         printf(".Lend%d:\n",cnt);
         return;
+    case ND_BLOCK:
+        for (Node *now = node->next;now;now = now->next) {
+            gen_statement(now);
+        }
+        return;
     default:
         gen_expression(node);
         printf("    pop rax\n");

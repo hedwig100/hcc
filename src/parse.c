@@ -133,6 +133,15 @@ Node *stmt() {
         }
         node->then = stmt();
         return node;
+    } else if (consume("{")) {
+        node = calloc(1,sizeof(Node));
+        node->kind = ND_BLOCK;
+        Node *end = node;
+        while (!consume("}")) {
+            end->next = stmt();
+            end = end->next;
+        }
+        return node;
     }
     
     node = expr();

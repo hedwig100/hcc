@@ -71,6 +71,7 @@ typedef enum {
     ND_LT,     // < 
     ND_LEQ,    // <= 
     ND_LVAR,   // local variable
+    ND_BLOCK,
     ND_ASSIGN, // assign
     ND_RETURN, // "return"
     ND_IF,     // "if"
@@ -97,6 +98,8 @@ struct Node {
     Node *els;
     Node *ini;
     Node *step;
+
+    Node *next;
 };
 
 Node *code[100]; // AST
