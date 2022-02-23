@@ -1,5 +1,5 @@
-#ifndef CC_H
-#define CC_H
+#ifndef HCC_H
+#define HCC_H
 
 #include <stdio.h> 
 #include <stdlib.h> 

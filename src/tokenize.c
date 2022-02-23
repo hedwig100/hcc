@@ -1,4 +1,4 @@
-#include "9cc.h"
+#include "hcc.h"
 
 // error_at reports error
 void error_at(char *loc,char *fmt, ...) {

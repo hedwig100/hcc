@@ -1,10 +1,10 @@
-# 9cc
+# hcc
 C compiler 
 
 ## setup
 
 ```
-git clone https://github.com/hedwig100/9cc && cd 9cc
-docker build -t 9cc .
-docker run -it --name 9cc 9cc /bin/bash
+git clone https://github.com/hedwig100/hcc && cd hcc
+docker build -t hcc .
+docker run -it --name hcc hcc /bin/bash
 ```

@@ -1,1 +1,1 @@
-docker run --rm -v $HOME/C/9cc:/9cc -w /9cc compilerbook make test
+docker run --rm -v $HOME/C/hcc:/hcc -w /hcc compilerbook make test

@@ -1,4 +1,4 @@
-#include "9cc.h"
+#include "hcc.h"
 
 int lprintf(FILE *fp, int level, const char *file, int line, const char *func, const char *fmt, ...) {
     int n = 0;

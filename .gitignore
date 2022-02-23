@@ -2,7 +2,7 @@
 *.o
 tmp*
 a.out
-9cc
+hcc
 .vscode
 .vscode-server
 .ssh

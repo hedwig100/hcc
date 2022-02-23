@@ -1,4 +1,4 @@
-#include "9cc.h" 
+#include "hcc.h" 
 
 // consume read a token and return true if next token is expected kind of token,
 // otherwise,return false 

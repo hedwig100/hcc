@@ -1,4 +1,4 @@
-#include "9cc.h" 
+#include "hcc.h" 
 
 // counter create unique number
 int counter() {

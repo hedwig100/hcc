@@ -9,7 +9,7 @@ RUN DEBIAN_FRONTEND=noninteractive apt install -y \
     gdb \
     sudo
 
-ARG USER="cc"
+ARG USER="hcc"
 RUN useradd ${USER}  && \
     mkdir -p /home/${USER} && \ 
     chown ${USER} /home/${USER}
