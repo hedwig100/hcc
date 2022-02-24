@@ -213,7 +213,7 @@ void gen_statement(Node *node) {
         printf(".Lend%d:\n",cnt);
         return;
     case ND_BLOCK:
-        for (Node *now = node->next;now;now = now->next) {
+        for (Node *now = node->block;now;now = now->next) {
             gen_statement(now);
         }
         return;
@@ -237,7 +237,7 @@ void gen_func_def(Node *node) {
         printf("    mov rbp,rsp\n");
         printf("    sub rsp,%d\n",node->offset);
         gen_param_get(node);
-        gen_statement(node->next);
+        gen_statement(node->body);
         return;
     default:
         errorf("not func def");

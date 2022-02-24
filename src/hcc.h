@@ -93,6 +93,7 @@ struct Node {
     int offset; // if kind is ND_LVAR,ND_FUNCDEF,its offset from sp
     char *name; // if kind is ND_CALLFUNC,ND_FUNCDEF,its name
     int len;    // name's length
+    Node *next;
 
     // "if" ( cond ) then "else" els
     // "while" ( cond ) then
@@ -104,12 +105,12 @@ struct Node {
     Node *step;
 
     // if kind is ND_BLOCK,its statements
-    // if kind is ND_FUNCDEF,its block
-    Node *next;
+    Node *block;
 
     // if kind is ND_CALLFUNC,ND_FUNCDEF, its parameters
     int n_param;
     Node *params;
+    Node *body;
 };
 
 Node *code[100]; // AST

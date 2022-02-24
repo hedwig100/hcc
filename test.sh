@@ -86,5 +86,7 @@ assert 3 "main() {a1=0;b_1=3;return a1+b_1;}"
 assert 55 "fib(n) {if (n <= 1) return n; return fib(n-1)+fib(n-2);} main() {return fib(10);}"
 assert 21 "fib(n) {if (n <= 1) return n; return fib(n-1)+fib(n-2);} main() {return fib(fib(6));}"
 assert 55 "fib(n) {if (n <= 1) return n; return fib(n-1)+fib(n-2);} main() {return fib(fib(fib(5))+fib(5));}"
+assert 1 "main() {a = 0;{b = 4;a=a+1;}return a;}"
+assert 1 "main() {{}a=0;return a+1;}"
 
 echo OK 
