@@ -113,43 +113,27 @@ Node *func_def() {
     }
     node->name = tok->str;
     node->len = tok->len;
-    expect("(");
 
-    node->n_param = 0;
-    if (consume(")")) { // 0 parameter
+    expect("(");
+    if (consume(")")) {
+        node->params = NULL;
         node->body = cmp_stmt();
         return node;
     }
 
-
-    tok = consume_ident();
-    node->n_param++;
-    if (!tok) {
-        error_at(tok->str,"not identifer");
-        return node;
-    }
-    Node *start = calloc(1,sizeof(Node));
-    start->kind = ND_LVAR;
-    LVar *lvar = calloc(1,sizeof(LVar));
-    lvar->next = locals;
-    lvar->name = tok->str;
-    lvar->len = tok->len;
-    lvar->offset = locals->offset + 8;
-    start->offset = lvar->offset;
-    locals = lvar;
-    
-    while (!consume(")")) {
-        expect(",");
-
+    Node head;
+    head.next = NULL;
+    Node *now = &head;
+    while (1) {
         Token *tok = consume_ident();
-        node->n_param++;
         if (!tok) {
             error_at(tok->str,"not identifer");
             return node;
         }
-        Node *now = calloc(1,sizeof(Node));
+        now->next = calloc(1,sizeof(Node));
+        now = now->next;
         now->kind = ND_LVAR;
-        lvar = calloc(1,sizeof(LVar));
+        LVar *lvar = calloc(1,sizeof(LVar));
         lvar->next = locals;
         lvar->name = tok->str;
         lvar->len = tok->len;
@@ -157,12 +141,14 @@ Node *func_def() {
         now->offset = lvar->offset;
         locals = lvar;
 
-        now->params = start;
-        start = now;
+        if (!consume(",")) {
+            expect(")");
+            break;
+        }
     }
-    node->params = start;
+    
+    node->params = head.next;
     node->body = cmp_stmt();
-
     return node;
 }
 
@@ -334,21 +320,22 @@ Node *primary() {
             node->name = tok->str;
             node->len = tok->len;
             
-            node->n_param = 0;
             if (consume(")")) {
                 return node;
             }
             
-            Node *start = expr();
-            node->n_param++;
-            while (!consume(")")) {
-                expect(",");
-                Node *now = expr();
-                node->n_param++;
-                now->params = start;
-                start = now;
+            Node head;
+            head.next = NULL;
+            Node *now = &head;
+            while (1) {
+                now->next = expr();
+                now = now->next;
+                if (!consume(",")) {
+                    expect(")");
+                    break;
+                }
             }
-            node->params = start;
+            node->params = head.next;
             return node;
         }
 

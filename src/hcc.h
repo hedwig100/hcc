@@ -104,11 +104,12 @@ struct Node {
     Node *ini;
     Node *step;
 
-    // if kind is ND_BLOCK,its statements
+    // ND_BLOCK
+    // { block }
     Node *block;
 
-    // if kind is ND_CALLFUNC,ND_FUNCDEF, its parameters
-    int n_param;
+    // ND_CALLFUNC,ND_FUNCDEF
+    // name(params),name(params) body
     Node *params;
     Node *body;
 };

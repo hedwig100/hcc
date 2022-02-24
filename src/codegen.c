@@ -24,13 +24,12 @@ void gen_lval(Node *node) {
 const char *PARAM_REG[6] = {"rdi","rsi","rdx","rcx","r8","r9"};
 
 int gen_param_set(Node *node) {
-    int i = 0;
-    for (Node *now = node->params;i < node->n_param;now = now->params) {
-        i++;
-        if (!now) errorf("param count is not valid");
+    int n_param = 0;
+    for (Node *now = node->params;now;now = now->next) {
         gen_expression(now);
+        n_param++;
     }
-    for (i = 0;i < node->n_param;i++) {
+    for (int i = n_param-1;i >= 0;i--) {
         printf("    pop %s\n",PARAM_REG[i]);
         align--;
     }
@@ -45,12 +44,10 @@ int gen_param_set(Node *node) {
 
 void gen_param_get(Node *node) {
     int i = 0;
-    for (Node *now = node->params;i < node->n_param;now = now->params) {
-        if (!now) errorf("param count is not valid");
+    for (Node *now = node->params;now;now = now->next) {
         printf("    mov rax,rbp\n");
         printf("    sub rax,%d\n",now->offset);
-        printf("    mov [rax],%s\n",PARAM_REG[i]);
-        i++;
+        printf("    mov [rax],%s\n",PARAM_REG[i++]);
     }
 }
 
