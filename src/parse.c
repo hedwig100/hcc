@@ -77,6 +77,25 @@ Node *new_node_num(int val) {
     return node; 
 }
 
+Node *new_node_lvar(Token *tok) {
+    if (!tok) error_at(tok->str,"not identifier");
+    Node *node = calloc(1,sizeof(Node));
+    node->kind = ND_LVAR;
+    LVar *lvar = find_lvar(tok);
+    if (lvar) {
+        node->offset = lvar->offset;
+    } else {
+        LVar *lvar = calloc(1,sizeof(LVar));
+        lvar->next = locals;
+        lvar->name = tok->str;
+        lvar->len = tok->len;
+        lvar->offset = locals->offset + 8;
+        node->offset = lvar->offset;
+        locals = lvar;
+    }
+    return node;
+}
+
 void program() {
     int i = 0; 
     while (!at_eof()) {
@@ -126,20 +145,8 @@ Node *func_def() {
     Node *now = &head;
     while (1) {
         Token *tok = consume_ident();
-        if (!tok) {
-            error_at(tok->str,"not identifer");
-            return node;
-        }
-        now->next = calloc(1,sizeof(Node));
+        now->next = new_node_lvar(tok);
         now = now->next;
-        now->kind = ND_LVAR;
-        LVar *lvar = calloc(1,sizeof(LVar));
-        lvar->next = locals;
-        lvar->name = tok->str;
-        lvar->len = tok->len;
-        lvar->offset = locals->offset + 8;
-        now->offset = lvar->offset;
-        locals = lvar;
 
         if (!consume(",")) {
             expect(")");
@@ -339,19 +346,7 @@ Node *primary() {
             return node;
         }
 
-        node->kind = ND_LVAR;
-        LVar *lvar = find_lvar(tok);
-        if (lvar) {
-            node->offset = lvar->offset;
-        } else {
-            LVar *lvar = calloc(1,sizeof(LVar));
-            lvar->next = locals;
-            lvar->name = tok->str;
-            lvar->len = tok->len;
-            lvar->offset = locals->offset + 8;
-            node->offset = lvar->offset;
-            locals = lvar;
-        }
+        node = new_node_lvar(tok);
         return node;
     }
 

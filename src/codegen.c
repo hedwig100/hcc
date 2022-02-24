@@ -78,9 +78,7 @@ void gen_expression(Node *node) {
         return;
     case ND_CALLFUNC:
         is_pop = gen_param_set(node);
-        strncpy(ident,node->name,node->len);
-        ident[node->len] = '\0';
-        printf("    call %s\n",ident);
+        printf("    call %s\n",to_str(node->name,node->len));
         if (is_pop) {
             printf("    pop rdi # for 16byte alignment\n");
             align--;

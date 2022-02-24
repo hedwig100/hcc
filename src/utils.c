@@ -8,6 +8,7 @@ int lprintf(FILE *fp, int level, const char *file, int line, const char *func, c
     n += vfprintf(fp, fmt, ap);
     va_end(ap);
     n += fprintf(fp, " (%s:%d)\n", file, line);
+    if (level == 'E') exit(1);
     return n;
 }
 
