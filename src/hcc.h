@@ -36,11 +36,10 @@ struct Token {
 // token sequence
 Token *token;
 
-void error_at(char *loc, char *fmt, ...);
 Token *tokenize(char *p);
 
 /*
-    parse.c
+    for parser
 */
 
 // typekind
@@ -153,6 +152,20 @@ struct Node {
 
 Node *code[100]; // AST
 
+/*
+    parse_utils.c
+*/
+
+Type *new_type(TypeKind kind);
+bool type_cmp(Type *typ1, Type *typ2);
+void register_func(Node *node);
+Func *find_func(Node *node);
+LVar *find_lvar(Token *tok);
+
+/*
+    parse.c
+*/
+
 void program();
 Node *cmp_stmt();
 Node *func_def();
@@ -186,7 +199,9 @@ void gen_func_def(Node *node);
 // log for debug
 int lprintf(FILE *fp, int level, const char *file, int line, const char *func,
             const char *fmt, ...);
+void error_at(char *loc, char *fmt, ...);
 char *to_str(char *s, int len);
+
 #define errorf(...) \
     lprintf(stderr, 'E', __FILE__, __LINE__, __func__, __VA_ARGS__)
 #define warnf(...) \

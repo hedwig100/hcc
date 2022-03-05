@@ -37,7 +37,7 @@ int main(int argc, char **argv) {
     // construct AST
     infof("try to construct AST...");
     locals = calloc(1, sizeof(LVar));
-    funcs  = calloc(1, sizeof(Func));
+    funcs  = NULL;
     program();
 
     // generate code

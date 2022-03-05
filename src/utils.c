@@ -13,6 +13,20 @@ int lprintf(FILE *fp, int level, const char *file, int line, const char *func,
     return n;
 }
 
+// error_at reports error
+void error_at(char *loc, char *fmt, ...) {
+    va_list ap;
+    va_start(ap, fmt);
+
+    int pos = loc - user_input;
+    fprintf(stderr, "%s\n", user_input);
+    fprintf(stderr, "%*s", pos, " ");
+    fprintf(stderr, "^ ");
+    vfprintf(stderr, fmt, ap);
+    fprintf(stderr, "\n");
+    exit(1);
+}
+
 char *to_str(char *s, int len) {
     char *ret = calloc(len + 1, sizeof(char));
     memcpy(ret, s, len);

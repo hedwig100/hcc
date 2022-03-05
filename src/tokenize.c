@@ -1,19 +1,5 @@
 #include "hcc.h"
 
-// error_at reports error
-void error_at(char *loc, char *fmt, ...) {
-    va_list ap;
-    va_start(ap, fmt);
-
-    int pos = loc - user_input;
-    fprintf(stderr, "%s\n", user_input);
-    fprintf(stderr, "%*s", pos, " ");
-    fprintf(stderr, "^ ");
-    vfprintf(stderr, fmt, ap);
-    fprintf(stderr, "\n");
-    exit(1);
-}
-
 bool startwith(char *p, char *q) { return memcmp(p, q, strlen(q)) == 0; }
 
 bool is_alnum(char c) { return isalnum(c) || (c == '_'); }
