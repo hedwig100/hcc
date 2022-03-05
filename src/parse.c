@@ -43,6 +43,15 @@ int expect_number() {
     return val;
 }
 
+Token *expect_ident() {
+    if (token->kind != TK_IDENT) {
+        error_at(token->str, "not ident");
+    }
+    Token *tok = token;
+    token      = token->next;
+    return tok;
+}
+
 // find_lvar searches local variables,if exists return the local variable
 // otherwise return NULL
 LVar *find_lvar(Token *tok) {
@@ -74,7 +83,6 @@ Node *new_node_num(int val) {
 }
 
 Node *new_node_lvar(Token *tok) {
-    if (!tok) error_at(tok->str, "not identifier");
     Node *node = calloc(1, sizeof(Node));
     node->kind = ND_LVAR;
     LVar *lvar = find_lvar(tok);
@@ -121,11 +129,7 @@ Node *cmp_stmt() {
 Node *func_def() {
     Node *node = calloc(1, sizeof(Node));
     node->kind = ND_FUNCDEF;
-    Token *tok = consume_ident();
-    if (!tok) {
-        error_at(tok->str, "not identifer");
-        return node;
-    }
+    Token *tok = expect_ident();
     node->name = tok->str;
     node->len  = tok->len;
 
@@ -140,7 +144,7 @@ Node *func_def() {
     head.next = NULL;
     Node *now = &head;
     while (1) {
-        Token *tok = consume_ident();
+        Token *tok = expect_ident();
         now->next  = new_node_lvar(tok);
         now        = now->next;
 
