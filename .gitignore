@@ -7,3 +7,4 @@ hcc
 .vscode-server
 .ssh
 .gitconfig
+.cache

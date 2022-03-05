@@ -1,0 +1,10 @@
+---
+BasedOnStyle: LLVM
+BreakBeforeBraces: Attach
+AlignConsecutiveAssignments: true
+AlignTrailingComments: true
+AllowShortIfStatementsOnASingleLine: true
+AllowShortBlocksOnASingleLine: true
+PointerAlignment: Right
+ColumnLimit: 0
+IndentWidth: 4

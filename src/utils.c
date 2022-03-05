@@ -1,6 +1,7 @@
 #include "hcc.h"
 
-int lprintf(FILE *fp, int level, const char *file, int line, const char *func, const char *fmt, ...) {
+int lprintf(FILE *fp, int level, const char *file, int line, const char *func,
+            const char *fmt, ...) {
     int n = 0;
     va_list ap;
     n += fprintf(fp, "[%c] %s: ", level, func);
@@ -12,9 +13,9 @@ int lprintf(FILE *fp, int level, const char *file, int line, const char *func, c
     return n;
 }
 
-char *to_str(char *s,int len) {
-    char *ret = calloc(len+1,sizeof(char));
-    memcpy(ret,s,len);
+char *to_str(char *s, int len) {
+    char *ret = calloc(len + 1, sizeof(char));
+    memcpy(ret, s, len);
     ret[len] = '\0';
     return ret;
 }
