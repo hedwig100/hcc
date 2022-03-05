@@ -43,6 +43,24 @@ Token *tokenize(char *p);
     parse.c
 */
 
+// typekind
+
+typedef enum {
+    TP_INT,
+    TP_PTR,
+} TypeKind;
+
+// type
+
+typedef struct Type Type;
+
+struct Type {
+    TypeKind kind;
+
+    // ptr_to is valid when kind = TP_PTR.
+    Type *ptr_to;
+};
+
 // local variable
 typedef struct LVar LVar;
 
@@ -51,6 +69,7 @@ struct LVar {
     char *name; // local variable name
     int len;    // local variable length
     int offset; // offset from RBP
+    Type *typ;
 };
 
 // local variables
@@ -91,6 +110,7 @@ struct Node {
 
     int val;    // if kind is ND_NUM,its number
     int offset; // if kind is ND_LVAR,ND_FUNCDEF,its offset from sp
+    Type *typ;  // when kind is ND_LVAR,ND_FUNCDEF, its type(or return type)
 
     // operator's left-hand side and right-hand side
     Node *lhs;

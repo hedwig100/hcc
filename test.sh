@@ -88,7 +88,11 @@ assert 21 "int fib(int n) {if (n <= 1) return n; return fib(n-1)+fib(n-2);} int 
 assert 55 "int fib(int n) {if (n <= 1) return n; return fib(n-1)+fib(n-2);} int main() {return fib(fib(fib(5))+fib(5));}"
 assert 1 "int main() {int a;a = 0;{int b;b = 4;a=a+1;}return a;}"
 assert 1 "int main() {{}int a;a=0;return a+1;}"
-assert 7 "int main() {int a;a = 3;int b;b = &a;int c;c = *b;return c + 4;}"
-assert 6 "int main() {int a;int b;int c;a = 10;b = &a;c = *b;return c - 4;}"
+assert 7 "int main() {int a;a = 3;int *b;b = &a;int c;c = *b;return c + 4;}"
+assert 6 "int main() {int a;int *b;int c;a = 10;b = &a;c = *b;return c - 4;}"
+assert 10 "int main() {int a;int *b;a = 10;b = &a;return *b;}"
+assert 5 "int main() {int a;int *b;b = &a;*b = 5;return a;}"
+assert 15 "int main() {int a;int *b;int **c;b = &a;c = &b;**c = 10;*b = *b + 5;return a;}"
+assert 3 "int main() {int a;int **c;*c = &a;**c = 3;return a;}"
 
 echo OK 

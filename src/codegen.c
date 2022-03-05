@@ -11,14 +11,23 @@ int counter() {
 
 // gen_lvar generates local variable (expression)
 void gen_lvar(Node *node) {
-    if (node->kind != ND_LVAR) {
-        errorf("Left side value of assignment is not variable.");
-    }
-
     printf("    mov rax,rbp # local variable address\n");
     printf("    sub rax,%d\n", node->offset);
     printf("    push rax\n");
     align++;
+}
+
+void gen_addr(Node *node) {
+    switch (node->kind) {
+    case ND_LVAR:
+        gen_lvar(node);
+        return;
+    case ND_DEREF:
+        gen_expression(node->lhs);
+        return;
+    default:
+        errorf("Left side value of assignment is not variable.");
+    }
 }
 
 const char *PARAM_REG[6] = {"rdi", "rsi", "rdx", "rcx", "r8", "r9"};
@@ -68,7 +77,7 @@ void gen_expression(Node *node) {
         printf("    push rax\n");
         return;
     case ND_ASSIGN:
-        gen_lvar(node->lhs);
+        gen_addr(node->lhs);
         gen_expression(node->rhs);
         printf("    pop rdi # assign\n");
         printf("    pop rax\n");

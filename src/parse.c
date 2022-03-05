@@ -82,7 +82,7 @@ Node *new_node_num(int val) {
     return node;
 }
 
-Node *new_node_lvar(Token *tok) {
+Node *new_node_lvar(Token *tok, Type *typ) {
     Node *node   = calloc(1, sizeof(Node));
     node->kind   = ND_LVAR;
     LVar *lvar   = calloc(1, sizeof(LVar));
@@ -91,6 +91,8 @@ Node *new_node_lvar(Token *tok) {
     lvar->len    = tok->len;
     lvar->offset = locals->offset + 8;
     node->offset = lvar->offset;
+    lvar->typ    = typ;
+    node->typ    = typ;
     locals       = lvar;
     return node;
 }
@@ -100,6 +102,7 @@ Node *node_lvar(Token *tok) {
     node->kind   = ND_LVAR;
     LVar *lvar   = find_lvar(tok);
     node->offset = lvar->offset;
+    node->typ    = lvar->typ;
     return node;
 }
 
@@ -129,13 +132,27 @@ Node *cmp_stmt() {
     return node;
 }
 
-Node *func_def() {
+Type *type_declare() {
     expect("int");
+    Type *typ = calloc(1, sizeof(Type));
+    typ->kind = TP_INT;
+    while (consume("*")) {
+        Type *next   = calloc(1, sizeof(Type));
+        next->kind   = TP_PTR;
+        next->ptr_to = typ;
+        typ          = next;
+    }
+    return typ;
+}
+
+Node *func_def() {
+    Type *typ  = type_declare();
     Node *node = calloc(1, sizeof(Node));
     node->kind = ND_FUNCDEF;
     Token *tok = expect_ident();
     node->name = tok->str;
     node->len  = tok->len;
+    node->typ  = typ;
 
     expect("(");
     if (consume(")")) {
@@ -148,9 +165,9 @@ Node *func_def() {
     head.next = NULL;
     Node *now = &head;
     while (1) {
-        expect("int");
+        Type *typ  = type_declare();
         Token *tok = expect_ident();
-        now->next  = new_node_lvar(tok);
+        now->next  = new_node_lvar(tok, typ);
         now        = now->next;
 
         if (!consume(",")) {
@@ -234,8 +251,17 @@ Node *stmt() {
 
 Node *expr() {
     if (consume("int")) {
+        Type *typ = calloc(1, sizeof(Type));
+        typ->kind = TP_INT;
+        while (consume("*")) {
+            Type *next   = calloc(1, sizeof(Type));
+            next->kind   = TP_PTR;
+            next->ptr_to = typ;
+            typ          = next;
+        }
+
         Token *tok = expect_ident();
-        Node *node = new_node_lvar(tok);
+        Node *node = new_node_lvar(tok, typ);
         return node;
     }
     return assign();
