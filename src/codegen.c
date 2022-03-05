@@ -9,8 +9,8 @@ int counter() {
     return count++;
 }
 
-// gen_lval generates local variable (expression)
-void gen_lval(Node *node) {
+// gen_lvar generates local variable (expression)
+void gen_lvar(Node *node) {
     if (node->kind != ND_LVAR) {
         errorf("Left side value of assignment is not variable.");
     }
@@ -62,13 +62,13 @@ void gen_expression(Node *node) {
         align++;
         return;
     case ND_LVAR:
-        gen_lval(node);
+        gen_lvar(node);
         printf("    pop rax # get local variable\n");
         printf("    mov rax,[rax]\n");
         printf("    push rax\n");
         return;
     case ND_ASSIGN:
-        gen_lval(node->lhs);
+        gen_lvar(node->lhs);
         gen_expression(node->rhs);
         printf("    pop rdi # assign\n");
         printf("    pop rax\n");
@@ -83,6 +83,16 @@ void gen_expression(Node *node) {
             printf("    pop rdi # for 16byte alignment\n");
             align--;
         }
+        printf("    push rax\n");
+        return;
+    case ND_ADDR:
+        // &lvar is ok, &(x + y) is bad
+        gen_lvar(node->lhs);
+        return;
+    case ND_DEREF:
+        gen_expression(node->lhs);
+        printf("    pop rax # deref \n");
+        printf("    mov rax, [rax]\n");
         printf("    push rax\n");
         return;
     }

@@ -88,5 +88,7 @@ assert 21 "fib(n) {if (n <= 1) return n; return fib(n-1)+fib(n-2);} main() {retu
 assert 55 "fib(n) {if (n <= 1) return n; return fib(n-1)+fib(n-2);} main() {return fib(fib(fib(5))+fib(5));}"
 assert 1 "main() {a = 0;{b = 4;a=a+1;}return a;}"
 assert 1 "main() {{}a=0;return a+1;}"
+assert 7 "main() {a = 3;b = &a;c = *b;return c + 4;}"
+assert 6 "main() {a = 10;b = &a;c = *b;return c - 4;}"
 
 echo OK 
