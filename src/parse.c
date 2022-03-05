@@ -67,11 +67,12 @@ bool at_eof() { return token->kind == TK_EOF; }
 
 // construct AST
 
-Node *new_node(NodeKind kind, Node *lhs, Node *rhs) {
+Node *new_node(NodeKind kind, Node *lhs, Node *rhs, Type *typ) {
     Node *node = calloc(1, sizeof(Node));
     node->kind = kind;
     node->lhs  = lhs;
     node->rhs  = rhs;
+    node->typ  = typ;
     return node;
 }
 
@@ -79,6 +80,7 @@ Node *new_node_num(int val) {
     Node *node = calloc(1, sizeof(Node));
     node->kind = ND_NUM;
     node->val  = val;
+    node->typ  = new_type(TP_INT);
     return node;
 }
 
@@ -106,12 +108,58 @@ Node *node_lvar(Token *tok) {
     return node;
 }
 
+Type *new_type(TypeKind kind) {
+    Type *typ = calloc(1, sizeof(Type));
+    typ->kind = kind;
+    return typ;
+}
+
+bool type_cmp(Type *typ1, Type *typ2) {
+    if (typ1->kind != typ2->kind) {
+        return false;
+    }
+    if (typ1->kind != TP_PTR) {
+        return true;
+    }
+    return type_cmp(typ1->ptr_to, typ2->ptr_to);
+}
+
+void register_func(Node *node) {
+    if (node->kind != ND_FUNCDEF) {
+        errorf("cannot register func when node->kind is not FUNCDEF");
+    }
+    Func *now = calloc(1, sizeof(Func));
+    now->name = node->name;
+    now->len  = node->len;
+    now->ret  = node->typ;
+    int i     = 0;
+    for (Node *param = node->params; param; param = param->next) {
+        now->params[i] = param->typ;
+        i++;
+    }
+    now->next = funcs;
+    funcs     = now;
+}
+
+Func *find_func(Node *node) {
+    if (node->kind != ND_CALLFUNC) {
+        errorf("cannot register func when node->kind is not FUNCDEF");
+    }
+    for (Func *fn = funcs; fn; fn = fn->next) {
+        if (memcmp(node->name, fn->name, node->len) == 0) {
+            return fn;
+        }
+    }
+    error_at(token->str, "function '%s' is not define", node->name);
+}
+
 void program() {
     int i = 0;
     while (!at_eof()) {
         locals->offset    = 0;
         code[i]           = func_def();
         code[i++]->offset = locals->offset;
+        infof("finished function(%d)", i);
     }
     code[i] = NULL;
 }
@@ -134,11 +182,9 @@ Node *cmp_stmt() {
 
 Type *type_declare() {
     expect("int");
-    Type *typ = calloc(1, sizeof(Type));
-    typ->kind = TP_INT;
+    Type *typ = new_type(TP_INT);
     while (consume("*")) {
-        Type *next   = calloc(1, sizeof(Type));
-        next->kind   = TP_PTR;
+        Type *next   = new_type(TP_PTR);
         next->ptr_to = typ;
         typ          = next;
     }
@@ -153,6 +199,7 @@ Node *func_def() {
     node->name = tok->str;
     node->len  = tok->len;
     node->typ  = typ;
+    register_func(node);
 
     expect("(");
     if (consume(")")) {
@@ -176,6 +223,7 @@ Node *func_def() {
         }
     }
 
+    infof("finished until { }.");
     node->params = head.next;
     node->body   = cmp_stmt();
     return node;
@@ -190,7 +238,9 @@ Node *stmt() {
         node->kind = ND_IF;
         node->cond = expr();
         expect(")");
+        infof("finished until 'if ( cond )'");
         node->then = stmt();
+        infof("finished until 'if ( cond ) then'");
 
         if (consume("else")) {
             node->els = stmt();
@@ -202,6 +252,7 @@ Node *stmt() {
         node->kind = ND_RETURN;
         node->lhs  = expr();
         expect(";");
+        infof("finished until 'return expr;'");
         return node;
     } else if (consume("while")) {
         expect("(");
@@ -270,7 +321,11 @@ Node *expr() {
 Node *assign() {
     Node *node = equality();
     if (consume("=")) {
-        node = new_node(ND_ASSIGN, node, assign());
+        node = new_node(ND_ASSIGN, node, assign(), NULL);
+        if (!type_cmp(node->lhs->typ, node->rhs->typ)) {
+            error_at(token->str, "cannot assign different type.");
+        }
+        node->typ = node->lhs->typ;
     }
     return node;
 }
@@ -280,9 +335,9 @@ Node *equality() {
 
     for (;;) {
         if (consume("==")) {
-            node = new_node(ND_EQ, node, relational());
+            node = new_node(ND_EQ, node, relational(), new_type(TP_INT)); // actually bool
         } else if (consume("!=")) {
-            node = new_node(ND_NEQ, node, relational());
+            node = new_node(ND_NEQ, node, relational(), new_type(TP_INT)); // actually bool
         } else {
             return node;
         }
@@ -294,13 +349,13 @@ Node *relational() {
 
     for (;;) {
         if (consume("<")) {
-            node = new_node(ND_LT, node, add());
+            node = new_node(ND_LT, node, add(), new_type(TP_INT)); // actually bool
         } else if (consume("<=")) {
-            node = new_node(ND_LEQ, node, add());
+            node = new_node(ND_LEQ, node, add(), new_type(TP_INT)); // actually bool
         } else if (consume(">")) {
-            node = new_node(ND_LT, add(), node);
+            node = new_node(ND_LT, add(), node, new_type(TP_INT)); // actually bool
         } else if (consume(">=")) {
-            node = new_node(ND_LEQ, add(), node);
+            node = new_node(ND_LEQ, add(), node, new_type(TP_INT)); // actually bool
         } else {
             return node;
         }
@@ -312,9 +367,11 @@ Node *add() {
 
     for (;;) {
         if (consume("+")) {
-            node = new_node(ND_ADD, node, mul());
+            node      = new_node(ND_ADD, node, mul(), NULL);
+            node->typ = node->lhs->typ;
         } else if (consume("-")) {
-            node = new_node(ND_SUB, node, mul());
+            node      = new_node(ND_SUB, node, mul(), NULL);
+            node->typ = node->lhs->typ;
         } else {
             return node;
         }
@@ -326,9 +383,11 @@ Node *mul() {
 
     for (;;) {
         if (consume("*")) {
-            node = new_node(ND_MUL, node, unary());
+            node      = new_node(ND_MUL, node, unary(), NULL);
+            node->typ = node->lhs->typ;
         } else if (consume("/")) {
-            node = new_node(ND_DIV, node, unary());
+            node      = new_node(ND_DIV, node, unary(), NULL);
+            node->typ = node->lhs->typ;
         } else {
             return node;
         }
@@ -336,17 +395,28 @@ Node *mul() {
 }
 
 Node *unary() {
+    if (consume("&")) {
+        Node *node        = new_node(ND_ADDR, unary(), NULL, new_type(TP_PTR));
+        node->typ->ptr_to = node->lhs->typ;
+        return node;
+    }
+    if (consume("*")) {
+        Node *node = new_node(ND_DEREF, unary(), NULL, NULL);
+        if (node->lhs->typ->kind == TP_INT) {
+            error_at(token->str, "cannot dereference not pointer type.");
+        }
+        node->typ = node->lhs->typ->ptr_to;
+        return node;
+    }
     if (consume("+")) {
         return primary();
     }
     if (consume("-")) {
-        return new_node(ND_SUB, new_node_num(0), primary());
-    }
-    if (consume("&")) {
-        return new_node(ND_ADDR, unary(), NULL);
-    }
-    if (consume("*")) {
-        return new_node(ND_DEREF, unary(), NULL);
+        Node *node = new_node(ND_SUB, new_node_num(0), primary(), new_type(TP_INT));
+        if (node->rhs->typ->kind != TP_INT) {
+            error_at(token->str, "unary '-' cannot be used for address.");
+        }
+        return node;
     }
     return primary();
 }
@@ -369,6 +439,9 @@ Node *primary() {
             node->name = tok->str;
             node->len  = tok->len;
 
+            Func *func = find_func(node);
+            node->typ  = func->ret;
+
             if (consume(")")) {
                 return node;
             }
@@ -379,6 +452,7 @@ Node *primary() {
             while (1) {
                 now->next = expr();
                 now       = now->next;
+                // TODO:type check of argment
                 if (!consume(",")) {
                     expect(")");
                     break;

@@ -61,6 +61,22 @@ struct Type {
     Type *ptr_to;
 };
 
+Type *new_type(TypeKind kind);
+
+// function
+typedef struct Func Func;
+
+struct Func {
+    Func *next;
+    char *name;
+    int len;
+
+    Type *ret;
+    Type *params[6];
+};
+
+Func *funcs;
+
 // local variable
 typedef struct LVar LVar;
 
@@ -110,7 +126,7 @@ struct Node {
 
     int val;    // if kind is ND_NUM,its number
     int offset; // if kind is ND_LVAR,ND_FUNCDEF,its offset from sp
-    Type *typ;  // when kind is ND_LVAR,ND_FUNCDEF, its type(or return type)
+    Type *typ;  // when kind is ND_LVAR,ND_FUNCDEF,ND_FUNCCALL its type(or return type)
 
     // operator's left-hand side and right-hand side
     Node *lhs;
