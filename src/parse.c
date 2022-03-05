@@ -83,19 +83,26 @@ Node *new_node_num(int val) {
 }
 
 Node *new_node_lvar(Token *tok) {
+    Node *node   = calloc(1, sizeof(Node));
+    node->kind   = ND_LVAR;
+    LVar *lvar   = calloc(1, sizeof(LVar));
+    lvar->next   = locals;
+    lvar->name   = tok->str;
+    lvar->len    = tok->len;
+    lvar->offset = locals->offset + 8;
+    node->offset = lvar->offset;
+    locals       = lvar;
+    return node;
+}
+
+Node *node_lvar(Token *tok) {
     Node *node = calloc(1, sizeof(Node));
     node->kind = ND_LVAR;
     LVar *lvar = find_lvar(tok);
     if (lvar) {
         node->offset = lvar->offset;
     } else {
-        LVar *lvar   = calloc(1, sizeof(LVar));
-        lvar->next   = locals;
-        lvar->name   = tok->str;
-        lvar->len    = tok->len;
-        lvar->offset = locals->offset + 8;
-        node->offset = lvar->offset;
-        locals       = lvar;
+        error_at(token->str, "local variable isn't defined.");
     }
     return node;
 }
@@ -227,7 +234,14 @@ Node *stmt() {
     return node;
 }
 
-Node *expr() { return assign(); }
+Node *expr() {
+    if (consume("int")) {
+        Token *tok = expect_ident();
+        Node *node = new_node_lvar(tok);
+        return node;
+    }
+    return assign();
+}
 
 Node *assign() {
     Node *node = equality();
@@ -350,7 +364,7 @@ Node *primary() {
             return node;
         }
 
-        node = new_node_lvar(tok);
+        node = node_lvar(tok);
         return node;
     }
 

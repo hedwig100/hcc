@@ -77,7 +77,7 @@ typedef enum {
     ND_WHILE,    // "while"
     ND_FOR,      // "for"
     ND_ADDR,     // &
-    ND_DEREF     // *
+    ND_DEREF,    // *
 } NodeKind;
 
 // node
