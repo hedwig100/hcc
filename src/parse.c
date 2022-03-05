@@ -80,7 +80,7 @@ Node *new_node_lvar(Token *tok, Type *typ) {
     lvar->next   = locals;
     lvar->name   = tok->str;
     lvar->len    = tok->len;
-    lvar->offset = locals->offset + 8;
+    lvar->offset = locals->offset + typ->size;
     node->offset = lvar->offset;
     lvar->typ    = typ;
     node->typ    = typ;

@@ -93,6 +93,6 @@ assert 6 "int main() {int a;int *b;int c;a = 10;b = &a;c = *b;return c - 4;}"
 assert 10 "int main() {int a;int *b;a = 10;b = &a;return *b;}"
 assert 5 "int main() {int a;int *b;b = &a;*b = 5;return a;}"
 assert 15 "int main() {int a;int *b;int **c;b = &a;c = &b;**c = 10;*b = *b + 5;return a;}"
-assert 3 "int main() {int a;int **c;*c = &a;**c = 3;return a;}"
+assert 10 "int f(int *a) {int c;c = *a;return c;} int main() {int a;int *b;a = 10;b = &a;return f(b);}"
 
 echo OK 

@@ -30,7 +30,8 @@ void gen_addr(Node *node) {
     }
 }
 
-const char *PARAM_REG[6] = {"rdi", "rsi", "rdx", "rcx", "r8", "r9"};
+const char *PARAM_REG64[6] = {"rdi", "rsi", "rdx", "rcx", "r8", "r9"};
+const char *PARAM_REG32[6] = {"edi", "esi", "edx", "ecx", "r8d", "r9d"};
 
 int gen_param_set(Node *node) {
     int n_param = 0;
@@ -39,7 +40,7 @@ int gen_param_set(Node *node) {
         n_param++;
     }
     for (int i = n_param - 1; i >= 0; i--) {
-        printf("    pop %s\n", PARAM_REG[i]);
+        printf("    pop %s\n", PARAM_REG64[i]);
         align--;
     }
 
@@ -56,7 +57,17 @@ void gen_param_get(Node *node) {
     for (Node *now = node->params; now; now = now->next) {
         printf("    mov rax,rbp\n");
         printf("    sub rax,%d\n", now->offset);
-        printf("    mov [rax],%s\n", PARAM_REG[i++]);
+
+        switch (now->typ->kind) {
+        case TP_INT:
+            printf("    mov dword ptr [rax],%s\n", PARAM_REG32[i++]);
+            break;
+        case TP_PTR:
+            printf("    mov qword ptr [rax],%s\n", PARAM_REG64[i++]);
+            break;
+        default:
+            errorf("typ isn't valid.");
+        }
     }
 }
 
@@ -73,7 +84,18 @@ void gen_expression(Node *node) {
     case ND_LVAR:
         gen_lvar(node);
         printf("    pop rax # get local variable\n");
-        printf("    mov rax,[rax]\n");
+
+        switch (node->typ->kind) {
+        case TP_INT:
+            printf("    movsx rax,dword ptr [rax]\n");
+            break;
+        case TP_PTR:
+            printf("    mov rax,qword ptr [rax]\n");
+            break;
+        default:
+            errorf("typ isn't valid.");
+        }
+
         printf("    push rax\n");
         return;
     case ND_ASSIGN:
@@ -81,7 +103,18 @@ void gen_expression(Node *node) {
         gen_expression(node->rhs);
         printf("    pop rdi # assign\n");
         printf("    pop rax\n");
-        printf("    mov [rax],rdi\n");
+
+        switch (node->lhs->typ->kind) {
+        case TP_INT:
+            printf("    mov dword ptr [rax],edi\n");
+            break;
+        case TP_PTR:
+            printf("    mov qword ptr [rax],rdi\n");
+            break;
+        default:
+            errorf("typ isn't valid.");
+        }
+
         printf("    push rdi\n");
         align--;
         return;

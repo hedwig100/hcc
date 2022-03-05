@@ -58,6 +58,7 @@ struct Type {
 
     // ptr_to is valid when kind = TP_PTR.
     Type *ptr_to;
+    int size;
 };
 
 Type *new_type(TypeKind kind);

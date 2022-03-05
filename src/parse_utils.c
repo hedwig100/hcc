@@ -3,6 +3,16 @@
 Type *new_type(TypeKind kind) {
     Type *typ = calloc(1, sizeof(Type));
     typ->kind = kind;
+    switch (kind) {
+    case TP_INT:
+        typ->size = 4;
+        return typ;
+    case TP_PTR:
+        typ->size = 8;
+        return typ;
+    default:
+        error_at(token->str, "kind isn't valid.");
+    }
     return typ;
 }
 
