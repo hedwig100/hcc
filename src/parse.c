@@ -134,6 +134,7 @@ Node *cmp_stmt() {
 }
 
 Node *func_def() {
+    expect("int");
     Node *node = calloc(1, sizeof(Node));
     node->kind = ND_FUNCDEF;
     Token *tok = expect_ident();
@@ -151,6 +152,7 @@ Node *func_def() {
     head.next = NULL;
     Node *now = &head;
     while (1) {
+        expect("int");
         Token *tok = expect_ident();
         now->next  = new_node_lvar(tok);
         now        = now->next;
