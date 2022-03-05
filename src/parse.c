@@ -53,14 +53,14 @@ Token *expect_ident() {
 }
 
 // find_lvar searches local variables,if exists return the local variable
-// otherwise return NULL
+// otherwise raise error
 LVar *find_lvar(Token *tok) {
     for (LVar *var = locals; var; var = var->next) {
         if (var->len == tok->len && !memcmp(tok->str, var->name, var->len)) {
             return var;
         }
     }
-    return NULL;
+    error_at(token->str, "local variable isn't defined.");
 }
 
 bool at_eof() { return token->kind == TK_EOF; }
@@ -96,14 +96,10 @@ Node *new_node_lvar(Token *tok) {
 }
 
 Node *node_lvar(Token *tok) {
-    Node *node = calloc(1, sizeof(Node));
-    node->kind = ND_LVAR;
-    LVar *lvar = find_lvar(tok);
-    if (lvar) {
-        node->offset = lvar->offset;
-    } else {
-        error_at(token->str, "local variable isn't defined.");
-    }
+    Node *node   = calloc(1, sizeof(Node));
+    node->kind   = ND_LVAR;
+    LVar *lvar   = find_lvar(tok);
+    node->offset = lvar->offset;
     return node;
 }
 
