@@ -10,6 +10,8 @@ Type *new_type(TypeKind kind) {
     case TP_PTR:
         typ->size = 8;
         return typ;
+    case TP_ARRAY:
+        return typ;
     default:
         error_at(token->str, "kind isn't valid.");
     }
@@ -17,25 +19,29 @@ Type *new_type(TypeKind kind) {
 }
 
 bool type_cmp(Type *typ1, Type *typ2) {
-    if (typ1->kind != typ2->kind) {
+    TypeKind kind1 = typ1->kind == TP_ARRAY ? TP_PTR : typ1->kind;
+    TypeKind kind2 = typ1->kind == TP_ARRAY ? TP_PTR : typ1->kind;
+
+    if (kind1 != kind2) {
         return false;
     }
-    if (typ1->kind != TP_PTR) {
+    if (kind1 != TP_PTR) {
         return true;
     }
     return type_cmp(typ1->ptr_to, typ2->ptr_to);
 }
 
 Type *can_add(Type *typ1, Type *typ2) {
-    if (typ1->kind == typ2->kind) {
-        if (typ1->kind == TP_INT)
-            return typ1;
-        else
-            error_at(token->str, "cannot add this types.");
-    }
-    if (typ1->kind == TP_INT)
+    if (typ1->kind == TP_INT) {
         return typ2;
-    return typ1;
+    } else if (typ2->kind == TP_INT) {
+        return typ1;
+    }
+    error_at(token->str, "cannot add here.");
+}
+
+bool is_ptr(Type *typ) {
+    return typ->kind == TP_ARRAY || typ->kind == TP_PTR;
 }
 
 void register_func(Node *node) {

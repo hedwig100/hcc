@@ -60,10 +60,11 @@ void gen_param_get(Node *node) {
 
         switch (now->typ->kind) {
         case TP_INT:
-            printf("    mov dword ptr [rax],%s\n", PARAM_REG32[i++]);
+            printf("    mov dword ptr [rax],%s # int \n", PARAM_REG32[i++]);
             break;
+        case TP_ARRAY:
         case TP_PTR:
-            printf("    mov qword ptr [rax],%s\n", PARAM_REG64[i++]);
+            printf("    mov qword ptr [rax],%s # ptr,arr\n", PARAM_REG64[i++]);
             break;
         default:
             errorf("typ isn't valid.");
@@ -87,10 +88,12 @@ void gen_expression(Node *node) {
 
         switch (node->typ->kind) {
         case TP_INT:
-            printf("    movsx rax,dword ptr [rax]\n");
+            printf("    movsx rax,dword ptr [rax] # int\n");
             break;
         case TP_PTR:
-            printf("    mov rax,qword ptr [rax]\n");
+            printf("    mov rax,qword ptr [rax] # ptr\n");
+            break;
+        case TP_ARRAY:
             break;
         default:
             errorf("typ isn't valid.");
@@ -106,13 +109,13 @@ void gen_expression(Node *node) {
 
         switch (node->lhs->typ->kind) {
         case TP_INT:
-            printf("    mov dword ptr [rax],edi\n");
+            printf("    mov dword ptr [rax],edi # int \n");
             break;
         case TP_PTR:
-            printf("    mov qword ptr [rax],rdi\n");
+            printf("    mov qword ptr [rax],rdi # ptr \n");
             break;
         default:
-            errorf("typ isn't valid.");
+            errorf("cannot assign value to this type.");
         }
 
         printf("    push rdi\n");
@@ -133,9 +136,11 @@ void gen_expression(Node *node) {
         return;
     case ND_DEREF:
         gen_expression(node->lhs);
-        printf("    pop rax # deref \n");
-        printf("    mov rax, [rax]\n");
-        printf("    push rax\n");
+        if (node->typ->kind != TP_ARRAY) {
+            printf("    pop rax # deref \n");
+            printf("    mov rax, [rax]\n");
+            printf("    push rax\n");
+        }
         return;
     }
 

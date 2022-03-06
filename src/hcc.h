@@ -47,6 +47,7 @@ Token *tokenize(char *p);
 typedef enum {
     TP_INT,
     TP_PTR,
+    TP_ARRAY,
 } TypeKind;
 
 // type
@@ -59,6 +60,7 @@ struct Type {
     // ptr_to is valid when kind = TP_PTR.
     Type *ptr_to;
     int size;
+    size_t array_size;
 };
 
 Type *new_type(TypeKind kind);
@@ -159,6 +161,7 @@ Node *code[100]; // AST
 
 Type *new_type(TypeKind kind);
 bool type_cmp(Type *typ1, Type *typ2);
+bool is_ptr(Type *typ);
 Type *can_add(Type *typ1, Type *typ2);
 void register_func(Node *node);
 Func *find_func(Node *node);

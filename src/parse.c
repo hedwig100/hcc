@@ -135,6 +135,19 @@ Type *type_declare() {
     return typ;
 }
 
+Type *type_array(Type *typ) {
+    while (consume("[")) {
+        int array_size = expect_number();
+        expect("]");
+        Type *next       = new_type(TP_ARRAY);
+        next->ptr_to     = typ;
+        next->array_size = array_size;
+        next->size       = typ->size * array_size;
+        typ              = next;
+    }
+    return typ;
+}
+
 Node *func_def() {
     Type *typ  = type_declare();
     Node *node = calloc(1, sizeof(Node));
@@ -145,8 +158,11 @@ Node *func_def() {
     node->typ  = typ;
     register_func(node);
 
+    infof("finished until 'type ident'.");
+
     expect("(");
     if (consume(")")) {
+        infof("finished until '()'.");
         node->params = NULL;
         node->body   = cmp_stmt();
         return node;
@@ -158,8 +174,12 @@ Node *func_def() {
     while (1) {
         Type *typ  = type_declare();
         Token *tok = expect_ident();
+        typ        = type_array(typ);
         now->next  = new_node_lvar(tok, typ);
         now        = now->next;
+        if (now->typ->kind == TP_ARRAY) {
+            now->typ->kind = TP_PTR;
+        }
 
         if (!consume(",")) {
             expect(")");
@@ -167,7 +187,7 @@ Node *func_def() {
         }
     }
 
-    infof("finished until { }.");
+    infof("finished until '(param)'.");
     node->params = head.next;
     node->body   = cmp_stmt();
     return node;
@@ -254,7 +274,9 @@ Node *expr() {
         }
 
         Token *tok = expect_ident();
+        typ        = type_array(typ);
         Node *node = new_node_lvar(tok, typ);
+        infof("finished until 'typ ident'(local variable declaration).");
         return node;
     }
     return assign();
@@ -264,10 +286,11 @@ Node *assign() {
     Node *node = equality();
     if (consume("=")) {
         node = new_node(ND_ASSIGN, node, assign(), NULL);
-        if (!type_cmp(node->lhs->typ, node->rhs->typ)) {
+        if (!type_cmp(node->lhs->typ, node->rhs->typ) || node->lhs->typ->kind == TP_ARRAY) {
             error_at(token->str, "cannot assign different type.");
         }
         node->typ = node->lhs->typ;
+        infof("finished until 'a = b'.");
     }
     return node;
 }
@@ -314,13 +337,13 @@ Node *add() {
             Type *typ = can_add(lhs->typ, rhs->typ);
             if (typ->kind == TP_INT) {
                 node = new_node(ND_ADD, lhs, rhs, typ);
-            } else if (lhs->typ->kind == TP_PTR) {
+            } else if (is_ptr(lhs->typ)) {
                 rhs       = new_node(ND_MUL, rhs, new_node_num(lhs->typ->ptr_to->size), new_type(TP_INT));
-                node      = new_node(ND_ADD, lhs, rhs, new_type(TP_PTR));
+                node      = new_node(ND_ADD, lhs, rhs, lhs->typ);
                 node->typ = lhs->typ;
             } else {
                 lhs       = new_node(ND_MUL, lhs, new_node_num(rhs->typ->ptr_to->size), new_type(TP_INT));
-                node      = new_node(ND_ADD, lhs, rhs, new_type(TP_PTR));
+                node      = new_node(ND_ADD, lhs, rhs, rhs->typ);
                 node->typ = rhs->typ;
             }
         } else if (consume("-")) {
@@ -329,13 +352,13 @@ Node *add() {
             Type *typ = can_add(lhs->typ, rhs->typ);
             if (typ->kind == TP_INT) {
                 node = new_node(ND_SUB, lhs, rhs, typ);
-            } else if (lhs->typ->kind == TP_PTR) {
+            } else if (is_ptr(lhs->typ)) {
                 rhs       = new_node(ND_MUL, rhs, new_node_num(lhs->typ->ptr_to->size), new_type(TP_INT));
-                node      = new_node(ND_SUB, lhs, rhs, new_type(TP_PTR));
+                node      = new_node(ND_SUB, lhs, rhs, lhs->typ);
                 node->typ = lhs->typ;
             } else {
                 lhs       = new_node(ND_MUL, lhs, new_node_num(rhs->typ->ptr_to->size), new_type(TP_INT));
-                node      = new_node(ND_SUB, lhs, rhs, new_type(TP_PTR));
+                node      = new_node(ND_SUB, lhs, rhs, rhs->typ);
                 node->typ = rhs->typ;
             }
         } else {
