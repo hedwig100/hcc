@@ -124,17 +124,18 @@ Node *cmp_stmt() {
     return node;
 }
 
+// type_declare reads 'int **a' like token.
 Type *type_declare() {
     expect("int");
     Type *typ = new_type(TP_INT);
     while (consume("*")) {
-        Type *next   = new_type(TP_PTR);
-        next->ptr_to = typ;
-        typ          = next;
+        Type *next = new_type_ptr(typ);
+        typ        = next;
     }
     return typ;
 }
 
+// type_array reads '[43][43]' like token.
 Type *type_array(Type *typ) {
     while (consume("[")) {
         int array_size = expect_number();
@@ -268,9 +269,8 @@ Node *expr() {
     if (consume("int")) {
         Type *typ = new_type(TP_INT);
         while (consume("*")) {
-            Type *next   = new_type(TP_PTR);
-            next->ptr_to = typ;
-            typ          = next;
+            Type *next = new_type_ptr(typ);
+            typ        = next;
         }
 
         Token *tok = expect_ident();
@@ -286,8 +286,10 @@ Node *assign() {
     Node *node = equality();
     if (consume("=")) {
         node = new_node(ND_ASSIGN, node, assign(), NULL);
-        if (!type_cmp(node->lhs->typ, node->rhs->typ) || node->lhs->typ->kind == TP_ARRAY) {
+        if (!type_cmp(node->lhs->typ, node->rhs->typ)) {
             error_at(token->str, "cannot assign different type.");
+        } else if (node->lhs->typ->kind == TP_ARRAY) {
+            error_at(token->str, "cannot assign to array.");
         }
         node->typ = node->lhs->typ;
         infof("finished until 'a = b'.");
@@ -378,13 +380,12 @@ Node *unary() {
         return new_node_num(node->typ->size);
     }
     if (consume("&")) {
-        Node *node        = new_node(ND_ADDR, unary(), NULL, new_type(TP_PTR));
-        node->typ->ptr_to = node->lhs->typ;
-        return node;
+        Node *lhs = unary();
+        return new_node(ND_ADDR, lhs, NULL, new_type_ptr(lhs->typ));
     }
     if (consume("*")) {
         Node *node = new_node(ND_DEREF, unary(), NULL, NULL);
-        if (node->lhs->typ->kind == TP_INT) {
+        if (!is_ptr(node->lhs->typ)) {
             error_at(token->str, "cannot dereference not pointer type.");
         }
         node->typ = node->lhs->typ->ptr_to;
@@ -395,7 +396,7 @@ Node *unary() {
     }
     if (consume("-")) {
         Node *node = new_node(ND_SUB, new_node_num(0), postfix(), new_type(TP_INT));
-        if (node->rhs->typ->kind != TP_INT) {
+        if (is_ptr(node->rhs->typ)) {
             error_at(token->str, "unary '-' cannot be used for address.");
         }
         return node;
@@ -409,7 +410,7 @@ Node *postfix() {
         if (consume("[")) {
             node = add_helper(node, expr(), ND_ADD);
             node = new_node(ND_DEREF, node, NULL, NULL);
-            if (node->lhs->typ->kind == TP_INT) {
+            if (!is_ptr(node->lhs->typ)) {
                 error_at(token->str, "cannot dereference not pointer type.");
             }
             node->typ = node->lhs->typ->ptr_to;

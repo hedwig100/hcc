@@ -160,6 +160,7 @@ Node *code[100]; // AST
 */
 
 Type *new_type(TypeKind kind);
+Type *new_type_ptr(Type *ptr_to);
 bool type_cmp(Type *typ1, Type *typ2);
 bool is_ptr(Type *typ);
 Type *can_add(Type *typ1, Type *typ2);

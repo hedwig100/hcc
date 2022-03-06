@@ -7,9 +7,6 @@ Type *new_type(TypeKind kind) {
     case TP_INT:
         typ->size = 4;
         return typ;
-    case TP_PTR:
-        typ->size = 8;
-        return typ;
     case TP_ARRAY:
         return typ;
     default:
@@ -18,6 +15,15 @@ Type *new_type(TypeKind kind) {
     return typ;
 }
 
+Type *new_type_ptr(Type *ptr_to) {
+    Type *typ   = calloc(1, sizeof(Type));
+    typ->kind   = TP_PTR;
+    typ->size   = 8;
+    typ->ptr_to = ptr_to;
+    return typ;
+}
+
+// type_cmp checks if typ1 equals typ2. note thah array and ptr is regarded as the same type.
 bool type_cmp(Type *typ1, Type *typ2) {
     TypeKind kind1 = typ1->kind == TP_ARRAY ? TP_PTR : typ1->kind;
     TypeKind kind2 = typ1->kind == TP_ARRAY ? TP_PTR : typ1->kind;
@@ -31,6 +37,7 @@ bool type_cmp(Type *typ1, Type *typ2) {
     return type_cmp(typ1->ptr_to, typ2->ptr_to);
 }
 
+// can_add checks if "typ1 + typ2" is valid. it is valid when either of type is int for NOW.
 Type *can_add(Type *typ1, Type *typ2) {
     if (typ1->kind == TP_INT) {
         return typ2;

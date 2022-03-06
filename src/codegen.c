@@ -130,21 +130,21 @@ void gen_expression(Node *node) {
         return;
     case ND_DEREF:
         gen_expression(node->lhs);
-        if (node->typ->kind != TP_ARRAY) {
+        switch (node->typ->kind) {
+        case TP_INT:
             printf("    pop rax # stack%d, deref \n", --align);
-
-            switch (node->typ->kind) {
-            case TP_INT:
-                printf("    movsx rax,dword ptr [rax] # int\n");
-                break;
-            case TP_PTR:
-                printf("    mov rax,qword ptr [rax] # ptr\n");
-                break;
-            default:
-                errorf("typ isn't valid.");
-            }
-
+            printf("    movsx rax,dword ptr [rax] # int\n");
             printf("    push rax # stack%d\n", align++);
+            break;
+        case TP_PTR:
+            printf("    pop rax # stack%d, deref \n", --align);
+            printf("    mov rax,qword ptr [rax] # ptr\n");
+            printf("    push rax # stack%d\n", align++);
+            break;
+        case TP_ARRAY:
+            break;
+        default:
+            errorf("typ isn't valid.");
         }
         return;
     }
