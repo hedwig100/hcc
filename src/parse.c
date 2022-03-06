@@ -361,6 +361,10 @@ Node *mul() {
 }
 
 Node *unary() {
+    if (consume("sizeof")) {
+        Node *node = unary();
+        return new_node_num(node->typ->size);
+    }
     if (consume("&")) {
         Node *node        = new_node(ND_ADDR, unary(), NULL, new_type(TP_PTR));
         node->typ->ptr_to = node->lhs->typ;

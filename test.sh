@@ -97,5 +97,12 @@ assert 10 "int f(int *a) {int c;c = *a;return c;} int main() {int a;int *b;a = 1
 assert 5 "int main() {int a;int b;int c;int *d;d = &a;d = d - 2;c = 5;return *d;}"
 assert 20 "int main() {int a;int b;int c;int d;int *e;e = &d;e = e + 3;a = 20;return *e;}"
 assert 20 "int main() {int a;int b;int c;int d;int *e;e = &d;e = e + 2;b = 10;*e = *e + 10;return b;}"
+assert 4 "int main() {int a;return sizeof(a);}"
+assert 4 "int main() {int a;return sizeof a;}"
+assert 8 "int main() {int *a;return sizeof(a);}"
+assert 13 "int main() {int *a;return sizeof a +5;}"
+assert 4 "int main() {int *a;return sizeof(*a+4);}"
+assert 4 "int main() {return sizeof(-130);}"
+assert 4 "int main() {int *a;return sizeof sizeof(a) ;}"
 
 echo OK 
