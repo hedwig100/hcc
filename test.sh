@@ -121,5 +121,10 @@ assert 3 "int main() {int *a[5];int b;b=3;a[b]=&b;return *a[b];}"
 assert 4 "int main() {int *a[2][2][2][2];a[0][0][0][0]=4;int i;i = 0;int j;j = 0;return a[i][i+j][j*i][(j*1)+1-1];}"
 assert 4 "int sum(int a[2][2]){int ans;ans=0;int i;int j;i=0;j=0;for(i=0;i<2;i=i+1){for(j=0;j<2;j=j+1){ans=ans+a[i][j];}}return ans;}int main() {int a[2][2];int i;int j;i = 0;j = 0;for(i=0;i<2;i=i+1){for(j=0;j<2;j=j+1){a[i][j]=1;}}return sum(a);}"
 assert 0 "int a;int *b;int *c[10];int *d[2][2];int main() {return 0;}"
+assert 3 "int a;int main() {a=3;return a;}"
+assert 4 "int *a;int main() {int b;a = &b;*a = 4;return b;}"
+assert 3 "int a[10];int main() {a[3]=3;return a[3];}"
+assert 2 "int *a[10];int main() {int b;int c;c = 2;a[3] = &b;return *(a[3] - 1);}"
+assert 4 "int a;int f(){a=4;return 0;}int main() {f();return a;}"
 
 echo OK 

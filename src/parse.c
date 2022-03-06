@@ -113,9 +113,12 @@ Node *new_node_gvar(Token *tok, Type *typ) {
 }
 
 Node *node_gvar(Token *tok) {
+    GVar *gvar = find_gvar(tok);
+    if (!gvar) {
+        return NULL;
+    }
     Node *node = calloc(1, sizeof(Node));
     node->kind = ND_GVAR;
-    GVar *gvar = find_gvar(tok);
     node->name = gvar->name;
     node->len  = gvar->len;
     node->typ  = gvar->typ;
@@ -500,6 +503,10 @@ Node *primary() {
             return node;
         }
 
+        node = node_gvar(tok);
+        if (node) {
+            return node;
+        }
         node = node_lvar(tok);
         return node;
     }

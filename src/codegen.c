@@ -9,10 +9,16 @@ int counter() {
     return count++;
 }
 
-// gen_lvar generates local variable (expression)
+// gen_lvar generates local variable address (expression)
 void gen_lvar(Node *node) {
     printf("    mov rax,rbp # local variable address\n");
     printf("    sub rax,%d\n", node->offset);
+    printf("    push rax # stack%d\n", align++);
+}
+
+// gen_gvar generates global variable address (expression)
+void gen_gvar(Node *node) {
+    printf("    lea rax, [%s + rip] # global variable address\n", to_str(node->name, node->len));
     printf("    push rax # stack%d\n", align++);
 }
 
@@ -20,6 +26,9 @@ void gen_addr(Node *node) {
     switch (node->kind) {
     case ND_LVAR:
         gen_lvar(node);
+        return;
+    case ND_GVAR:
+        gen_gvar(node);
         return;
     case ND_DEREF:
         gen_expression(node->lhs);
@@ -80,6 +89,25 @@ void gen_expression(Node *node) {
         return;
     case ND_LVAR:
         gen_lvar(node);
+        printf("    pop rax # stack%d, get local variable\n", --align);
+
+        switch (node->typ->kind) {
+        case TP_INT:
+            printf("    movsx rax,dword ptr [rax] # int\n");
+            break;
+        case TP_PTR:
+            printf("    mov rax,qword ptr [rax] # ptr\n");
+            break;
+        case TP_ARRAY:
+            break;
+        default:
+            errorf("typ isn't valid.");
+        }
+
+        printf("    push rax # stack%d\n", align++);
+        return;
+    case ND_GVAR:
+        gen_gvar(node);
         printf("    pop rax # stack%d, get local variable\n", --align);
 
         switch (node->typ->kind) {

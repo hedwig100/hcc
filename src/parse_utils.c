@@ -92,12 +92,12 @@ LVar *find_lvar(Token *tok) {
 }
 
 // find_gvar searches local variables,if exists return the local variable
-// otherwise raise error
+// otherwise return NULL
 GVar *find_gvar(Token *tok) {
     for (GVar *var = globals; var; var = var->next) {
         if (var->len == tok->len && !memcmp(tok->str, var->name, var->len)) {
             return var;
         }
     }
-    error_at(tok->str, "global variable isn't defined.");
+    return NULL;
 }
