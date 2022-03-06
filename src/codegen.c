@@ -323,3 +323,39 @@ void gen_ext_def(Node *node) {
         return;
     }
 }
+
+void gen_program() {
+    printf(".intel_syntax noprefix\n");
+
+    // data section
+    int start = 1;
+    for (int i = 0; code[i]; i++) {
+        if (code[i]->kind == ND_GVAR) {
+            if (start) {
+                printf(".data\n");
+                start = 0;
+            }
+            gen_ext_def(code[i]);
+        }
+    }
+
+    // text section
+    start = 1;
+    for (int i = 0; code[i]; i++) { // finish if code[i] is NULL
+        if (code[i]->kind == ND_FUNCDEF) {
+            if (start) {
+                printf(".text\n");
+                printf(".globl %s", to_str(code[i]->name, code[i]->len));
+                start = 0;
+            } else {
+                printf(",%s", to_str(code[i]->name, code[i]->len));
+            }
+        }
+    }
+    printf("\n");
+    for (int i = 0; code[i]; i++) {
+        if (code[i]->kind == ND_FUNCDEF) {
+            gen_ext_def(code[i]);
+        }
+    }
+}

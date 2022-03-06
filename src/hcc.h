@@ -216,6 +216,7 @@ void gen_param_get(Node *node);
 void gen_expression(Node *node);
 void gen_statement(Node *node);
 void gen_ext_def(Node *node);
+void gen_program();
 
 /*
     utils.c
