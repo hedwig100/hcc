@@ -309,11 +309,35 @@ Node *add() {
 
     for (;;) {
         if (consume("+")) {
-            node      = new_node(ND_ADD, node, mul(), NULL);
-            node->typ = node->lhs->typ;
+            Node *lhs = node;
+            Node *rhs = mul();
+            Type *typ = can_add(lhs->typ, rhs->typ);
+            if (typ->kind == TP_INT) {
+                node = new_node(ND_ADD, lhs, rhs, typ);
+            } else if (lhs->typ->kind == TP_PTR) {
+                rhs       = new_node(ND_MUL, rhs, new_node_num(lhs->typ->ptr_to->size), new_type(TP_INT));
+                node      = new_node(ND_ADD, lhs, rhs, new_type(TP_PTR));
+                node->typ = lhs->typ;
+            } else {
+                lhs       = new_node(ND_MUL, lhs, new_node_num(rhs->typ->ptr_to->size), new_type(TP_INT));
+                node      = new_node(ND_ADD, lhs, rhs, new_type(TP_PTR));
+                node->typ = rhs->typ;
+            }
         } else if (consume("-")) {
-            node      = new_node(ND_SUB, node, mul(), NULL);
-            node->typ = node->lhs->typ;
+            Node *lhs = node;
+            Node *rhs = mul();
+            Type *typ = can_add(lhs->typ, rhs->typ);
+            if (typ->kind == TP_INT) {
+                node = new_node(ND_SUB, lhs, rhs, typ);
+            } else if (lhs->typ->kind == TP_PTR) {
+                rhs       = new_node(ND_MUL, rhs, new_node_num(lhs->typ->ptr_to->size), new_type(TP_INT));
+                node      = new_node(ND_SUB, lhs, rhs, new_type(TP_PTR));
+                node->typ = lhs->typ;
+            } else {
+                lhs       = new_node(ND_MUL, lhs, new_node_num(rhs->typ->ptr_to->size), new_type(TP_INT));
+                node      = new_node(ND_SUB, lhs, rhs, new_type(TP_PTR));
+                node->typ = rhs->typ;
+            }
         } else {
             return node;
         }

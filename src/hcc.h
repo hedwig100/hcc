@@ -159,6 +159,7 @@ Node *code[100]; // AST
 
 Type *new_type(TypeKind kind);
 bool type_cmp(Type *typ1, Type *typ2);
+Type *can_add(Type *typ1, Type *typ2);
 void register_func(Node *node);
 Func *find_func(Node *node);
 LVar *find_lvar(Token *tok);

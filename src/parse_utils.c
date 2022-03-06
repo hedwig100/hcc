@@ -26,6 +26,18 @@ bool type_cmp(Type *typ1, Type *typ2) {
     return type_cmp(typ1->ptr_to, typ2->ptr_to);
 }
 
+Type *can_add(Type *typ1, Type *typ2) {
+    if (typ1->kind == typ2->kind) {
+        if (typ1->kind == TP_INT)
+            return typ1;
+        else
+            error_at(token->str, "cannot add this types.");
+    }
+    if (typ1->kind == TP_INT)
+        return typ2;
+    return typ1;
+}
+
 void register_func(Node *node) {
     if (node->kind != ND_FUNCDEF) {
         errorf("cannot register func when node->kind is not FUNCDEF");
