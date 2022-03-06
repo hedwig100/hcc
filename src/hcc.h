@@ -45,9 +45,10 @@ Token *tokenize(char *p);
 // typekind
 
 typedef enum {
-    TP_INT,
-    TP_PTR,
-    TP_ARRAY,
+    TP_INT,   // int
+    TP_CHAR,  // char
+    TP_PTR,   // pointer
+    TP_ARRAY, // array
 } TypeKind;
 
 // type
@@ -175,7 +176,7 @@ Node *code[100]; // AST
 
 Type *new_type(TypeKind kind);
 Type *new_type_ptr(Type *ptr_to);
-bool type_cmp(Type *typ1, Type *typ2);
+Type *can_assign(Type *typ1, Type *typ2);
 bool is_ptr(Type *typ);
 Type *can_add(Type *typ1, Type *typ2);
 void register_func(Node *node);

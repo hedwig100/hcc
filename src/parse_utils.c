@@ -7,6 +7,9 @@ Type *new_type(TypeKind kind) {
     case TP_INT:
         typ->size = 4;
         return typ;
+    case TP_CHAR:
+        typ->size = 1;
+        return typ;
     case TP_ARRAY:
         return typ;
     default:
@@ -23,28 +26,102 @@ Type *new_type_ptr(Type *ptr_to) {
     return typ;
 }
 
-// type_cmp checks if typ1 equals typ2. note thah array and ptr is regarded as the same type.
-bool type_cmp(Type *typ1, Type *typ2) {
-    TypeKind kind1 = typ1->kind == TP_ARRAY ? TP_PTR : typ1->kind;
-    TypeKind kind2 = typ1->kind == TP_ARRAY ? TP_PTR : typ1->kind;
-
-    if (kind1 != kind2) {
-        return false;
+// type_cmp checks when 'typ1 = typ2' is valid.
+// if it isn't valid, raise error else return assign type;
+Type *can_assign(Type *typ1, Type *typ2) {
+    switch (typ1->kind) {
+    case TP_INT:
+        switch (typ2->kind) {
+        case TP_INT:
+        case TP_CHAR:
+            return new_type(TP_INT);
+        case TP_PTR:
+        case TP_ARRAY:
+        default:
+            error_at(token->str, "cannot assign here.");
+        }
+    case TP_CHAR:
+        switch (typ2->kind) {
+        case TP_INT:
+        case TP_CHAR:
+            return new_type(TP_CHAR);
+        case TP_PTR:
+        case TP_ARRAY:
+        default:
+            error_at(token->str, "cannot assign here.");
+        }
+    case TP_PTR:
+        switch (typ2->kind) {
+        case TP_INT:
+        case TP_CHAR:
+            error_at(token->str, "cannot assign here.");
+        case TP_PTR:
+            return typ1;
+        case TP_ARRAY:
+        default:
+            error_at(token->str, "cannot assign here.");
+        }
+    case TP_ARRAY:
+    default:
+        error_at(token->str, "cannot assign here.");
     }
-    if (kind1 != TP_PTR) {
-        return true;
-    }
-    return type_cmp(typ1->ptr_to, typ2->ptr_to);
 }
 
-// can_add checks if "typ1 + typ2" is valid. it is valid when either of type is int for NOW.
+// can_add checks if "typ1 + typ2" is valid. it is valid when either of type is not pointer,
+// return type after addition.
 Type *can_add(Type *typ1, Type *typ2) {
-    if (typ1->kind == TP_INT) {
-        return typ2;
-    } else if (typ2->kind == TP_INT) {
-        return typ1;
+    switch (typ1->kind) {
+    case TP_INT:
+        switch (typ2->kind) {
+        case TP_INT:
+            return new_type(TP_INT);
+        case TP_CHAR:
+            return new_type(TP_INT);
+        case TP_PTR:
+            return typ2;
+        case TP_ARRAY:
+            return typ2;
+        default:
+            error_at(token->str, "type isn't valid.");
+        }
+    case TP_CHAR:
+        switch (typ2->kind) {
+        case TP_INT:
+            return new_type(TP_INT);
+        case TP_CHAR:
+            return new_type(TP_CHAR);
+        case TP_PTR:
+            return typ2;
+        case TP_ARRAY:
+            return typ2;
+        default:
+            error_at(token->str, "type isn't valid.");
+        }
+    case TP_PTR:
+        switch (typ2->kind) {
+        case TP_INT:
+            return typ1;
+        case TP_CHAR:
+            return typ1;
+        case TP_PTR:
+        case TP_ARRAY:
+        default:
+            error_at(token->str, "type isn't valid.");
+        }
+    case TP_ARRAY:
+        switch (typ2->kind) {
+        case TP_INT:
+            return typ1;
+        case TP_CHAR:
+            return typ1;
+        case TP_PTR:
+        case TP_ARRAY:
+        default:
+            error_at(token->str, "type isn't valid.");
+        }
+    default:
+        error_at(token->str, "type isn't valid.");
     }
-    error_at(token->str, "cannot add here.");
 }
 
 bool is_ptr(Type *typ) {

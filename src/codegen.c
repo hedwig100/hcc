@@ -40,6 +40,7 @@ void gen_addr(Node *node) {
 
 const char *PARAM_REG64[6] = {"rdi", "rsi", "rdx", "rcx", "r8", "r9"};
 const char *PARAM_REG32[6] = {"edi", "esi", "edx", "ecx", "r8d", "r9d"};
+const char *PARAM_REG8[6]  = {"dil", "sil", "dl", "cl", "r8b", "r9b"};
 
 int gen_param_set(Node *node) {
     int n_param = 0;
@@ -68,6 +69,9 @@ void gen_param_get(Node *node) {
         case TP_INT:
             printf("    mov dword ptr [rax],%s # int \n", PARAM_REG32[i++]);
             break;
+        case TP_CHAR:
+            printf("    mov byte ptr [rax],%s # char\n", PARAM_REG8[i++]);
+            break;
         case TP_ARRAY:
         case TP_PTR:
             printf("    mov qword ptr [rax],%s # ptr,arr\n", PARAM_REG64[i++]);
@@ -95,6 +99,9 @@ void gen_expression(Node *node) {
         case TP_INT:
             printf("    movsx rax,dword ptr [rax] # int\n");
             break;
+        case TP_CHAR:
+            printf("    movsx rax,byte ptr [rax] # char\n");
+            break;
         case TP_PTR:
             printf("    mov rax,qword ptr [rax] # ptr\n");
             break;
@@ -113,6 +120,9 @@ void gen_expression(Node *node) {
         switch (node->typ->kind) {
         case TP_INT:
             printf("    movsx rax,dword ptr [rax] # int\n");
+            break;
+        case TP_CHAR:
+            printf("    movsx rax,byte ptr [rax] # char\n");
             break;
         case TP_PTR:
             printf("    mov rax,qword ptr [rax] # ptr\n");
@@ -134,6 +144,9 @@ void gen_expression(Node *node) {
         switch (node->lhs->typ->kind) {
         case TP_INT:
             printf("    mov dword ptr [rax],edi # int \n");
+            break;
+        case TP_CHAR:
+            printf("    mov byte ptr [rax],dil # char\n");
             break;
         case TP_PTR:
             printf("    mov qword ptr [rax],rdi # ptr \n");
@@ -162,6 +175,11 @@ void gen_expression(Node *node) {
         case TP_INT:
             printf("    pop rax # stack%d, deref \n", --align);
             printf("    movsx rax,dword ptr [rax] # int\n");
+            printf("    push rax # stack%d\n", align++);
+            break;
+        case TP_CHAR:
+            printf("    pop rax # stack%d, deref \n", --align);
+            printf("    movsx rax,byte ptr [rax] # char\n");
             printf("    push rax # stack%d\n", align++);
             break;
         case TP_PTR:
