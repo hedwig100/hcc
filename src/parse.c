@@ -327,40 +327,29 @@ Node *relational() {
     }
 }
 
+Node *add_helper(Node *lhs, Node *rhs, NodeKind kind) {
+    Node *node;
+    Type *typ = can_add(lhs->typ, rhs->typ);
+    if (typ->kind == TP_INT) {
+        node = new_node(kind, lhs, rhs, typ);
+    } else if (is_ptr(lhs->typ)) {
+        rhs  = new_node(ND_MUL, rhs, new_node_num(lhs->typ->ptr_to->size), new_type(TP_INT));
+        node = new_node(kind, lhs, rhs, typ);
+    } else {
+        lhs  = new_node(ND_MUL, lhs, new_node_num(rhs->typ->ptr_to->size), new_type(TP_INT));
+        node = new_node(kind, lhs, rhs, typ);
+    }
+    return node;
+}
+
 Node *add() {
     Node *node = mul();
 
     for (;;) {
         if (consume("+")) {
-            Node *lhs = node;
-            Node *rhs = mul();
-            Type *typ = can_add(lhs->typ, rhs->typ);
-            if (typ->kind == TP_INT) {
-                node = new_node(ND_ADD, lhs, rhs, typ);
-            } else if (is_ptr(lhs->typ)) {
-                rhs       = new_node(ND_MUL, rhs, new_node_num(lhs->typ->ptr_to->size), new_type(TP_INT));
-                node      = new_node(ND_ADD, lhs, rhs, lhs->typ);
-                node->typ = lhs->typ;
-            } else {
-                lhs       = new_node(ND_MUL, lhs, new_node_num(rhs->typ->ptr_to->size), new_type(TP_INT));
-                node      = new_node(ND_ADD, lhs, rhs, rhs->typ);
-                node->typ = rhs->typ;
-            }
+            node = add_helper(node, mul(), ND_ADD);
         } else if (consume("-")) {
-            Node *lhs = node;
-            Node *rhs = mul();
-            Type *typ = can_add(lhs->typ, rhs->typ);
-            if (typ->kind == TP_INT) {
-                node = new_node(ND_SUB, lhs, rhs, typ);
-            } else if (is_ptr(lhs->typ)) {
-                rhs       = new_node(ND_MUL, rhs, new_node_num(lhs->typ->ptr_to->size), new_type(TP_INT));
-                node      = new_node(ND_SUB, lhs, rhs, lhs->typ);
-                node->typ = lhs->typ;
-            } else {
-                lhs       = new_node(ND_MUL, lhs, new_node_num(rhs->typ->ptr_to->size), new_type(TP_INT));
-                node      = new_node(ND_SUB, lhs, rhs, rhs->typ);
-                node->typ = rhs->typ;
-            }
+            node = add_helper(node, mul(), ND_SUB);
         } else {
             return node;
         }
@@ -402,22 +391,42 @@ Node *unary() {
         return node;
     }
     if (consume("+")) {
-        return primary();
+        return postfix();
     }
     if (consume("-")) {
-        Node *node = new_node(ND_SUB, new_node_num(0), primary(), new_type(TP_INT));
+        Node *node = new_node(ND_SUB, new_node_num(0), postfix(), new_type(TP_INT));
         if (node->rhs->typ->kind != TP_INT) {
             error_at(token->str, "unary '-' cannot be used for address.");
         }
         return node;
     }
-    return primary();
+    return postfix();
+}
+
+Node *postfix() {
+    Node *node = primary();
+    for (;;) {
+        if (consume("[")) {
+            node = add_helper(node, expr(), ND_ADD);
+            node = new_node(ND_DEREF, node, NULL, NULL);
+            if (node->lhs->typ->kind == TP_INT) {
+                error_at(token->str, "cannot dereference not pointer type.");
+            }
+            node->typ = node->lhs->typ->ptr_to;
+            expect("]");
+            infof("finished until 'ident[ ]'(index access)");
+        } else {
+            return node;
+        }
+    }
 }
 
 Node *primary() {
+    Node *node;
+
     // if next token is '(', primary should be '(' expr ')'
     if (consume("(")) {
-        Node *node = expr();
+        node = expr();
         expect(")");
         return node;
     }
@@ -425,7 +434,7 @@ Node *primary() {
     // next token is an identifier
     Token *tok = consume_ident();
     if (tok) {
-        Node *node = calloc(1, sizeof(Node));
+        node = calloc(1, sizeof(Node));
 
         if (consume("(")) { // function call
             node->kind = ND_CALLFUNC;

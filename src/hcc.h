@@ -173,6 +173,8 @@ LVar *find_lvar(Token *tok);
 
 void program();
 Node *cmp_stmt();
+Type *type_declare();
+Type *type_array(Type *typ);
 Node *func_def();
 Node *stmt();
 Node *expr();
@@ -182,6 +184,7 @@ Node *relational();
 Node *add();
 Node *mul();
 Node *unary();
+Node *postfix();
 Node *primary();
 
 /*

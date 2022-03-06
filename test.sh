@@ -114,5 +114,11 @@ assert 8 "int f(int *a[2]){return **a + **(a + 1);} int main() {int *b[2];int c;
 assert 1 "int f(int **a){return **a + *(*a - 1);} int main() {int *b[2];int c;int d;c = 4;d = -3;*b = &c;return f(b);}"
 assert 4 "int main() {int a[5][3]; *(*(a+1)+2) = 4; return *(*(a+1)+2);}"
 assert 9 "int main() {int a[5][3][4]; *(*(*(a+1)+2)+2) = 9; return *(*(*(a+1)+2)+2);}"
+assert 8 "int main() {int a[5]; a[1]=4;a[2]=4; return a[1]+a[2];}"
+assert 1 "int main() {int a[5];*(a+1)=1;return *(a+*(a+1));}"
+assert 1 "int main() {int a[5]; a[1]=2;a[a[1]]=4;a[a[a[1]]]=1; return a[a[1]+2];}"
+assert 3 "int main() {int *a[5];int b;b=3;a[b]=&b;return *a[b];}"
+assert 4 "int main() {int *a[2][2][2][2];a[0][0][0][0]=4;int i;i = 0;int j;j = 0;return a[i][i+j][j*i][(j*1)+1-1];}"
+assert 4 "int sum(int a[2][2]){int ans;ans=0;int i;int j;i=0;j=0;for(i=0;i<2;i=i+1){for(j=0;j<2;j=j+1){ans=ans+a[i][j];}}return ans;}int main() {int a[2][2];int i;int j;i = 0;j = 0;for(i=0;i<2;i=i+1){for(j=0;j<2;j=j+1){a[i][j]=1;}}return sum(a);}"
 
 echo OK 
