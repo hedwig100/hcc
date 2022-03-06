@@ -36,24 +36,28 @@ int main(int argc, char **argv) {
 
     // construct AST
     infof("try to construct AST...");
-    locals = calloc(1, sizeof(LVar));
-    funcs  = NULL;
+    globals = calloc(1, sizeof(GVar));
+    funcs   = NULL;
     program();
 
     // generate code
     infof("try to generate assembly...");
     printf(".intel_syntax noprefix\n");
     printf(".globl ");
+    int start = 1;
     for (int i = 0; code[i]; i++) {
-        if (i == 0)
+        if (code[i]->kind != ND_FUNCDEF) continue;
+        if (start) {
             printf("%s", to_str(code[i]->name, code[i]->len));
-        else
+            start = 0;
+        } else {
             printf(",%s", to_str(code[i]->name, code[i]->len));
+        }
     }
     printf("\n");
 
     for (int i = 0; code[i]; i++) { // finish if code[i] is NULL
-        gen_func_def(code[i]);
+        gen_ext_def(code[i]);
     }
 
     return 0;

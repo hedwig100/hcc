@@ -97,13 +97,38 @@ Node *node_lvar(Token *tok) {
     return node;
 }
 
+Node *new_node_gvar(Token *tok, Type *typ) {
+    Node *node = calloc(1, sizeof(Node));
+    node->kind = ND_GVAR;
+    GVar *gvar = calloc(1, sizeof(GVar));
+    gvar->next = globals;
+    gvar->name = tok->str;
+    node->name = tok->str;
+    gvar->len  = tok->len;
+    node->len  = tok->len;
+    gvar->typ  = typ;
+    node->typ  = typ;
+    globals    = gvar;
+    return node;
+}
+
+Node *node_gvar(Token *tok) {
+    Node *node = calloc(1, sizeof(Node));
+    node->kind = ND_GVAR;
+    GVar *gvar = find_gvar(tok);
+    node->name = gvar->name;
+    node->len  = gvar->len;
+    node->typ  = gvar->typ;
+    return node;
+}
+
 void program() {
     int i = 0;
     while (!at_eof()) {
-        locals->offset    = 0;
-        code[i]           = func_def();
-        code[i++]->offset = locals->offset;
-        infof("finished function(%d)", i);
+        locals         = calloc(1, sizeof(LVar));
+        locals->offset = 0;
+        code[i++]      = ext_def();
+        infof("finished ext definition(%d)", i);
     }
     code[i] = NULL;
 }
@@ -149,19 +174,29 @@ Type *type_array(Type *typ) {
     return typ;
 }
 
-Node *func_def() {
+Node *ext_def() {
     Type *typ  = type_declare();
-    Node *node = calloc(1, sizeof(Node));
-    node->kind = ND_FUNCDEF;
     Token *tok = expect_ident();
-    node->name = tok->str;
-    node->len  = tok->len;
-    node->typ  = typ;
-    register_func(node);
+    if (consume("(")) {
+        // function
+        Node *node = calloc(1, sizeof(Node));
+        node->name = tok->str;
+        node->len  = tok->len;
+        node->typ  = typ;
+        node->kind = ND_FUNCDEF;
+        register_func(node);
+        node         = func_def(node);
+        node->offset = locals->offset;
+    } else {
+        // global variable
+        typ = type_array(typ);
+        expect(";");
+        Node *node = new_node_gvar(tok, typ);
+        return node;
+    }
+}
 
-    infof("finished until 'type ident'.");
-
-    expect("(");
+Node *func_def(Node *node) {
     if (consume(")")) {
         infof("finished until '()'.");
         node->params = NULL;

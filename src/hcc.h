@@ -93,6 +93,19 @@ struct LVar {
 // local variables
 LVar *locals;
 
+// global variable
+typedef struct GVar GVar;
+
+struct GVar {
+    GVar *next; // next glocal variable if exists,otherwise NULL
+    char *name; // local variable name
+    int len;    // local variable length
+    Type *typ;
+};
+
+// local variables
+GVar *globals;
+
 // nodekind
 typedef enum {
     ND_ADD,      // +
@@ -105,6 +118,7 @@ typedef enum {
     ND_LT,       // <
     ND_LEQ,      // <=
     ND_LVAR,     // local variable
+    ND_GVAR,     // global variable
     ND_BLOCK,    // { }
     ND_CALLFUNC, // call func()
     ND_FUNCDEF,  // definition of function
@@ -167,6 +181,7 @@ Type *can_add(Type *typ1, Type *typ2);
 void register_func(Node *node);
 Func *find_func(Node *node);
 LVar *find_lvar(Token *tok);
+GVar *find_gvar(Token *tok);
 
 /*
     parse.c
@@ -176,7 +191,8 @@ void program();
 Node *cmp_stmt();
 Type *type_declare();
 Type *type_array(Type *typ);
-Node *func_def();
+Node *ext_def();
+Node *func_def(Node *node);
 Node *stmt();
 Node *expr();
 Node *assign();
@@ -199,7 +215,7 @@ int gen_param_set(Node *node);
 void gen_param_get(Node *node);
 void gen_expression(Node *node);
 void gen_statement(Node *node);
-void gen_func_def(Node *node);
+void gen_ext_def(Node *node);
 
 /*
     utils.c

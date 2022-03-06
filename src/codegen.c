@@ -273,7 +273,7 @@ void gen_statement(Node *node) {
     }
 }
 
-void gen_func_def(Node *node) {
+void gen_ext_def(Node *node) {
     switch (node->kind) {
     case ND_FUNCDEF:
         align = 0;
@@ -285,6 +285,10 @@ void gen_func_def(Node *node) {
         printf("    sub rsp,%d\n", node->offset);
         gen_param_get(node);
         gen_statement(node->body);
+        return;
+    case ND_GVAR:
+        printf("%s:\n", to_str(node->name, node->len));
+        printf("    .zero %d\n", node->typ->size);
         return;
     default:
         errorf("not func def");
