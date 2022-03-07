@@ -116,6 +116,10 @@ void gen_expression(Node *node) {
     case ND_NUM:
         printf("    push %d # stack%d,num\n", node->val, align++);
         return;
+    case ND_STR:
+        printf("    lea rax, [.LC%d + rip] # string literal\n", node->id);
+        printf("    push rax # stack%d\n", align++);
+        return;
     case ND_LVAR:
         gen_lvar(node);
         printf("    pop rax # stack%d, get local variable\n", --align);
@@ -321,6 +325,10 @@ void gen_program() {
             }
             gen_ext_def(code[i]);
         }
+    }
+    for (Str *str = strs; str; str = str->next) {
+        printf(".LC%d:\n", str->id);
+        printf("    .string %s\n", to_str(str->val, str->len));
     }
 
     // text section

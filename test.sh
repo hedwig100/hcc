@@ -130,5 +130,8 @@ assert 3 "int main() {char a;a = 3;return a;}"
 assert 3 "int main() {char x[3];x[0]=-1;x[1]=2;int y;y = 4;return x[0]+y;}"
 assert 4 "int main() {char *x[3];char y;y = 4;x[0] = &y;return *x[0];}"
 assert 0 "int f(char x,char *y) {return x + *y;} int main() {char a;char *b;a = -4;b = &a;return f(a,b) + 8;}"
+assert 97 "int main() {char *x; x = \"aie\";return x[0];}"
+assert 97 "char *x; int main() {x = \"oa\";return x[1];}"
+assert 97 "int main() {char *x[3]; x[0] = \"joga\"; return x[0][3];}"
 
 echo OK 

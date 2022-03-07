@@ -50,6 +50,17 @@ Token *tokenize(char *p) {
             continue;
         }
 
+        if (*p == '"') {
+            cur = new_token(TK_STR, cur, p);
+            p   = strstr(++p, "\"");
+            if (!p) {
+                error_at(token->str, "string literal is not valid.");
+            }
+            p++;
+            cur->len = p - cur->str;
+            continue;
+        }
+
         if (strncmp(p, "return", 6) == 0 && !isalnum(p[6])) {
             cur      = new_token(TK_RESERVED, cur, p);
             cur->len = 6;

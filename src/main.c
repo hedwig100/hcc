@@ -37,6 +37,7 @@ int main(int argc, char **argv) {
     // construct AST
     infof("try to construct AST...");
     globals = calloc(1, sizeof(GVar));
+    strs    = NULL;
     funcs   = NULL;
     program();
 

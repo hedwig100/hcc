@@ -22,6 +22,17 @@ Token *consume_ident() {
     return tok;
 }
 
+// consume_str read a token and return the token if next token is string literal,
+// otherwise return NULL
+Token *consume_str() {
+    if (token->kind != TK_STR) {
+        return NULL;
+    }
+    Token *tok = token;
+    token      = token->next;
+    return tok;
+}
+
 // expect read a token if next token is expected kind of token,
 // otherwise print error
 void expect(char *op) {
@@ -122,6 +133,27 @@ Node *node_gvar(Token *tok) {
     node->name = gvar->name;
     node->len  = gvar->len;
     node->typ  = gvar->typ;
+    return node;
+}
+
+Node *new_node_str(Token *tok) {
+    Node *node = calloc(1, sizeof(Node));
+    node->kind = ND_STR;
+    Str *str   = calloc(1, sizeof(Str));
+    str->next  = strs;
+    if (strs) {
+        str->id = strs->id + 1;
+    } else {
+        str->id = 0;
+    }
+    node->id   = str->id;
+    str->val   = tok->str;
+    node->name = tok->str;
+    str->len   = tok->len;
+    node->len  = tok->len;
+    node->typ  = new_type_ptr(new_type(TP_CHAR));
+    strs       = str;
+    new_node_lvar(tok, node->typ);
     return node;
 }
 
@@ -467,6 +499,7 @@ Node *postfix() {
 
 Node *primary() {
     Node *node;
+    Token *tok;
 
     // if next token is '(', primary should be '(' expr ')'
     if (consume("(")) {
@@ -476,7 +509,7 @@ Node *primary() {
     }
 
     // next token is an identifier
-    Token *tok = consume_ident();
+    tok = consume_ident();
     if (tok) {
         node = calloc(1, sizeof(Node));
 
@@ -516,5 +549,10 @@ Node *primary() {
         return node;
     }
 
+    tok = consume_str();
+    if (tok) {
+        node = new_node_str(tok);
+        return node;
+    }
     return new_node_num(expect_number());
 }

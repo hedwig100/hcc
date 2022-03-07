@@ -19,6 +19,7 @@ typedef enum {
     TK_RESERVED, // operator
     TK_IDENT,    // identifier
     TK_NUM,      // integer
+    TK_STR,      // string literal
     TK_EOF,      // end of input
 } TokenKind;
 
@@ -107,6 +108,18 @@ struct GVar {
 // local variables
 GVar *globals;
 
+// string literal
+typedef struct Str Str;
+
+struct Str {
+    Str *next;
+    char *val;
+    int len;
+    int id;
+};
+
+Str *strs;
+
 // nodekind
 typedef enum {
     ND_ADD,      // +
@@ -114,6 +127,7 @@ typedef enum {
     ND_MUL,      // *
     ND_DIV,      // /
     ND_NUM,      // integer
+    ND_STR,      // string literal
     ND_EQ,       // ==
     ND_NEQ,      // !=
     ND_LT,       // <
@@ -142,6 +156,7 @@ struct Node {
     int len;    // name's length
 
     int val;    // if kind is ND_NUM,its number
+    int id;     // if kind is ND_STR,its id
     int offset; // if kind is ND_LVAR,ND_FUNCDEF,its offset from sp
     Type *typ;  // when kind is ND_LVAR,ND_FUNCDEF,ND_FUNCCALL its type(or return type)
 
