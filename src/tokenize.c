@@ -44,7 +44,7 @@ Token *tokenize(char *p) {
         if (strncmp(p, "/*", 2) == 0) {
             char *q = strstr(p + 2, "*/");
             if (!q) {
-                error_at(p, token->str, "comment not closed.");
+                error_at(p, "comment not closed.");
             }
             p = q + 2;
             continue;
