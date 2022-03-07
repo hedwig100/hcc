@@ -169,7 +169,6 @@ Node *new_node_str(Token *tok) {
     node->len  = tok->len;
     node->typ  = new_type_ptr(new_type(TP_CHAR));
     strs       = str;
-    new_node_lvar(tok, node->typ);
     return node;
 }
 
