@@ -226,13 +226,11 @@ Node *ext_def() {
     Token *tok = expect_ident();
     if (consume("(")) {
         // function
-        Node *node = calloc(1, sizeof(Node));
-        node->name = tok->str;
-        node->len  = tok->len;
-        node->typ  = typ;
-        node->kind = ND_FUNCDEF;
-        register_func(node);
-        node         = func_def(node);
+        Node *node   = calloc(1, sizeof(Node));
+        node->name   = tok->str;
+        node->len    = tok->len;
+        node->typ    = typ;
+        node         = func_def_or_decl(node);
         node->offset = locals->offset;
     } else {
         // global variable
@@ -243,13 +241,23 @@ Node *ext_def() {
     }
 }
 
-Node *func_def(Node *node) {
+Node *func_def_or_decl(Node *node) {
     if (consume(")")) {
         infof("finished until '()'.");
         node->params = NULL;
-        expect("{");
-        node->body = cmp_stmt();
-        return node;
+        if (consume("{")) {
+            // function definition
+            node->kind = ND_FUNCDEF;
+            register_func(node);
+            node->body = cmp_stmt();
+            return node;
+        } else {
+            // function declaration
+            node->kind = ND_FUNCDECL;
+            expect(";");
+            register_func(node);
+            return node;
+        }
     }
 
     Node head;
@@ -276,9 +284,19 @@ Node *func_def(Node *node) {
 
     infof("finished until '(param)'.");
     node->params = head.next;
-    expect("{");
-    node->body = cmp_stmt();
-    return node;
+    if (consume("{")) {
+        // function definition
+        node->kind = ND_FUNCDEF;
+        register_func(node);
+        node->body = cmp_stmt();
+        return node;
+    } else {
+        // function declaration
+        node->kind = ND_FUNCDECL;
+        expect(";");
+        register_func(node);
+        return node;
+    }
 }
 
 Node *stmt() {

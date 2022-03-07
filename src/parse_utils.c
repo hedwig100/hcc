@@ -129,8 +129,8 @@ bool is_ptr(Type *typ) {
 }
 
 void register_func(Node *node) {
-    if (node->kind != ND_FUNCDEF) {
-        errorf("cannot register func when node->kind is not FUNCDEF");
+    if (node->kind != ND_FUNCDEF && node->kind != ND_FUNCDECL) {
+        errorf("cannot register func when node->kind is neither FUNCDEF nor FUNCDECL.");
     }
     Func *now = calloc(1, sizeof(Func));
     now->name = node->name;

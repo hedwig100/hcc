@@ -139,6 +139,7 @@ typedef enum {
     ND_BLOCK,    // { }
     ND_CALLFUNC, // call func()
     ND_FUNCDEF,  // definition of function
+    ND_FUNCDECL, // declaration of function
     ND_ASSIGN,   // assign
     ND_RETURN,   // "return"
     ND_IF,       // "if"
@@ -210,7 +211,7 @@ Node *cmp_stmt();
 Type *type_declare();
 Type *type_array(Type *typ);
 Node *ext_def();
-Node *func_def(Node *node);
+Node *func_def_or_decl(Node *node);
 Node *stmt();
 Node *expr();
 Node *assign();

@@ -20,8 +20,26 @@ assertf() {
     expected="$1" 
     input="$2" 
 
-    ./hcc "testdata/$input" > tmp.s 
+    ./hcc "testdata/$input.c" > tmp.s 
     cc -o tmp tmp.s 
+    ./tmp 
+    actual="$?" 
+
+    if [ "$actual" = "$expected" ]; then 
+        echo "$input => $actual" 
+    else
+        echo "$input => $expected expected, but got $actual" 
+        exit 1
+    fi 
+}
+
+assertlink() {
+    expected="$1" 
+    input="$2" 
+
+    cc -c "testdata/$input/cc.c"
+    ./hcc "testdata/$input/hcc.c" > tmp.s 
+    cc -o tmp tmp.s cc.o
     ./tmp 
     actual="$?" 
 
@@ -150,6 +168,10 @@ assert 0 "int f(char x,char *y) {return x + *y;} int main() {char a;char *b;a = 
 assert 97 "int main() {char *x; x = \"aie\";return x[0];}"
 assert 97 "char *x; int main() {x = \"oa\";return x[1];}"
 assert 97 "int main() {char *x[3]; x[0] = \"joga\"; return x[0][3];}"
-assertf 10 test4.c
+assertf 10 test4
+assertlink 0 test1
+assertlink 0 test2
+assertlink 0 test3
+assertlink 26 test5
 
 echo OK 
