@@ -8,3 +8,7 @@ hcc
 .ssh
 .gitconfig
 .cache
+
+test/*.i
+test/*.s
+test/*.exe

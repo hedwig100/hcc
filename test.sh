@@ -115,7 +115,7 @@ assert 64 "int main() {int ze;int j;ze=1;for (j=10;j>=0;j=j-2)ze=ze*2;return ze;
 assert 8 "int main() {int b;int c;int i;b=0;c=-4;for(i=0;i<4;i=i+1){b=b+1;c=c+2;} return b+c;}"
 assert 0 "int main() {int b;int c;int i;b=0;c=-4;i=50;while(i<54){i=i+1;b=b+1;c=c+2;} return b-c;}"
 assert 100 "int main() {int ans;int i;int j;ans=0;for(i=0;i<10;i=i+1){for(j=0;j<10;j=j+1){ans=ans+1;}}return ans;}"
-assert 24 "int main() {int ans;int i;ans=0;i=0;while(i<30){if(i<10){ans=ans*2;}else{ans=ans-50;}i=i+1;}return ans;}"
+assert 24 "int main() {int ans;int i;ans=1;i=0;while(i<30){if(i<10){ans=ans*2;}else{ans=ans-50;}i=i+1;}return ans;}"
 assert 3 "int main() {int a1;int b_1;a1=0;b_1=3;return a1+b_1;}"
 
 assert 55 "int fib(int n) {if (n <= 1) return n; return fib(n-1)+fib(n-2);} int main() {return fib(10);}"
