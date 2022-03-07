@@ -33,6 +33,23 @@ Token *tokenize(char *p) {
             continue;
         }
 
+        if (strncmp(p, "//", 2) == 0) {
+            p += 2;
+            while (*p != '\n') {
+                p++;
+            }
+            continue;
+        }
+
+        if (strncmp(p, "/*", 2) == 0) {
+            char *q = strstr(p + 2, "*/");
+            if (!q) {
+                error_at(p, token->str, "comment not closed.");
+            }
+            p = q + 2;
+            continue;
+        }
+
         if (startwith(p, "==") || startwith(p, "!=") || startwith(p, "<=") ||
             startwith(p, ">=")) {
             cur      = new_token(TK_RESERVED, cur, p);
@@ -51,12 +68,12 @@ Token *tokenize(char *p) {
         }
 
         if (*p == '"') {
-            cur = new_token(TK_STR, cur, p);
-            p   = strstr(++p, "\"");
-            if (!p) {
+            cur     = new_token(TK_STR, cur, p);
+            char *q = strstr(++p, "\"");
+            if (!q) {
                 error_at(token->str, "string literal is not valid.");
             }
-            p++;
+            p        = q + 1;
             cur->len = p - cur->str;
             continue;
         }

@@ -16,6 +16,23 @@ assert() {
     fi 
 }
 
+assertf() {
+    expected="$1" 
+    input="$2" 
+
+    ./hcc "testdata/$input" > tmp.s 
+    cc -o tmp tmp.s 
+    ./tmp 
+    actual="$?" 
+
+    if [ "$actual" = "$expected" ]; then 
+        echo "$input => $actual" 
+    else
+        echo "$input => $expected expected, but got $actual" 
+        exit 1
+    fi 
+}
+
 assert 0 "int main() {return 0;}" 
 assert 42 "int main() {return 42;}" 
 assert 21 "int main() {return 5+20-4;}"
@@ -133,5 +150,6 @@ assert 0 "int f(char x,char *y) {return x + *y;} int main() {char a;char *b;a = 
 assert 97 "int main() {char *x; x = \"aie\";return x[0];}"
 assert 97 "char *x; int main() {x = \"oa\";return x[1];}"
 assert 97 "int main() {char *x[3]; x[0] = \"joga\"; return x[0][3];}"
+assertf 10 test4.c
 
 echo OK 
