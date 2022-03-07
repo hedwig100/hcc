@@ -23,9 +23,13 @@ int main(int argc, char **argv) {
 
     // construct AST
     infof("try to construct AST...");
-    globals = calloc(1, sizeof(GVar));
-    strs    = NULL;
-    funcs   = NULL;
+    globals        = calloc(1, sizeof(GVar));
+    strs           = NULL;
+    funcs          = NULL;
+    scopes         = calloc(1, sizeof(Scope));
+    scopes->before = NULL;
+    scopes->offset = 0;
+    scopes->lvar   = calloc(1, sizeof(LVar));
     program();
 
     // generate code

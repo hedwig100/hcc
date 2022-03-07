@@ -94,9 +94,6 @@ struct LVar {
     Type *typ;
 };
 
-// local variables
-LVar *locals;
-
 // global variable
 typedef struct GVar GVar;
 
@@ -107,7 +104,7 @@ struct GVar {
     Type *typ;
 };
 
-// local variables
+// global variables
 GVar *globals;
 
 // string literal
@@ -121,6 +118,20 @@ struct Str {
 };
 
 Str *strs;
+
+// Scope
+typedef struct Scope Scope;
+
+struct Scope {
+    Scope *next;
+    Scope *before;
+    LVar *lvar;
+
+    // maximal offset in this scope
+    int offset;
+};
+
+Scope *scopes;
 
 // nodekind
 typedef enum {
@@ -200,7 +211,11 @@ Type *can_add(Type *typ1, Type *typ2);
 void register_func(Node *node);
 Func *find_func(Node *node);
 LVar *find_lvar(Token *tok);
+bool can_defined_lvar(Token *tok);
 GVar *find_gvar(Token *tok);
+void enter_scope();
+void out_scope();
+void add_offset(Scope *scope, int size);
 
 /*
     parse.c

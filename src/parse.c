@@ -89,20 +89,19 @@ Node *new_node_lvar(Token *tok, Type *typ) {
     node->kind = ND_LVAR;
 
     // check if the same name local variable isn't defined
-    LVar *lvar = find_lvar(tok);
-    if (lvar) {
-        error_at(token->str, "the same name local variable is defined ever.");
+    if (!can_defined_lvar(tok)) {
+        error_at(token->str, "the same name local variable is defined in this scope.");
     }
 
-    lvar         = calloc(1, sizeof(LVar));
-    lvar->next   = locals;
+    LVar *lvar   = calloc(1, sizeof(LVar));
+    lvar->next   = scopes->lvar;
+    scopes->lvar = lvar;
     lvar->name   = tok->str;
     lvar->len    = tok->len;
-    lvar->offset = locals->offset + typ->size;
+    add_offset(scopes, typ->size);
     node->offset = lvar->offset;
     lvar->typ    = typ;
     node->typ    = typ;
-    locals       = lvar;
     return node;
 }
 
@@ -177,8 +176,7 @@ Node *new_node_str(Token *tok) {
 void program() {
     int i = 0;
     while (!at_eof()) {
-        locals         = calloc(1, sizeof(LVar));
-        locals->offset = 0;
+        scopes->offset = 0;
         code[i++]      = ext_def();
         infof("finished ext definition(%d)", i);
     }
@@ -248,7 +246,7 @@ Node *ext_def() {
         node->len    = tok->len;
         node->typ    = typ;
         node         = func_def_or_decl(node);
-        node->offset = locals->offset;
+        node->offset = scopes->offset;
     } else {
         // global variable
         typ = type_array(typ);
@@ -259,6 +257,7 @@ Node *ext_def() {
 }
 
 Node *func_def_or_decl(Node *node) {
+    enter_scope();
     if (consume(")")) {
         infof("finished until '()'.");
         node->params = NULL;
@@ -267,12 +266,14 @@ Node *func_def_or_decl(Node *node) {
             node->kind = ND_FUNCDEF;
             register_func(node);
             node->body = cmp_stmt();
+            out_scope();
             return node;
         } else {
             // function declaration
             node->kind = ND_FUNCDECL;
             expect(";");
             register_func(node);
+            out_scope();
             return node;
         }
     }
@@ -306,12 +307,14 @@ Node *func_def_or_decl(Node *node) {
         node->kind = ND_FUNCDEF;
         register_func(node);
         node->body = cmp_stmt();
+        out_scope();
         return node;
     } else {
         // function declaration
         node->kind = ND_FUNCDECL;
         expect(";");
         register_func(node);
+        out_scope();
         return node;
     }
 }
@@ -326,7 +329,9 @@ Node *stmt() {
         node->cond = expr();
         expect(")");
         infof("finished until 'if ( cond )'");
+        enter_scope();
         node->then = stmt();
+        out_scope();
         infof("finished until 'if ( cond ) then'");
 
         if (consume("else")) {
@@ -347,7 +352,9 @@ Node *stmt() {
         node->kind = ND_WHILE;
         node->cond = expr();
         expect(")");
+        enter_scope();
         node->then = stmt();
+        out_scope();
         return node;
     } else if (consume("for")) {
         expect("(");
@@ -365,10 +372,15 @@ Node *stmt() {
             node->step = expr();
             consume(")");
         }
+        enter_scope();
         node->then = stmt();
+        out_scope();
         return node;
     } else if (consume("{")) {
-        return cmp_stmt();
+        enter_scope();
+        node = cmp_stmt();
+        out_scope();
+        return node;
     }
 
     node = expr();

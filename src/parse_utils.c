@@ -160,12 +160,26 @@ Func *find_func(Node *node) {
 // find_lvar searches local variables,if exists return the local variable
 // otherwise return NULL
 LVar *find_lvar(Token *tok) {
-    for (LVar *var = locals; var; var = var->next) {
-        if (var->len == tok->len && !memcmp(tok->str, var->name, var->len)) {
-            return var;
+    for (Scope *scp = scopes; scp; scp = scp->before) {
+        for (LVar *var = scp->lvar; var; var = var->next) {
+            if (var->len == tok->len && !memcmp(tok->str, var->name, var->len)) {
+                return var;
+            }
         }
     }
     return NULL;
+}
+
+// can_defined_lvar checks if the tok->name local variable can be defined
+// if OK (the same name local variable is not defined), return true;
+// else return false;
+bool can_defined_lvar(Token *tok) {
+    for (LVar *var = scopes->lvar; var; var = var->next) {
+        if (var->len == tok->len && !memcmp(tok->str, var->name, var->len)) {
+            return false;
+        }
+    }
+    return true;
 }
 
 // find_gvar searches local variables,if exists return the global variable
@@ -177,4 +191,28 @@ GVar *find_gvar(Token *tok) {
         }
     }
     return NULL;
+}
+
+void enter_scope() {
+    Scope *new        = calloc(1, sizeof(Scope));
+    new->before       = scopes;
+    scopes->next      = new;
+    new->lvar         = calloc(1, sizeof(LVar));
+    new->lvar->next   = NULL;
+    new->offset       = scopes->offset;
+    new->lvar->offset = new->offset;
+    scopes            = new;
+}
+
+void out_scope() {
+    if (scopes->before == NULL) {
+        error_at(token->str, "cannot get out of this scope.");
+    }
+    scopes->before->offset = scopes->offset;
+    scopes                 = scopes->before;
+}
+
+void add_offset(Scope *scope, int size) {
+    scope->offset       = scope->offset + size;
+    scope->lvar->offset = scope->offset;
 }
