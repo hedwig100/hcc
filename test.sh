@@ -173,5 +173,8 @@ assertlink 0 test1
 assertlink 0 test2
 assertlink 0 test3
 assertlink 26 test5
+assert 0 "int main() {int a;a=0;{int a;a=3;a=a+1;}return a;}"
+assert 4 "int a;int main() {a=0;int a;a=4;{int a;a=6;}return a;}"
+assert 0 "int main() {int i;i = 0;int ans;ans = 0;for (i=0;i<10;i=i+1){int ans;ans = 4;ans = ans+1;}return ans;}"
 
 echo OK 

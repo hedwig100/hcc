@@ -110,7 +110,7 @@ Node *node_lvar(Token *tok) {
     node->kind = ND_LVAR;
     LVar *lvar = find_lvar(tok);
     if (!lvar) {
-        error_at(token->str, "local variable isn't defined.");
+        return NULL;
     }
     node->offset = lvar->offset;
     node->typ    = lvar->typ;
@@ -142,7 +142,7 @@ Node *new_node_gvar(Token *tok, Type *typ) {
 Node *node_gvar(Token *tok) {
     GVar *gvar = find_gvar(tok);
     if (!gvar) {
-        return NULL;
+        error_at(token->str, "this variable isn't defined.");
     }
     Node *node = calloc(1, sizeof(Node));
     node->kind = ND_GVAR;
@@ -579,11 +579,11 @@ Node *primary() {
             return node;
         }
 
-        node = node_gvar(tok);
+        node = node_lvar(tok);
         if (node) {
             return node;
         }
-        node = node_lvar(tok);
+        node = node_gvar(tok);
         return node;
     }
 
