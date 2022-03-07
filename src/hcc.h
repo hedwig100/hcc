@@ -2,6 +2,7 @@
 #define HCC_H
 
 #include <ctype.h>
+#include <errno.h>
 #include <stdarg.h>
 #include <stdbool.h>
 #include <stdio.h>
@@ -9,6 +10,7 @@
 #include <string.h>
 
 char *user_input;
+char *filename;
 
 /*
     tokenize.c
@@ -243,6 +245,8 @@ int lprintf(FILE *fp, int level, const char *file, int line, const char *func,
             const char *fmt, ...);
 void error_at(char *loc, char *fmt, ...);
 char *to_str(char *s, int len);
+void input_from_stdin();
+char *read_file(char *path);
 
 #define errorf(...) \
     lprintf(stderr, 'E', __FILE__, __LINE__, __func__, __VA_ARGS__)
