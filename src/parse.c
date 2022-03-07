@@ -85,9 +85,16 @@ Node *new_node_num(int val) {
 }
 
 Node *new_node_lvar(Token *tok, Type *typ) {
-    Node *node   = calloc(1, sizeof(Node));
-    node->kind   = ND_LVAR;
-    LVar *lvar   = calloc(1, sizeof(LVar));
+    Node *node = calloc(1, sizeof(Node));
+    node->kind = ND_LVAR;
+
+    // check if the same name local variable isn't defined
+    LVar *lvar = find_lvar(tok);
+    if (lvar) {
+        error_at(token->str, "the same name local variable is defined ever.");
+    }
+
+    lvar         = calloc(1, sizeof(LVar));
     lvar->next   = locals;
     lvar->name   = tok->str;
     lvar->len    = tok->len;
@@ -100,9 +107,12 @@ Node *new_node_lvar(Token *tok, Type *typ) {
 }
 
 Node *node_lvar(Token *tok) {
-    Node *node   = calloc(1, sizeof(Node));
-    node->kind   = ND_LVAR;
-    LVar *lvar   = find_lvar(tok);
+    Node *node = calloc(1, sizeof(Node));
+    node->kind = ND_LVAR;
+    LVar *lvar = find_lvar(tok);
+    if (!lvar) {
+        error_at(token->str, "local variable isn't defined.");
+    }
     node->offset = lvar->offset;
     node->typ    = lvar->typ;
     return node;
@@ -111,7 +121,14 @@ Node *node_lvar(Token *tok) {
 Node *new_node_gvar(Token *tok, Type *typ) {
     Node *node = calloc(1, sizeof(Node));
     node->kind = ND_GVAR;
-    GVar *gvar = calloc(1, sizeof(GVar));
+
+    // check if the same name global variable isn't defined
+    GVar *gvar = find_gvar(tok);
+    if (gvar) {
+        error_at(token->str, "the same name global variable is defined ever.");
+    }
+
+    gvar       = calloc(1, sizeof(GVar));
     gvar->next = globals;
     gvar->name = tok->str;
     node->name = tok->str;

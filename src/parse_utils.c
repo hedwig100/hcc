@@ -158,17 +158,17 @@ Func *find_func(Node *node) {
 }
 
 // find_lvar searches local variables,if exists return the local variable
-// otherwise raise error
+// otherwise return NULL
 LVar *find_lvar(Token *tok) {
     for (LVar *var = locals; var; var = var->next) {
         if (var->len == tok->len && !memcmp(tok->str, var->name, var->len)) {
             return var;
         }
     }
-    error_at(tok->str, "local variable isn't defined.");
+    return NULL;
 }
 
-// find_gvar searches local variables,if exists return the local variable
+// find_gvar searches local variables,if exists return the global variable
 // otherwise return NULL
 GVar *find_gvar(Token *tok) {
     for (GVar *var = globals; var; var = var->next) {
