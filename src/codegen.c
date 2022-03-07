@@ -40,7 +40,45 @@ void gen_addr(Node *node) {
 
 const char *PARAM_REG64[6] = {"rdi", "rsi", "rdx", "rcx", "r8", "r9"};
 const char *PARAM_REG32[6] = {"edi", "esi", "edx", "ecx", "r8d", "r9d"};
+const char *PARAM_REG16[6] = {"di", "si", "dx", "cx", "r8w", "r9w"};
 const char *PARAM_REG8[6]  = {"dil", "sil", "dl", "cl", "r8b", "r9b"};
+
+// gen_store stores data in reg in [rax]
+void gen_store(Type *typ, const char *reg64, const char *reg32, const char *reg16, const char *reg8) {
+    switch (typ->kind) {
+    case TP_INT:
+        printf("    mov dword ptr [rax],%s # int \n", reg32);
+        return;
+    case TP_CHAR:
+        printf("    mov byte ptr [rax],%s # char\n", reg8);
+        return;
+    case TP_ARRAY:
+    case TP_PTR:
+        printf("    mov qword ptr [rax],%s # ptr,arr\n", reg64);
+        return;
+    default:
+        errorf("typ isn't valid.");
+    }
+}
+
+// gen_load loads data in [rax] to reg
+void gen_load(Type *typ, const char *reg64) {
+    switch (typ->kind) {
+    case TP_INT:
+        printf("    movsx %s,dword ptr [rax] # int\n", reg64);
+        return;
+    case TP_CHAR:
+        printf("    movsx %s,byte ptr [rax] # char\n", reg64);
+        return;
+    case TP_PTR:
+        printf("    mov %s,qword ptr [rax] # ptr\n", reg64);
+        return;
+    case TP_ARRAY:
+        return;
+    default:
+        errorf("typ isn't valid.");
+    }
+}
 
 int gen_param_set(Node *node) {
     int n_param = 0;
@@ -64,21 +102,8 @@ void gen_param_get(Node *node) {
     for (Node *now = node->params; now; now = now->next) {
         printf("    mov rax,rbp\n");
         printf("    sub rax,%d\n", now->offset);
-
-        switch (now->typ->kind) {
-        case TP_INT:
-            printf("    mov dword ptr [rax],%s # int \n", PARAM_REG32[i++]);
-            break;
-        case TP_CHAR:
-            printf("    mov byte ptr [rax],%s # char\n", PARAM_REG8[i++]);
-            break;
-        case TP_ARRAY:
-        case TP_PTR:
-            printf("    mov qword ptr [rax],%s # ptr,arr\n", PARAM_REG64[i++]);
-            break;
-        default:
-            errorf("typ isn't valid.");
-        }
+        gen_store(now->typ, PARAM_REG64[i], PARAM_REG32[i], PARAM_REG16[i], PARAM_REG8[i]);
+        i++;
     }
 }
 
@@ -94,45 +119,13 @@ void gen_expression(Node *node) {
     case ND_LVAR:
         gen_lvar(node);
         printf("    pop rax # stack%d, get local variable\n", --align);
-
-        switch (node->typ->kind) {
-        case TP_INT:
-            printf("    movsx rax,dword ptr [rax] # int\n");
-            break;
-        case TP_CHAR:
-            printf("    movsx rax,byte ptr [rax] # char\n");
-            break;
-        case TP_PTR:
-            printf("    mov rax,qword ptr [rax] # ptr\n");
-            break;
-        case TP_ARRAY:
-            break;
-        default:
-            errorf("typ isn't valid.");
-        }
-
+        gen_load(node->typ, "rax");
         printf("    push rax # stack%d\n", align++);
         return;
     case ND_GVAR:
         gen_gvar(node);
         printf("    pop rax # stack%d, get local variable\n", --align);
-
-        switch (node->typ->kind) {
-        case TP_INT:
-            printf("    movsx rax,dword ptr [rax] # int\n");
-            break;
-        case TP_CHAR:
-            printf("    movsx rax,byte ptr [rax] # char\n");
-            break;
-        case TP_PTR:
-            printf("    mov rax,qword ptr [rax] # ptr\n");
-            break;
-        case TP_ARRAY:
-            break;
-        default:
-            errorf("typ isn't valid.");
-        }
-
+        gen_load(node->typ, "rax");
         printf("    push rax # stack%d\n", align++);
         return;
     case ND_ASSIGN:
@@ -141,19 +134,10 @@ void gen_expression(Node *node) {
         printf("    pop rdi # stack%d, assign\n", --align);
         printf("    pop rax # stack%d\n", --align);
 
-        switch (node->lhs->typ->kind) {
-        case TP_INT:
-            printf("    mov dword ptr [rax],edi # int \n");
-            break;
-        case TP_CHAR:
-            printf("    mov byte ptr [rax],dil # char\n");
-            break;
-        case TP_PTR:
-            printf("    mov qword ptr [rax],rdi # ptr \n");
-            break;
-        default:
-            errorf("cannot assign value to this type.");
+        if (node->lhs->typ->kind == TP_ARRAY) {
+            errorf("cannot assign to array.");
         }
+        gen_store(node->lhs->typ, "rdi", "edi", "di", "dil");
 
         printf("    push rdi # stack%d\n", align++);
         return;
@@ -171,27 +155,9 @@ void gen_expression(Node *node) {
         return;
     case ND_DEREF:
         gen_expression(node->lhs);
-        switch (node->typ->kind) {
-        case TP_INT:
-            printf("    pop rax # stack%d, deref \n", --align);
-            printf("    movsx rax,dword ptr [rax] # int\n");
-            printf("    push rax # stack%d\n", align++);
-            break;
-        case TP_CHAR:
-            printf("    pop rax # stack%d, deref \n", --align);
-            printf("    movsx rax,byte ptr [rax] # char\n");
-            printf("    push rax # stack%d\n", align++);
-            break;
-        case TP_PTR:
-            printf("    pop rax # stack%d, deref \n", --align);
-            printf("    mov rax,qword ptr [rax] # ptr\n");
-            printf("    push rax # stack%d\n", align++);
-            break;
-        case TP_ARRAY:
-            break;
-        default:
-            errorf("typ isn't valid.");
-        }
+        printf("    pop rax # stack%d, deref \n", --align);
+        gen_load(node->typ, "rax");
+        printf("    push rax # stack%d\n", align++);
         return;
     }
 
