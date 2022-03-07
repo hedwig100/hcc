@@ -34,17 +34,8 @@ int main() {
     ASSERT(185, param4(10, -43, 32, -100));
     ASSERT(184, param5(10, -43, 32, -100, -1));
     ASSERT(0, param6(10, -43, 32, -100, -1, 184));
-    int a;
-    a = 0;
-    {
-        int b;
-        b = 4;
-        a = a + 1;
-    }
-    ASSERT(1, a);
-    {}
-    a = 0;
-    ASSERT(1, a + 1);
+    ASSERT(1, ({int a;a = 0;{int b;b = 4;a = a + 1;}a; }));
+    ASSERT(1, ({{}int a;a = 0;a + 1; }));
     ok();
     return 0;
 }
