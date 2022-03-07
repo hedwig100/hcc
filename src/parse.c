@@ -388,13 +388,23 @@ Node *stmt() {
     return node;
 }
 
+// expr = type_declare ident type_array
+//        | cmp_stmt
+//        | assign
 Node *expr() {
     Type *typ = type_declare();
+    Node *node;
+
     if (typ) {
         Token *tok = expect_ident();
         typ        = type_array(typ);
         Node *node = new_node_lvar(tok, typ);
         infof("finished until 'typ ident'(local variable declaration).");
+        return node;
+    } else if (consume("{")) { // statement-expression
+        enter_scope();
+        node = cmp_stmt();
+        out_scope();
         return node;
     }
     return assign();
@@ -543,6 +553,14 @@ Node *primary() {
     if (consume("(")) {
         node = expr();
         expect(")");
+        if (node->kind == ND_BLOCK) { // statement expression
+            Type *typ;
+            for (Node *nd = node->block; nd; nd = nd->next) {
+                typ = nd->typ;
+            }
+            node = new_node(ND_STMTEXPR, node, NULL, typ);
+            return node;
+        }
         return node;
     }
 

@@ -162,7 +162,6 @@ Func *find_func(Node *node) {
 LVar *find_lvar(Token *tok) {
     for (Scope *scp = scopes; scp; scp = scp->before) {
         for (LVar *var = scp->lvar; var; var = var->next) {
-            infof(to_str(var->name, var->len));
             if (var->len == tok->len && !memcmp(tok->str, var->name, var->len)) {
                 return var;
             }

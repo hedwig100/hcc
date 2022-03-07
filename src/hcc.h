@@ -158,6 +158,7 @@ typedef enum {
     ND_FOR,      // "for"
     ND_ADDR,     // &
     ND_DEREF,    // *
+    ND_STMTEXPR, // "({" block "})"
 } NodeKind;
 
 // node

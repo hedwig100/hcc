@@ -176,5 +176,8 @@ assertlink 26 test5
 assert 0 "int main() {int a;a=0;{int a;a=3;a=a+1;}return a;}"
 assert 4 "int a;int main() {a=0;int a;a=4;{int a;a=6;}return a;}"
 assert 0 "int main() {int i;i = 0;int ans;ans = 0;for (i=0;i<10;i=i+1){int ans;ans = 4;ans = ans+1;}return ans;}"
+assert 0 "int main() {return ({int i;i = 0;i;});}"
+assert 25 "int main() {int a;a=20;int b;b = ({int a;a=10;a-5;});return b+a;}"
+assert 20 "int main() {int b;b=({int ans;ans=0;int i;for(i=0;i<5;i=i+1){ans=ans+i;} ans;});return b*2;}"
 
 echo OK 
