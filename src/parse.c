@@ -168,8 +168,8 @@ void program() {
     code[i] = NULL;
 }
 
+// cmp_stmt = stmt* "}"
 Node *cmp_stmt() {
-    expect("{");
     Node *node = calloc(1, sizeof(Node));
     node->kind = ND_BLOCK;
     Node head;
@@ -247,7 +247,8 @@ Node *func_def(Node *node) {
     if (consume(")")) {
         infof("finished until '()'.");
         node->params = NULL;
-        node->body   = cmp_stmt();
+        expect("{");
+        node->body = cmp_stmt();
         return node;
     }
 
@@ -275,7 +276,8 @@ Node *func_def(Node *node) {
 
     infof("finished until '(param)'.");
     node->params = head.next;
-    node->body   = cmp_stmt();
+    expect("{");
+    node->body = cmp_stmt();
     return node;
 }
 
@@ -331,18 +333,7 @@ Node *stmt() {
         node->then = stmt();
         return node;
     } else if (consume("{")) {
-        node       = calloc(1, sizeof(Node));
-        node->kind = ND_BLOCK;
-        Node head;
-        head.next = NULL;
-        Node *now = &head;
-        while (!consume("}")) {
-            now->next = stmt();
-            now       = now->next;
-            now->next = NULL;
-        }
-        node->block = head.next;
-        return node;
+        return cmp_stmt();
     }
 
     node = expr();
