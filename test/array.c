@@ -41,7 +41,7 @@ int main() {
     ASSERT(1, ({int a[5]; a[1]=2;a[a[1]]=4;a[a[a[1]]]=1;  a[a[1]+2]; }));
     ASSERT(3, ({int *a[5];int b;b=3;a[b]=&b; *a[b]; }));
     ASSERT(4, ({int a[2][2][2][2];a[0][0][0][0]=4;int i;i = 0;int j;j = 0; a[i][i+j][j*i][(j*1)+1-1]; }));
-    ASSERT(4, ({int a[2][2];int i;int j;i = 0;j = 0;for(i=0;i<2;i=i+1){for(j=0;j<2;j=j+1){a[i][j]=1;}} sum(a); }));
+    ASSERT(4, ({int a[2][2];int i;int j;i = 0;j = 0;for(i=0;i<2;i=i+1){for(j=0;j<2;j=j+1){a[i][j] = 1;}}sum(a); }));
     ok();
     return 0;
 }

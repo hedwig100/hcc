@@ -218,17 +218,32 @@ Type *type_declare() {
     return typ;
 }
 
+// type_size decide type size of array recursively
+int type_size(Type *typ) {
+    if (is_typ(typ, TP_ARRAY)) {
+        typ->size = type_size(typ->ptr_to) * typ->array_size;
+        return typ->size;
+    }
+    return typ->size;
+}
+
 // type_array reads '[43][43]' like token.
 Type *type_array(Type *typ) {
+    int arr_size[30]; // [] repeats at most 30
+    int i = 0;
     while (consume("[")) {
-        int array_size = expect_number();
+        arr_size[i++] = expect_number();
         expect("]");
-        Type *next       = new_type(TP_ARRAY);
-        next->ptr_to     = typ;
-        next->array_size = array_size;
-        next->size       = typ->size * array_size;
-        typ              = next;
+        Type *next   = new_type(TP_ARRAY);
+        next->ptr_to = typ;
+        typ          = next;
     }
+    Type *now = typ;
+    for (int j = 0; j < i; j++) {
+        now->array_size = arr_size[j];
+        now             = now->ptr_to;
+    }
+    type_size(typ);
     return typ;
 }
 

@@ -160,7 +160,7 @@ void gen_expression(Node *node) {
         if (is_pop) {
             printf("    pop rdi # stack%d,for 16byte alignment\n", --align);
         }
-        printf("    push rax\n");
+        printf("    push rax # stack%d\n", align++);
         return;
     case ND_ADDR:
         // &lvar is ok, &(x + y) is bad
