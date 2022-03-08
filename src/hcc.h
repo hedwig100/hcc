@@ -230,7 +230,8 @@ void add_offset(Scope *scope, int size);
 
 void program();
 Node *cmp_stmt();
-Type *type_declare();
+Type *decl_spec();
+Type *pointer(Type *typ);
 Type *type_array(Type *typ);
 Node *ext_def();
 Node *eval_const(Node *node);

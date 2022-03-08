@@ -199,9 +199,10 @@ Node *cmp_stmt() {
     return node;
 }
 
-// type_declare reads 'int **' like token.
+// decl_spec = "int"
+//           | "char"
 // if not,return NULL;
-Type *type_declare() {
+Type *decl_spec() {
     Type *typ;
     if (consume("int")) {
         typ = new_type(TP_INT);
@@ -210,7 +211,11 @@ Type *type_declare() {
     } else {
         return NULL;
     }
+    return typ;
+}
 
+// pointer = '*' *
+Type *pointer(Type *typ) {
     while (consume("*")) {
         Type *next = new_type_ptr(typ);
         typ        = next;
@@ -248,12 +253,11 @@ Type *type_array(Type *typ) {
 }
 
 Node *ext_def() {
-    Type *typ = type_declare();
+    Type *typ = decl_spec();
+    assert_at(typ, token->str, "type declaration expected.");
+    typ = pointer(typ);
     Node *node;
 
-    if (!typ) {
-        error_at(token->str, "type declaration expected.");
-    }
     Token *tok = expect_ident();
     if (consume("(")) {
         // function
@@ -480,10 +484,9 @@ Node *func_def_or_decl(Node *node) {
     head.next = NULL;
     Node *now = &head;
     while (1) {
-        Type *typ = type_declare();
-        if (!typ) {
-            error_at(token->str, "type declaration expected.");
-        }
+        Type *typ = decl_spec();
+        assert_at(typ, token->str, "type declaration expected.");
+        typ        = pointer(typ);
         Token *tok = expect_ident();
         typ        = type_array(typ);
         now->next  = new_node_lvar(tok, typ);
@@ -586,14 +589,15 @@ Node *stmt() {
     return node;
 }
 
-// expr = type_declare ident type_array
-//        | type_declare ident type_array '=' initializer
+// expr = decl_spec ident type_array
+//        | decl_spec ident type_array '=' initializer
 //        | assign
 Node *expr() {
-    Type *typ = type_declare();
+    Type *typ = decl_spec();
     Node *node;
 
     if (typ) {
+        typ        = pointer(typ);
         Token *tok = expect_ident();
         typ        = type_array(typ);
         if (consume("=")) {
