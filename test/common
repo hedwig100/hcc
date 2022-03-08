@@ -13,3 +13,7 @@ int assert(int expected, int actual, char *code) {
 int ok() {
     printf("OK\n");
 }
+
+int printp(int *a) {
+    printf("pointer: %p\n", a);
+}

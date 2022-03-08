@@ -303,6 +303,12 @@ void gen_initializer(Node *node) {
     case ND_NUM:
         printf("    .long %d\n", node->val);
         return;
+    case ND_ADDR:
+        printf("    .quad %s\n", to_str(node->lhs->name, node->lhs->len));
+        return;
+    case ND_GVAR:
+        printf("    .quad %s\n", to_str(node->name, node->len));
+        return;
     default:
         errorf("cannot initilize with not number.");
     }

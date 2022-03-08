@@ -209,6 +209,7 @@ Type *new_type(TypeKind kind);
 Type *new_type_ptr(Type *ptr_to);
 Type *can_assign(Type *typ1, Type *typ2);
 bool is_ptr(Type *typ);
+bool is_typ(Type *typ, TypeKind kind);
 Type *can_add(Type *typ1, Type *typ2);
 void register_func(Node *node);
 Func *find_func(Node *node);

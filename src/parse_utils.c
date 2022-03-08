@@ -58,6 +58,7 @@ Type *can_assign(Type *typ1, Type *typ2) {
         case TP_PTR:
             return typ1;
         case TP_ARRAY:
+            return typ1;
         default:
             error_at(token->str, "cannot assign here.");
         }
@@ -126,6 +127,10 @@ Type *can_add(Type *typ1, Type *typ2) {
 
 bool is_ptr(Type *typ) {
     return typ->kind == TP_ARRAY || typ->kind == TP_PTR;
+}
+
+bool is_typ(Type *typ, TypeKind kind) {
+    return typ->kind == kind;
 }
 
 void register_func(Node *node) {

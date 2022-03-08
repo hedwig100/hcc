@@ -270,26 +270,52 @@ Node *ext_def() {
 }
 
 // eval evaluate constant expression.
-int eval(Node *node) {
+Node *eval(Node *node) {
+    Node *lhs;
+    Node *rhs;
+
     switch (node->kind) {
     case ND_NUM:
-        return node->val;
+        return new_node_num(node->val);
     case ND_ADD:
-        return eval(node->lhs) + eval(node->rhs);
+        lhs = eval(node->lhs);
+        rhs = eval(node->rhs);
+        return new_node_num(lhs->val + rhs->val);
     case ND_SUB:
-        return eval(node->lhs) - eval(node->rhs);
+        lhs = eval(node->lhs);
+        rhs = eval(node->rhs);
+        return new_node_num(lhs->val - rhs->val);
     case ND_MUL:
-        return eval(node->lhs) * eval(node->rhs);
+        lhs = eval(node->lhs);
+        rhs = eval(node->rhs);
+        return new_node_num(lhs->val * rhs->val);
     case ND_DIV:
-        return eval(node->lhs) / eval(node->rhs);
+        lhs = eval(node->lhs);
+        rhs = eval(node->rhs);
+        return new_node_num(lhs->val / rhs->val);
     case ND_EQ:
-        return eval(node->lhs) == eval(node->rhs);
+        lhs = eval(node->lhs);
+        rhs = eval(node->rhs);
+        return new_node_num(lhs->val == rhs->val);
     case ND_NEQ:
-        return eval(node->lhs) != eval(node->rhs);
+        lhs = eval(node->lhs);
+        rhs = eval(node->rhs);
+        return new_node_num(lhs->val != rhs->val);
     case ND_LT:
-        return eval(node->lhs) < eval(node->rhs);
+        lhs = eval(node->lhs);
+        rhs = eval(node->rhs);
+        return new_node_num(lhs->val < rhs->val);
     case ND_LEQ:
-        return eval(node->lhs) <= eval(node->rhs);
+        lhs = eval(node->lhs);
+        rhs = eval(node->rhs);
+        return new_node_num(lhs->val <= rhs->val);
+    case ND_ADDR:
+        return node;
+    case ND_GVAR:
+        if (is_typ(node->typ, TP_ARRAY)) {
+            return node;
+        }
+        error_at(token->str, "cannot evaluate here.");
     default:
         error_at(token->str, "cannot evaluate here.");
     }
@@ -297,7 +323,7 @@ int eval(Node *node) {
 
 Node *initializer() {
     Node *node = expr();
-    return new_node_num(eval(node));
+    return eval(node);
 }
 
 Node *func_def_or_decl(Node *node) {

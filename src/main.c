@@ -35,5 +35,6 @@ int main(int argc, char **argv) {
     // generate code
     infof("try to generate assembly...");
     gen_program();
+    infof("DONE!");
     return 0;
 }
