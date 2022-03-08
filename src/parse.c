@@ -234,13 +234,15 @@ Type *type_array(Type *typ) {
 
 Node *ext_def() {
     Type *typ = type_declare();
+    Node *node;
+
     if (!typ) {
         error_at(token->str, "type declaration expected.");
     }
     Token *tok = expect_ident();
     if (consume("(")) {
         // function
-        Node *node   = calloc(1, sizeof(Node));
+        node         = calloc(1, sizeof(Node));
         node->name   = tok->str;
         node->len    = tok->len;
         node->typ    = typ;
@@ -249,10 +251,53 @@ Node *ext_def() {
     } else {
         // global variable
         typ = type_array(typ);
-        expect(";");
-        Node *node = new_node_gvar(tok, typ);
-        return node;
+        if (consume("=")) { // initiliazer
+            Node *lhs = new_node_gvar(tok, typ);
+            Node *rhs = initializer();
+            expect(";");
+            Type *typ = can_assign(lhs->typ, rhs->typ);
+            if (!typ) {
+                error_at(token->str, "cannot initialize with this value.");
+            }
+            node = new_node(ND_INIT, lhs, rhs, typ);
+            return node;
+        } else { // declaration
+            expect(";");
+            node = new_node_gvar(tok, typ);
+            return node;
+        }
     }
+}
+
+// eval evaluate constant expression.
+int eval(Node *node) {
+    switch (node->kind) {
+    case ND_NUM:
+        return node->val;
+    case ND_ADD:
+        return eval(node->lhs) + eval(node->rhs);
+    case ND_SUB:
+        return eval(node->lhs) - eval(node->rhs);
+    case ND_MUL:
+        return eval(node->lhs) * eval(node->rhs);
+    case ND_DIV:
+        return eval(node->lhs) / eval(node->rhs);
+    case ND_EQ:
+        return eval(node->lhs) == eval(node->rhs);
+    case ND_NEQ:
+        return eval(node->lhs) != eval(node->rhs);
+    case ND_LT:
+        return eval(node->lhs) < eval(node->rhs);
+    case ND_LEQ:
+        return eval(node->lhs) <= eval(node->rhs);
+    default:
+        error_at(token->str, "cannot evaluate here.");
+    }
+}
+
+Node *initializer() {
+    Node *node = expr();
+    return new_node_num(eval(node));
 }
 
 Node *func_def_or_decl(Node *node) {

@@ -298,6 +298,16 @@ void gen_statement(Node *node) {
     }
 }
 
+void gen_initializer(Node *node) {
+    switch (node->kind) {
+    case ND_NUM:
+        printf("    .long %d\n", node->val);
+        return;
+    default:
+        errorf("cannot initilize with not number.");
+    }
+}
+
 void gen_ext_def(Node *node) {
     switch (node->kind) {
     case ND_FUNCDEF:
@@ -315,8 +325,12 @@ void gen_ext_def(Node *node) {
         printf("%s:\n", to_str(node->name, node->len));
         printf("    .zero %d\n", node->typ->size);
         return;
+    case ND_INIT:
+        printf("%s:\n", to_str(node->lhs->name, node->lhs->len));
+        gen_initializer(node->rhs);
+        return;
     default:
-        errorf("not func def");
+        errorf("not external definition");
         return;
     }
 }
@@ -327,7 +341,7 @@ void gen_program() {
     // data section
     int start = 1;
     for (int i = 0; code[i]; i++) {
-        if (code[i]->kind == ND_GVAR) {
+        if (code[i]->kind == ND_GVAR || code[i]->kind == ND_INIT) {
             if (start) {
                 printf(".data\n");
                 start = 0;

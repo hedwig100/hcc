@@ -159,6 +159,7 @@ typedef enum {
     ND_ADDR,     // &
     ND_DEREF,    // *
     ND_STMTEXPR, // "({" block "})"
+    ND_INIT,     // initializer
 } NodeKind;
 
 // node
@@ -227,6 +228,7 @@ Node *cmp_stmt();
 Type *type_declare();
 Type *type_array(Type *typ);
 Node *ext_def();
+Node *initializer();
 Node *func_def_or_decl(Node *node);
 Node *stmt();
 Node *expr();
