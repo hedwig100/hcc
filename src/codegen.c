@@ -309,6 +309,24 @@ void gen_initializer(Node *node) {
     case ND_GVAR:
         printf("    .quad %s\n", to_str(node->name, node->len));
         return;
+    case ND_ADD:
+        // lhs must be ND_ADDR or ND_GVAR,rhs must be ND_NUM
+        if (node->lhs->kind == ND_ADDR)
+            printf("    .quad %s+%d\n", to_str(node->lhs->lhs->name, node->lhs->lhs->len), node->rhs->val);
+        else if (node->lhs->kind == ND_GVAR)
+            printf("    .quad %s+%d\n", to_str(node->lhs->name, node->lhs->len), node->rhs->val);
+        else
+            errorf("cannot eval this value");
+        return;
+    case ND_SUB:
+        // lhs must be ND_ADDR or ND_GVAR,rhs must be ND_NUM
+        if (node->lhs->kind == ND_ADDR)
+            printf("    .quad %s-%d\n", to_str(node->lhs->lhs->name, node->lhs->lhs->len), node->rhs->val);
+        else if (node->lhs->kind == ND_GVAR)
+            printf("    .quad %s-%d\n", to_str(node->lhs->name, node->lhs->len), node->rhs->val);
+        else
+            errorf("cannot eval this value");
+        return;
     default:
         errorf("cannot initilize with not number.");
     }

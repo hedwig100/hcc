@@ -270,6 +270,8 @@ Node *ext_def() {
 }
 
 // eval evaluate constant expression.
+// ok-example) 4,(2+3)-2,(1*3)*3,&x+2,x-43
+// ng-example) &x*2,(&x + 1) - 1
 Node *eval(Node *node) {
     Node *lhs;
     Node *rhs;
@@ -280,34 +282,75 @@ Node *eval(Node *node) {
     case ND_ADD:
         lhs = eval(node->lhs);
         rhs = eval(node->rhs);
+        if (lhs->kind == ND_ADDR || lhs->kind == ND_GVAR) {
+            if (rhs->kind != ND_NUM) {
+                error_at(token->str, "cannot eval this value.");
+            }
+            return new_node(ND_ADD, lhs, rhs, lhs->typ);
+        } else if (rhs->kind == ND_ADDR || rhs->kind == ND_GVAR) {
+            if (lhs->kind != ND_NUM) {
+                error_at(token->str, "cannot eval this value.");
+            }
+            return new_node(ND_ADD, rhs, lhs, rhs->typ);
+        } else if (lhs->kind != ND_NUM || rhs->kind != ND_NUM) {
+            error_at(token->str, "cannot eval this value.");
+        }
         return new_node_num(lhs->val + rhs->val);
     case ND_SUB:
         lhs = eval(node->lhs);
         rhs = eval(node->rhs);
+        if (lhs->kind == ND_ADDR || lhs->kind == ND_GVAR) {
+            if (rhs->kind != ND_NUM) {
+                error_at(token->str, "cannot eval this value.");
+            }
+            return new_node(ND_SUB, lhs, rhs, lhs->typ);
+        } else if (rhs->kind == ND_ADDR || rhs->kind == ND_GVAR) {
+            error_at(token->str, "cannot eval this value.");
+        } else if (lhs->kind != ND_NUM || rhs->kind != ND_NUM) {
+            error_at(token->str, "cannot eval this value.");
+        }
         return new_node_num(lhs->val - rhs->val);
     case ND_MUL:
         lhs = eval(node->lhs);
         rhs = eval(node->rhs);
+        if (lhs->kind != ND_NUM || rhs->kind != ND_NUM) {
+            error_at(token->str, "cannot eval this value.");
+        }
         return new_node_num(lhs->val * rhs->val);
     case ND_DIV:
         lhs = eval(node->lhs);
         rhs = eval(node->rhs);
+        if (lhs->kind != ND_NUM || rhs->kind != ND_NUM) {
+            error_at(token->str, "cannot eval this value.");
+        }
         return new_node_num(lhs->val / rhs->val);
     case ND_EQ:
         lhs = eval(node->lhs);
         rhs = eval(node->rhs);
+        if (lhs->kind != ND_NUM || rhs->kind != ND_NUM) {
+            error_at(token->str, "cannot eval this value.");
+        }
         return new_node_num(lhs->val == rhs->val);
     case ND_NEQ:
         lhs = eval(node->lhs);
         rhs = eval(node->rhs);
+        if (lhs->kind != ND_NUM || rhs->kind != ND_NUM) {
+            error_at(token->str, "cannot eval this value.");
+        }
         return new_node_num(lhs->val != rhs->val);
     case ND_LT:
         lhs = eval(node->lhs);
         rhs = eval(node->rhs);
+        if (lhs->kind != ND_NUM || rhs->kind != ND_NUM) {
+            error_at(token->str, "cannot eval this value.");
+        }
         return new_node_num(lhs->val < rhs->val);
     case ND_LEQ:
         lhs = eval(node->lhs);
         rhs = eval(node->rhs);
+        if (lhs->kind != ND_NUM || rhs->kind != ND_NUM) {
+            error_at(token->str, "cannot eval this value.");
+        }
         return new_node_num(lhs->val <= rhs->val);
     case ND_ADDR:
         return node;
@@ -315,9 +358,9 @@ Node *eval(Node *node) {
         if (is_typ(node->typ, TP_ARRAY)) {
             return node;
         }
-        error_at(token->str, "cannot evaluate here.");
+        error_at(token->str, "cannot evaluate this value.");
     default:
-        error_at(token->str, "cannot evaluate here.");
+        error_at(token->str, "cannot evaluate this value.");
     }
 }
 

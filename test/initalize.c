@@ -6,6 +6,8 @@ int c  = ((0 == 1) > 5) + 54;
 int *d = &a;
 char e[10];
 char *f = e;
+int g[10];
+int *h = g + 4;
 
 int main() {
     ASSERT(-32, a);
@@ -18,6 +20,7 @@ int main() {
     a = 10;
     ASSERT(10, *d);
     ASSERT(1, f == e);
+    ASSERT(10, ({ g[4] = 10; *h; }));
     ok();
     return 0;
 }
