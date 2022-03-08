@@ -270,6 +270,7 @@ void gen_program();
 // log for debug
 int lprintf(FILE *fp, int level, const char *file, int line, const char *func,
             const char *fmt, ...);
+void assert_at(bool cond, char *loc, char *fmt, ...);
 void error_at(char *loc, char *fmt, ...);
 char *to_str(char *s, int len);
 void input_from_stdin();
