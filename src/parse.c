@@ -223,6 +223,57 @@ Type *pointer(Type *typ) {
     return typ;
 }
 
+// declarator = pointer direct_decl
+Node *declarator(Type *typ, bool is_global) {
+    typ = pointer(typ);
+    return direct_decl(typ, is_global);
+}
+
+// direct_decl = ident
+//             | ident ( '[' num ']')*
+//             | ident ( '(' param_list ')')*
+Node *direct_decl(Type *typ, bool is_global) {
+    Node *node;
+    Token *tok = expect_ident();
+    typ        = type_array(typ);
+
+    if (consume("(")) {
+        // function definition or declaration
+        assert_at(is_global, token->str, "function definition of declaration can't exist in function.");
+        node         = calloc(1, sizeof(Node));
+        node->name   = tok->str;
+        node->len    = tok->len;
+        node->typ    = typ;
+        node         = func_def_or_decl(node);
+        node->offset = scopes->offset;
+        return node;
+    } else {
+        // variable
+        if (consume("=")) { // initiliazer
+            Node *lhs;
+            Node *rhs;
+            if (is_global) {
+                lhs = new_node_gvar(tok, typ);
+                rhs = initializer(true);
+            } else {
+                lhs = new_node_lvar(tok, typ);
+                rhs = initializer(false);
+                return eval(lhs, rhs);
+            }
+            // array assignment is only possible during initialization.
+            if (is_typ(lhs->typ, TP_ARRAY) && is_typ(rhs->typ, TP_ARRAY)) {
+                return new_node(ND_INIT, lhs, rhs, lhs->typ);
+            }
+            Type *typ = can_assign(lhs->typ, rhs->typ);
+            assert_at(typ, token->str, "cannot initialize with this value.");
+            node = new_node(ND_INIT, lhs, rhs, typ);
+            return node;
+        } else { // declaration
+            return is_global ? new_node_gvar(tok, typ) : new_node_lvar(tok, typ);
+        }
+    }
+}
+
 // type_size decide type size of array recursively
 int type_size(Type *typ) {
     if (is_typ(typ, TP_ARRAY)) {
@@ -255,41 +306,10 @@ Type *type_array(Type *typ) {
 Node *ext_def() {
     Type *typ = decl_spec();
     assert_at(typ, token->str, "type declaration expected.");
-    typ = pointer(typ);
-    Node *node;
-
-    Token *tok = expect_ident();
-    if (consume("(")) {
-        // function
-        node         = calloc(1, sizeof(Node));
-        node->name   = tok->str;
-        node->len    = tok->len;
-        node->typ    = typ;
-        node         = func_def_or_decl(node);
-        node->offset = scopes->offset;
-    } else {
-        // global variable
-        typ = type_array(typ);
-        if (consume("=")) { // initiliazer
-            Node *lhs = new_node_gvar(tok, typ);
-            Node *rhs = initializer(true);
-            expect(";");
-            // array assignment is only possible during initialization.
-            if (is_typ(lhs->typ, TP_ARRAY) && is_typ(rhs->typ, TP_ARRAY)) {
-                return new_node(ND_INIT, lhs, rhs, lhs->typ);
-            }
-            Type *typ = can_assign(lhs->typ, rhs->typ);
-            if (!typ) {
-                error_at(token->str, "cannot initialize with this value.");
-            }
-            node = new_node(ND_INIT, lhs, rhs, typ);
-            return node;
-        } else { // declaration
-            expect(";");
-            node = new_node_gvar(tok, typ);
-            return node;
-        }
-    }
+    Node *node = declarator(typ, true);
+    if (node->kind != ND_FUNCDEF)
+        expect(";");
+    return node;
 }
 
 // eval_const evaluate constant expression.
@@ -473,7 +493,6 @@ Node *func_def_or_decl(Node *node) {
         } else {
             // function declaration
             node->kind = ND_FUNCDECL;
-            expect(";");
             register_func(node);
             out_scope();
             return node;
@@ -486,11 +505,8 @@ Node *func_def_or_decl(Node *node) {
     while (1) {
         Type *typ = decl_spec();
         assert_at(typ, token->str, "type declaration expected.");
-        typ        = pointer(typ);
-        Token *tok = expect_ident();
-        typ        = type_array(typ);
-        now->next  = new_node_lvar(tok, typ);
-        now        = now->next;
+        now->next = declarator(typ, false);
+        now       = now->next;
         if (now->typ->kind == TP_ARRAY) {
             now->typ->kind = TP_PTR;
         }
@@ -513,7 +529,6 @@ Node *func_def_or_decl(Node *node) {
     } else {
         // function declaration
         node->kind = ND_FUNCDECL;
-        expect(";");
         register_func(node);
         out_scope();
         return node;
@@ -597,17 +612,8 @@ Node *expr() {
     Node *node;
 
     if (typ) {
-        typ        = pointer(typ);
-        Token *tok = expect_ident();
-        typ        = type_array(typ);
-        if (consume("=")) {
-            Node *lhs = new_node_lvar(tok, typ);
-            Node *rhs = initializer(false);
-            return eval(lhs, rhs);
-        } else {
-            node = new_node_lvar(tok, typ);
-            return node;
-        }
+        typ = pointer(typ);
+        return declarator(typ, false);
     }
     return assign();
 }

@@ -232,6 +232,8 @@ void program();
 Node *cmp_stmt();
 Type *decl_spec();
 Type *pointer(Type *typ);
+Node *declarator(Type *typ, bool is_global);
+Node *direct_decl(Type *typ, bool is_global);
 Type *type_array(Type *typ);
 Node *ext_def();
 Node *eval_const(Node *node);
