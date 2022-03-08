@@ -268,7 +268,7 @@ Node *ext_def() {
         typ = type_array(typ);
         if (consume("=")) { // initiliazer
             Node *lhs = new_node_gvar(tok, typ);
-            Node *rhs = initializer();
+            Node *rhs = initializer(true);
             expect(";");
             // array assignment is only possible during initialization.
             if (is_typ(lhs->typ, TP_ARRAY) && is_typ(rhs->typ, TP_ARRAY)) {
@@ -288,10 +288,10 @@ Node *ext_def() {
     }
 }
 
-// eval evaluate constant expression.
+// eval_const evaluate constant expression.
 // ok-example) 4,(2+3)-2,(1*3)*3,&x+2,x-43
 // ng-example) &x*2,(&x + 1) - 1
-Node *eval(Node *node) {
+Node *eval_const(Node *node) {
     Node *lhs;
     Node *rhs;
 
@@ -299,8 +299,8 @@ Node *eval(Node *node) {
     case ND_NUM:
         return new_node_num(node->val);
     case ND_ADD:
-        lhs = eval(node->lhs);
-        rhs = eval(node->rhs);
+        lhs = eval_const(node->lhs);
+        rhs = eval_const(node->rhs);
         if (lhs->kind == ND_ADDR || lhs->kind == ND_GVAR) {
             if (rhs->kind != ND_NUM) {
                 error_at(token->str, "cannot eval this value.");
@@ -316,8 +316,8 @@ Node *eval(Node *node) {
         }
         return new_node_num(lhs->val + rhs->val);
     case ND_SUB:
-        lhs = eval(node->lhs);
-        rhs = eval(node->rhs);
+        lhs = eval_const(node->lhs);
+        rhs = eval_const(node->rhs);
         if (lhs->kind == ND_ADDR || lhs->kind == ND_GVAR) {
             if (rhs->kind != ND_NUM) {
                 error_at(token->str, "cannot eval this value.");
@@ -330,43 +330,43 @@ Node *eval(Node *node) {
         }
         return new_node_num(lhs->val - rhs->val);
     case ND_MUL:
-        lhs = eval(node->lhs);
-        rhs = eval(node->rhs);
+        lhs = eval_const(node->lhs);
+        rhs = eval_const(node->rhs);
         if (lhs->kind != ND_NUM || rhs->kind != ND_NUM) {
             error_at(token->str, "cannot eval this value.");
         }
         return new_node_num(lhs->val * rhs->val);
     case ND_DIV:
-        lhs = eval(node->lhs);
-        rhs = eval(node->rhs);
+        lhs = eval_const(node->lhs);
+        rhs = eval_const(node->rhs);
         if (lhs->kind != ND_NUM || rhs->kind != ND_NUM) {
             error_at(token->str, "cannot eval this value.");
         }
         return new_node_num(lhs->val / rhs->val);
     case ND_EQ:
-        lhs = eval(node->lhs);
-        rhs = eval(node->rhs);
+        lhs = eval_const(node->lhs);
+        rhs = eval_const(node->rhs);
         if (lhs->kind != ND_NUM || rhs->kind != ND_NUM) {
             error_at(token->str, "cannot eval this value.");
         }
         return new_node_num(lhs->val == rhs->val);
     case ND_NEQ:
-        lhs = eval(node->lhs);
-        rhs = eval(node->rhs);
+        lhs = eval_const(node->lhs);
+        rhs = eval_const(node->rhs);
         if (lhs->kind != ND_NUM || rhs->kind != ND_NUM) {
             error_at(token->str, "cannot eval this value.");
         }
         return new_node_num(lhs->val != rhs->val);
     case ND_LT:
-        lhs = eval(node->lhs);
-        rhs = eval(node->rhs);
+        lhs = eval_const(node->lhs);
+        rhs = eval_const(node->rhs);
         if (lhs->kind != ND_NUM || rhs->kind != ND_NUM) {
             error_at(token->str, "cannot eval this value.");
         }
         return new_node_num(lhs->val < rhs->val);
     case ND_LEQ:
-        lhs = eval(node->lhs);
-        rhs = eval(node->rhs);
+        lhs = eval_const(node->lhs);
+        rhs = eval_const(node->rhs);
         if (lhs->kind != ND_NUM || rhs->kind != ND_NUM) {
             error_at(token->str, "cannot eval this value.");
         }
@@ -378,29 +378,61 @@ Node *eval(Node *node) {
             return node;
         }
         error_at(token->str, "cannot evaluate this value.");
-    case ND_INITLIST:
+    case ND_ARRAY:
         for (Node *now = node->initlist; now; now = now->next) {
-            now = eval(now);
+            now = eval_const(now);
         }
         return node;
     case ND_STR:
         node->typ         = new_type(TP_ARRAY);
-        node->typ->ptr_to = TP_CHAR;
+        node->typ->ptr_to = new_type(TP_CHAR);
         return node;
     default:
         error_at(token->str, "cannot evaluate this value.");
     }
 }
 
-// initiaizer_list =  initializer (',' initializer)*
-Node *initializer_list() {
-    Node *node = calloc(1, sizeof(Node));
-    node->kind = ND_INITLIST;
+// eval transforms
+// int x[4] = {0,1,3,3};
+// to
+// int x[4];x[0]=0;x[1]=1;x[2]=3;x[3]=3;
+Node *eval(Node *lhs, Node *rhs) {
+    Type *typ;
+    if (!is_typ(lhs->typ, TP_ARRAY) || !is_typ(rhs->typ, TP_ARRAY)) {
+        typ = can_assign(lhs->typ, rhs->typ);
+        if (!typ) {
+            error_at(token->str, "cannot assign to this value.");
+        }
+    }
+
     Node head;
-    head.next = initializer();
+    head.next  = NULL;
+    Node *node = &head;
+    int i;
+    switch (rhs->kind) {
+    case ND_ARRAY:
+        i = 0;
+        for (Node *now = rhs->initlist; now; now = now->next) {
+            Node *new  = eval(access(lhs, new_node_num(i++)), now);
+            node->next = new;
+            node       = new;
+        }
+        rhs->initlist = head.next;
+        return rhs;
+    default:
+        return new_node(ND_ASSIGN, lhs, rhs, typ);
+    }
+}
+
+// initiaizer_list =  initializer (',' initializer)*
+Node *initializer_list(bool is_constant) {
+    Node *node = calloc(1, sizeof(Node));
+    node->kind = ND_ARRAY;
+    Node head;
+    head.next = initializer(is_constant);
     Node *now = head.next;
     while (consume(",")) {
-        now->next = initializer();
+        now->next = initializer(is_constant);
         now       = now->next;
     }
     node->initlist    = head.next;
@@ -411,15 +443,15 @@ Node *initializer_list() {
 
 // initializer = expr
 //             = "{" initializer_list ','? "}"
-Node *initializer() {
+Node *initializer(bool is_constant) {
     if (consume("{")) {
-        Node *node = initializer_list();
+        Node *node = initializer_list(is_constant);
         consume(",");
         expect("}");
-        return eval(node);
+        return is_constant ? eval_const(node) : node;
     }
     Node *node = expr();
-    return eval(node);
+    return is_constant ? eval_const(node) : node;
 }
 
 Node *func_def_or_decl(Node *node) {
@@ -555,6 +587,7 @@ Node *stmt() {
 }
 
 // expr = type_declare ident type_array
+//        | type_declare ident type_array '=' initializer
 //        | assign
 Node *expr() {
     Type *typ = type_declare();
@@ -563,9 +596,14 @@ Node *expr() {
     if (typ) {
         Token *tok = expect_ident();
         typ        = type_array(typ);
-        Node *node = new_node_lvar(tok, typ);
-        infof("finished until 'typ ident'(local variable declaration).");
-        return node;
+        if (consume("=")) {
+            Node *lhs = new_node_lvar(tok, typ);
+            Node *rhs = initializer(false);
+            return eval(lhs, rhs);
+        } else {
+            node = new_node_lvar(tok, typ);
+            return node;
+        }
     }
     return assign();
 }
@@ -687,16 +725,22 @@ Node *unary() {
     return postfix();
 }
 
+// access parse ptr[expr] -> *(ptr + expr)
+Node *access(Node *ptr, Node *expr) {
+    Node *node = add_helper(ptr, expr, ND_ADD);
+    node       = new_node(ND_DEREF, node, NULL, NULL);
+    if (!is_ptr(ptr->typ)) {
+        error_at(token->str, "cannot dereference not pointer type.");
+    }
+    node->typ = ptr->typ->ptr_to;
+    return node;
+}
+
 Node *postfix() {
     Node *node = primary();
     for (;;) {
         if (consume("[")) {
-            node = add_helper(node, expr(), ND_ADD);
-            node = new_node(ND_DEREF, node, NULL, NULL);
-            if (!is_ptr(node->lhs->typ)) {
-                error_at(token->str, "cannot dereference not pointer type.");
-            }
-            node->typ = node->lhs->typ->ptr_to;
+            node = access(node, expr());
             expect("]");
             infof("finished until 'ident[ ]'(index access)");
         } else {

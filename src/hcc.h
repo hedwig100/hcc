@@ -160,7 +160,7 @@ typedef enum {
     ND_DEREF,    // *
     ND_STMTEXPR, // "({" block "})"
     ND_INIT,     // initializer
-    ND_INITLIST, // initializer list
+    ND_ARRAY,    // initializer list
 } NodeKind;
 
 // node
@@ -199,7 +199,7 @@ struct Node {
     Node *params;
     Node *body;
 
-    // ND_INITLIST
+    // ND_ARRAY
     Node *initlist;
 };
 
@@ -233,7 +233,9 @@ Node *cmp_stmt();
 Type *type_declare();
 Type *type_array(Type *typ);
 Node *ext_def();
-Node *initializer();
+Node *eval_const(Node *node);
+Node *eval(Node *lhs, Node *rhs);
+Node *initializer(bool constant);
 Node *func_def_or_decl(Node *node);
 Node *stmt();
 Node *expr();
@@ -243,6 +245,7 @@ Node *relational();
 Node *add();
 Node *mul();
 Node *unary();
+Node *access(Node *ptr, Node *expr);
 Node *postfix();
 Node *primary();
 

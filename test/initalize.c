@@ -13,6 +13,13 @@ int j[3][5]    = {{0, 1, 2}, {0, 1}};
 char str[5]    = "abcd";
 char dou[3][4] = {"abc", "de", "f"};
 
+int fib(int n) {
+    if (n <= 1) {
+        return n;
+    }
+    return fib(n - 1) + fib(n - 2);
+}
+
 int main() {
     ASSERT(-32, a);
     ASSERT(33, b);
@@ -65,6 +72,42 @@ int main() {
     ASSERT(0, dou[2][1]);
     ASSERT(0, dou[2][2]);
     ASSERT(0, dou[2][3]);
+
+    int a   = -43;
+    char b  = 2;
+    char *c = "abc";
+    int d   = a + i[1];
+    ASSERT(-43, a);
+    ASSERT(2, b);
+    ASSERT(97, c[0]);
+    ASSERT(98, c[1]);
+    ASSERT(99, c[2]);
+    ASSERT(0, c[3]);
+    ASSERT(-42, d);
+
+    int e[4] = {-3, fib(10), a, (b + 5) * (-1), j[0][1]};
+    ASSERT(-3, e[0]);
+    ASSERT(55, e[1]);
+    ASSERT(-43, e[2]);
+    ASSERT(-7, e[3]);
+    ASSERT(1, e[4]);
+
+    char *f[2] = {c, "ef"};
+    ASSERT(97, f[0][0]);
+    ASSERT(98, f[0][1]);
+    ASSERT(99, f[0][2]);
+    ASSERT(0, f[0][3]);
+    ASSERT(101, f[1][0]);
+    ASSERT(102, f[1][1]);
+    ASSERT(0, f[1][2]);
+
+    int g[3][4] = {{0, 1, fib(10)}, {97, 4}, {5}};
+    ASSERT(0, g[0][0]);
+    ASSERT(1, g[0][1]);
+    ASSERT(55, g[0][2]);
+    ASSERT(97, g[1][0]);
+    ASSERT(4, g[1][1]);
+    ASSERT(5, g[2][0]);
 
     ok();
     return 0;

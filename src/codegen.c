@@ -172,6 +172,13 @@ void gen_expression(Node *node) {
         gen_load(node->typ, "rax");
         printf("    push rax # stack%d\n", align++);
         return;
+    case ND_ARRAY:
+        for (Node *now = node->initlist; now; now = now->next) {
+            gen_expression(now);
+            printf("    pop rax # stack%d\n", --align);
+        }
+        printf("    push rax # stack%d\n", align++);
+        return;
     }
 
     gen_expression(node->lhs);
@@ -329,7 +336,7 @@ void gen_initializer(Node *node, Type *typ) {
         else
             errorf("cannot eval this value");
         return;
-    case ND_INITLIST:
+    case ND_ARRAY:
         zero = typ->size;
         for (Node *now = node->initlist; now; now = now->next) {
             gen_initializer(now, typ->ptr_to);
