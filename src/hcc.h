@@ -160,6 +160,7 @@ typedef enum {
     ND_DEREF,    // *
     ND_STMTEXPR, // "({" block "})"
     ND_INIT,     // initializer
+    ND_INITLIST, // initializer list
 } NodeKind;
 
 // node
@@ -197,6 +198,9 @@ struct Node {
     // name(params),name(params) body
     Node *params;
     Node *body;
+
+    // ND_INITLIST
+    Node *initlist;
 };
 
 Node *code[100]; // AST

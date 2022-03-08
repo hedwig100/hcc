@@ -298,7 +298,9 @@ void gen_statement(Node *node) {
     }
 }
 
-void gen_initializer(Node *node) {
+void gen_initializer(Node *node, Type *typ) {
+    int zero;
+
     switch (node->kind) {
     case ND_NUM:
         printf("    .long %d\n", node->val);
@@ -327,6 +329,18 @@ void gen_initializer(Node *node) {
         else
             errorf("cannot eval this value");
         return;
+    case ND_INITLIST:
+        zero = typ->size;
+        infof("before %d\n", zero);
+        for (Node *now = node->initlist; now; now = now->next) {
+            gen_initializer(now, typ->ptr_to);
+            zero -= typ->ptr_to->size;
+        }
+        infof("after %d", zero);
+        if (zero > 0) {
+            printf("    .zero %d\n", zero);
+        }
+        return;
     default:
         errorf("cannot initilize with not number.");
     }
@@ -351,7 +365,7 @@ void gen_ext_def(Node *node) {
         return;
     case ND_INIT:
         printf("%s:\n", to_str(node->lhs->name, node->lhs->len));
-        gen_initializer(node->rhs);
+        gen_initializer(node->rhs, node->lhs->typ);
         return;
     default:
         errorf("not external definition");

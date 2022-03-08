@@ -270,6 +270,10 @@ Node *ext_def() {
             Node *lhs = new_node_gvar(tok, typ);
             Node *rhs = initializer();
             expect(";");
+            // array assignment is only possible during initialization.
+            if (is_typ(lhs->typ, TP_ARRAY) && is_typ(rhs->typ, TP_ARRAY)) {
+                return new_node(ND_INIT, lhs, rhs, lhs->typ);
+            }
             Type *typ = can_assign(lhs->typ, rhs->typ);
             if (!typ) {
                 error_at(token->str, "cannot initialize with this value.");
@@ -374,12 +378,42 @@ Node *eval(Node *node) {
             return node;
         }
         error_at(token->str, "cannot evaluate this value.");
+    case ND_INITLIST:
+        for (Node *now = node->initlist; now; now = now->next) {
+            now = eval(now);
+        }
+        return node;
     default:
         error_at(token->str, "cannot evaluate this value.");
     }
 }
 
+// initiaizer_list =  initializer (',' initializer)*
+Node *initializer_list() {
+    Node *node = calloc(1, sizeof(Node));
+    node->kind = ND_INITLIST;
+    Node head;
+    head.next = initializer();
+    Node *now = head.next;
+    while (consume(",")) {
+        now->next = initializer();
+        now       = now->next;
+    }
+    node->initlist    = head.next;
+    node->typ         = new_type(TP_ARRAY);
+    node->typ->ptr_to = node->initlist->typ;
+    return node;
+}
+
+// initializer = expr
+//             = "{" initializer_list ','? "}"
 Node *initializer() {
+    if (consume("{")) {
+        Node *node = initializer_list();
+        consume(",");
+        expect("}");
+        return eval(node);
+    }
     Node *node = expr();
     return eval(node);
 }

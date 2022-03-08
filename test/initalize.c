@@ -7,7 +7,9 @@ int *d = &a;
 char e[10];
 char *f = e;
 int g[10];
-int *h = g + 4;
+int *h      = g + 4;
+int i[3]    = {0, 1, 2};
+int j[3][5] = {{0, 1, 2}, {0, 1}};
 
 int main() {
     ASSERT(-32, a);
@@ -21,6 +23,27 @@ int main() {
     ASSERT(10, *d);
     ASSERT(1, f == e);
     ASSERT(10, ({ g[4] = 10; *h; }));
+    ASSERT(0, i[0]);
+    ASSERT(1, i[1]);
+    ASSERT(2, i[2]);
+
+    ASSERT(0, j[0][0]);
+    ASSERT(1, j[0][1]);
+    ASSERT(2, j[0][2]);
+    ASSERT(0, j[0][3]);
+    ASSERT(0, j[0][4]);
+
+    ASSERT(0, j[1][0]);
+    ASSERT(1, j[1][1]);
+    ASSERT(0, j[1][2]);
+    ASSERT(0, j[1][3]);
+    ASSERT(0, j[1][4]);
+
+    ASSERT(0, j[2][0]);
+    ASSERT(0, j[2][1]);
+    ASSERT(0, j[2][2]);
+    ASSERT(0, j[2][3]);
+    ASSERT(0, j[2][4]);
     ok();
     return 0;
 }
