@@ -123,9 +123,7 @@ Node *new_node_gvar(Token *tok, Type *typ) {
 
     // check if the same name global variable isn't defined
     GVar *gvar = find_gvar(tok);
-    if (gvar) {
-        error_at(token->str, "the same name global variable is defined ever.");
-    }
+    assert_at(!gvar, token->str, "the same name global variable is defined ever.");
 
     gvar       = calloc(1, sizeof(GVar));
     gvar->next = globals;
@@ -172,6 +170,7 @@ Node *new_node_str(Token *tok) {
     return node;
 }
 
+// program = ext_def*
 void program() {
     int i = 0;
     while (!at_eof()) {
@@ -231,7 +230,7 @@ Node *declarator(Type *typ, bool is_global) {
 
 // direct_decl = ident
 //             | ident ( '[' num ']')*
-//             | ident ( '(' param_list ')')*
+//             | ident '(' func_def_or_decl
 Node *direct_decl(Type *typ, bool is_global) {
     Node *node;
     Token *tok = expect_ident();
@@ -249,28 +248,7 @@ Node *direct_decl(Type *typ, bool is_global) {
         return node;
     } else {
         // variable
-        if (consume("=")) { // initiliazer
-            Node *lhs;
-            Node *rhs;
-            if (is_global) {
-                lhs = new_node_gvar(tok, typ);
-                rhs = initializer(true);
-            } else {
-                lhs = new_node_lvar(tok, typ);
-                rhs = initializer(false);
-                return eval(lhs, rhs);
-            }
-            // array assignment is only possible during initialization.
-            if (is_typ(lhs->typ, TP_ARRAY) && is_typ(rhs->typ, TP_ARRAY)) {
-                return new_node(ND_INIT, lhs, rhs, lhs->typ);
-            }
-            Type *typ = can_assign(lhs->typ, rhs->typ);
-            assert_at(typ, token->str, "cannot initialize with this value.");
-            node = new_node(ND_INIT, lhs, rhs, typ);
-            return node;
-        } else { // declaration
-            return is_global ? new_node_gvar(tok, typ) : new_node_lvar(tok, typ);
-        }
+        return is_global ? new_node_gvar(tok, typ) : new_node_lvar(tok, typ);
     }
 }
 
@@ -303,10 +281,26 @@ Type *type_array(Type *typ) {
     return typ;
 }
 
+// ext_def = decl_spec declarator
+//         | decl_spec declarator = initializer
 Node *ext_def() {
     Type *typ = decl_spec();
     assert_at(typ, token->str, "type declaration expected.");
     Node *node = declarator(typ, true);
+
+    if (node->kind == ND_GVAR && consume("=")) { // initiliazer
+        Node *rhs = initializer(true);
+        expect(";");
+        // array assignment is only possible during initialization.
+        if (is_typ(node->typ, TP_ARRAY) && is_typ(rhs->typ, TP_ARRAY)) {
+            return new_node(ND_INIT, node, rhs, node->typ);
+        } else {
+            Type *typ = can_assign(node->typ, rhs->typ);
+            assert_at(typ, token->str, "cannot initialize with this value.");
+            return new_node(ND_INIT, node, rhs, typ);
+        }
+    }
+
     if (node->kind != ND_FUNCDEF)
         expect(";");
     return node;
@@ -478,6 +472,8 @@ Node *initializer(bool is_constant) {
     return is_constant ? eval_const(node) : node;
 }
 
+// func_def_or_decl = ( decl_spec declarator ',' )* ')'
+//                  = ( decl_spec declarator ',' )* ')' '{' cmp_stmt
 Node *func_def_or_decl(Node *node) {
     enter_scope();
     if (consume(")")) {
@@ -535,6 +531,12 @@ Node *func_def_or_decl(Node *node) {
     }
 }
 
+// stmt = "if" '(' expr ')' stmt ( "else" stmt )?
+//      | "return" expr ';'
+//      | "while" '(' expr ')' stmt
+//      | "for" '(' expr? ';' expr? ';' expr; ')' stmt
+//      | '{' cmp_stmt
+//      | expr ';'
 Node *stmt() {
     Node *node;
 
@@ -604,20 +606,25 @@ Node *stmt() {
     return node;
 }
 
-// expr = decl_spec ident type_array
-//        | decl_spec ident type_array '=' initializer
-//        | assign
+// expr = decl_spec declarator
+//      | decl_spec declarator '=' initializer
+//      | assign
 Node *expr() {
     Type *typ = decl_spec();
     Node *node;
 
     if (typ) {
-        typ = pointer(typ);
-        return declarator(typ, false);
+        node = declarator(typ, false);
+        if (consume("=")) { // initiliazer
+            return eval(node, initializer(false));
+        }
+        return node;
     }
     return assign();
 }
 
+// assign = equality
+//        | equality '=' assign
 Node *assign() {
     Node *node = equality();
     if (consume("=")) {
@@ -628,6 +635,7 @@ Node *assign() {
     return node;
 }
 
+// equality = relational ( "==" relational | "!=" relational )*
 Node *equality() {
     Node *node = relational();
 
@@ -642,6 +650,7 @@ Node *equality() {
     }
 }
 
+// relational = add ( '<' add | "<=" add | '>' add | ">=" add)*
 Node *relational() {
     Node *node = add();
 
@@ -675,6 +684,7 @@ Node *add_helper(Node *lhs, Node *rhs, NodeKind kind) {
     return node;
 }
 
+// add = mul ( '+' mul | '-' mul)*
 Node *add() {
     Node *node = mul();
 
@@ -689,6 +699,7 @@ Node *add() {
     }
 }
 
+// mul = unary ( '*' unary | '/' unary )*
 Node *mul() {
     Node *node = unary();
 
@@ -705,6 +716,12 @@ Node *mul() {
     }
 }
 
+// unary = "sizeof" unary
+//       | '&' unary
+//       | '*' unary
+//       | '+' postfix
+//       | '-' postfix
+//       | postfix
 Node *unary() {
     if (consume("sizeof")) {
         Node *node = unary();
@@ -746,6 +763,7 @@ Node *access(Node *ptr, Node *expr) {
     return node;
 }
 
+// postfix = primary ( '[' expr ']' )*
 Node *postfix() {
     Node *node = primary();
     for (;;) {
@@ -759,6 +777,12 @@ Node *postfix() {
     }
 }
 
+// primary = "({" cmp_stmt ')'
+//         | '(' expr ')'
+//         | ident
+//         | ident '(' ( expr ',' )* ')'
+//         | string
+//         | num
 Node *primary() {
     Node *node;
     Token *tok;
