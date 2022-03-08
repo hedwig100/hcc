@@ -331,14 +331,18 @@ void gen_initializer(Node *node, Type *typ) {
         return;
     case ND_INITLIST:
         zero = typ->size;
-        infof("before %d\n", zero);
         for (Node *now = node->initlist; now; now = now->next) {
             gen_initializer(now, typ->ptr_to);
             zero -= typ->ptr_to->size;
         }
-        infof("after %d", zero);
         if (zero > 0) {
             printf("    .zero %d\n", zero);
+        }
+        return;
+    case ND_STR:
+        printf("    .ascii %s\n", to_str(node->name, node->len));
+        if (typ->size > node->len - 2) { // node->len = size("str")
+            printf("    .zero %d\n", typ->size - node->len + 2);
         }
         return;
     default:

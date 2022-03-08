@@ -7,9 +7,11 @@ int *d = &a;
 char e[10];
 char *f = e;
 int g[10];
-int *h      = g + 4;
-int i[3]    = {0, 1, 2};
-int j[3][5] = {{0, 1, 2}, {0, 1}};
+int *h         = g + 4;
+int i[3]       = {0, 1, 2};
+int j[3][5]    = {{0, 1, 2}, {0, 1}};
+char str[5]    = "abcd";
+char dou[3][4] = {"abc", "de", "f"};
 
 int main() {
     ASSERT(-32, a);
@@ -44,6 +46,26 @@ int main() {
     ASSERT(0, j[2][2]);
     ASSERT(0, j[2][3]);
     ASSERT(0, j[2][4]);
+
+    ASSERT(97, str[0]);
+    ASSERT(98, str[1]);
+    ASSERT(99, str[2]);
+    ASSERT(100, str[3]);
+    ASSERT(0, str[4]);
+
+    ASSERT(97, dou[0][0]);
+    ASSERT(98, dou[0][1]);
+    ASSERT(99, dou[0][2]);
+    ASSERT(0, dou[0][3]);
+    ASSERT(100, dou[1][0]);
+    ASSERT(101, dou[1][1]);
+    ASSERT(0, dou[1][2]);
+    ASSERT(0, dou[1][3]);
+    ASSERT(102, dou[2][0]);
+    ASSERT(0, dou[2][1]);
+    ASSERT(0, dou[2][2]);
+    ASSERT(0, dou[2][3]);
+
     ok();
     return 0;
 }

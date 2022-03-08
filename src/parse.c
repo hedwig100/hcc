@@ -383,6 +383,10 @@ Node *eval(Node *node) {
             now = eval(now);
         }
         return node;
+    case ND_STR:
+        node->typ         = new_type(TP_ARRAY);
+        node->typ->ptr_to = TP_CHAR;
+        return node;
     default:
         error_at(token->str, "cannot evaluate this value.");
     }
