@@ -347,9 +347,13 @@ void gen_initializer(Node *node, Type *typ) {
         }
         return;
     case ND_STR:
-        printf("    .ascii %s\n", to_str(node->name, node->len));
-        if (typ->size > node->len - 2) { // node->len = size("str")
-            printf("    .zero %d\n", typ->size - node->len + 2);
+        if (is_typ(typ, TP_PTR)) {
+            printf("    .quad .LC%d\n", node->id);
+        } else if (is_typ(typ, TP_ARRAY)) {
+            printf("    .ascii %s\n", to_str(node->name, node->len));
+            if (typ->size > node->len - 2) { // node->len = size("str")
+                printf("    .zero %d\n", typ->size - node->len + 2);
+            }
         }
         return;
     default:

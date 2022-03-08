@@ -12,6 +12,7 @@ int i[3]       = {0, 1, 2};
 int j[3][5]    = {{0, 1, 2}, {0, 1}};
 char str[5]    = "abcd";
 char dou[3][4] = {"abc", "de", "f"};
+char *fae      = "abcd";
 
 int fib(int n) {
     if (n <= 1) {
@@ -108,6 +109,12 @@ int main() {
     ASSERT(97, g[1][0]);
     ASSERT(4, g[1][1]);
     ASSERT(5, g[2][0]);
+
+    ASSERT(97, fae[0]);
+    ASSERT(98, fae[1]);
+    ASSERT(99, fae[2]);
+    ASSERT(100, fae[3]);
+    ASSERT(0, fae[4]);
 
     ok();
     return 0;
