@@ -33,6 +33,8 @@ Type *new_type_ptr(Type *ptr_to) {
 }
 
 int byte_align(Type *typ) {
+    int aligment;
+
     switch (typ->kind) {
     case TP_INT:
         return 4;
@@ -43,6 +45,11 @@ int byte_align(Type *typ) {
     case TP_ARRAY:
         return byte_align(typ->ptr_to);
     case TP_STRUCT:
+        aligment = 0;
+        for (Type *now = typ->mem; now; now = now->next) {
+            aligment = max(aligment, byte_align(now)); // actually lcm but max is enough
+        }
+        return aligment;
     default:
         errorf("type isn't valid.");
     }
@@ -264,9 +271,12 @@ void out_scope() {
     scopes                 = scopes->before;
 }
 
+int calc_aligment_offset(int min_offset, int alignment) {
+    return (min_offset + alignment - 1) / alignment * alignment;
+}
+
 void add_offset(Scope *scope, int size, int alignment) {
-    int min_offset      = scope->offset + size;
-    int offset          = (min_offset + alignment - 1) / alignment * alignment;
+    int offset          = calc_aligment_offset(scope->offset + size, alignment);
     scope->offset       = offset;
     scope->lvar->offset = offset;
 }

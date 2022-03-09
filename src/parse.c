@@ -201,16 +201,20 @@ Type *new_type_strct(Token *tok, Member *mem) {
     typ->kind = TP_STRUCT;
 
     Type head;
-    head.next = NULL;
-    Type *cur = &head;
-    int size  = 0;
+    head.next  = NULL;
+    Type *cur  = &head;
+    int offset = 0;
     for (Member *now = mem; now; now = now->next) {
         cur->next = now->typ;
         cur       = cur->next;
-        size += cur->size;
+
+        offset      = calc_aligment_offset(offset + cur->size, byte_align(cur));
+        now->offset = offset;
     }
-    typ->mem  = head.next;
-    typ->size = size;
+
+    typ->mem    = head.next;
+    typ->size   = offset;
+    strct->size = offset;
     return typ;
 }
 

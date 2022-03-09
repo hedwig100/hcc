@@ -8,6 +8,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#define max(a, b) ((a) > (b) ? (a) : (b));
 
 char *user_input;
 char *filename;
@@ -145,6 +146,7 @@ struct Member {
     char *name;
     int len;
     Type *typ;
+    int offset;
 };
 
 // Struct
@@ -155,6 +157,7 @@ struct Struct {
     char *name;
     int len;
     Member *mem;
+    int size;
 };
 
 Struct *strcts;
@@ -263,6 +266,7 @@ GVar *find_gvar(Token *tok);
 
 void enter_scope();
 void out_scope();
+int calc_aligment_offset(int min_offset, int alignment);
 void add_offset(Scope *scope, int size, int alignment);
 
 Node *eval_const(Node *node);
