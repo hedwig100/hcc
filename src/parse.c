@@ -11,6 +11,20 @@ bool consume(char *op) {
     return true;
 }
 
+// lookahead read a token and return true if next token is expected kind of token,
+// otherwise,return false. THIS FUNCTION DOESN'T CONSUME token.
+bool lookahead(char *op1, char *op2) {
+    if (token->kind != TK_RESERVED || token->len != strlen(op1) ||
+        memcmp(token->str, op1, token->len)) {
+        return false;
+    }
+    if (token->next->kind != TK_RESERVED || token->next->len != strlen(op2) ||
+        memcmp(token->next->str, op2, token->next->len)) {
+        return false;
+    }
+    return true;
+}
+
 // consume_ident read a token and return the token if next token is identifier,
 // otherwise return NULL
 Token *consume_ident() {
@@ -629,6 +643,7 @@ Node *mul() {
 }
 
 // unary = "sizeof" unary
+//       | "sizeof" decl_spec
 //       | '&' unary
 //       | '*' unary
 //       | '+' postfix
@@ -636,6 +651,13 @@ Node *mul() {
 //       | postfix
 Node *unary() {
     if (consume("sizeof")) {
+        if (lookahead("(", "int") || lookahead("(", "char") || lookahead("(", "struct")) {
+            expect("(");
+            Type *typ = decl_spec();
+            expect(")");
+            assert_at(typ, token->str, "must be type?");
+            return new_node_num(typ->size);
+        }
         Node *node = unary();
         return new_node_num(node->typ->size);
     }
@@ -724,6 +746,7 @@ Node *postfix() {
 //         | ident '(' expr ( ',' expr )* ')'
 //         | string
 //         | num
+// otherwise return NULL
 Node *primary() {
     Node *node;
     Token *tok;
