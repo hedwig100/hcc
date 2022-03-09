@@ -11,6 +11,7 @@ int counter() {
 
 // gen_lvar generates local variable address (expression)
 void gen_lvar(Node *node) {
+    if (node->kind != ND_LVAR) errorf("node kind is not ND_LVAR.");
     printf("    mov rax,rbp # local variable address\n");
     printf("    sub rax,%d\n", node->offset);
     printf("    push rax # stack%d\n", align++);
@@ -18,6 +19,7 @@ void gen_lvar(Node *node) {
 
 // gen_gvar generates global variable address (expression)
 void gen_gvar(Node *node) {
+    if (node->kind != ND_GVAR) errorf("node kind is not ND_GVAR.");
     printf("    lea rax, [%s + rip] # global variable address\n", to_str(node->name, node->len));
     printf("    push rax # stack%d\n", align++);
 }
