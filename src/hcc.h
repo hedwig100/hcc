@@ -212,34 +212,52 @@ Node *code[100]; // AST
 Type *new_type(TypeKind kind);
 Type *new_type_ptr(Type *ptr_to);
 Type *can_assign(Type *typ1, Type *typ2);
+Type *can_add(Type *typ1, Type *typ2);
 bool is_ptr(Type *typ);
 bool is_typ(Type *typ, TypeKind kind);
-Type *can_add(Type *typ1, Type *typ2);
+int type_size(Type *typ);
+
 void register_func(Node *node);
 Func *find_func(Node *node);
+
 LVar *find_lvar(Token *tok);
 bool can_defined_lvar(Token *tok);
+
 GVar *find_gvar(Token *tok);
+
 void enter_scope();
 void out_scope();
 void add_offset(Scope *scope, int size);
+
+Node *eval_const(Node *node);
+Node *eval(Node *lhs, Node *rhs);
+
+Node *add_helper(Node *lhs, Node *rhs, NodeKind kind);
+Node *access(Node *ptr, Node *expr);
 
 /*
     parse.c
 */
 
+Node *new_node(NodeKind kind, Node *lhs, Node *rhs, Type *typ);
+Node *new_node_num(int val);
+Node *new_node_lvar(Token *tok, Type *typ);
+Node *node_lvar(Token *tok);
+Node *new_node_gvar(Token *tok, Type *typ);
+Node *node_gvar(Token *tok);
+Node *new_node_str(Token *tok);
+
 void program();
-Node *cmp_stmt();
+Node *ext_def();
 Type *decl_spec();
-Type *pointer(Type *typ);
 Node *declarator(Type *typ, bool is_global);
+Type *pointer(Type *typ);
 Node *direct_decl(Type *typ, bool is_global);
 Type *type_array(Type *typ);
-Node *ext_def();
-Node *eval_const(Node *node);
-Node *eval(Node *lhs, Node *rhs);
-Node *initializer(bool constant);
 Node *func_param(Node *node);
+Node *initializer(bool constant);
+Node *initializer_list(bool is_constant);
+Node *cmp_stmt();
 Node *stmt();
 Node *expr();
 Node *assign();
@@ -248,7 +266,6 @@ Node *relational();
 Node *add();
 Node *mul();
 Node *unary();
-Node *access(Node *ptr, Node *expr);
 Node *postfix();
 Node *primary();
 
