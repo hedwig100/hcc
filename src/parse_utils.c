@@ -44,23 +44,26 @@ Type *new_type_strct(Token *tok, Member *mem) {
     // type
     Type *typ = calloc(1, sizeof(Type));
     typ->kind = TP_STRUCT;
+    typ->name = tok->str;
+    typ->len  = tok->len;
 
     Type head;
-    head.next  = NULL;
-    Type *cur  = &head;
-    int offset = 0;
+    head.next      = NULL;
+    Type *cur      = &head;
+    int min_offset = 0;
     for (Member *now = mem; now; now = now->next) {
         cur->next = now->typ;
         cur       = cur->next;
 
-        offset      = calc_aligment_offset(offset + cur->size, byte_align(cur));
+        int offset  = calc_aligment_offset(min_offset, byte_align(cur));
         cur->offset = offset;
         now->offset = offset;
+        min_offset  = offset + cur->size;
     }
 
     typ->mem    = head.next;
-    typ->size   = offset;
-    strct->size = offset;
+    typ->size   = min_offset;
+    strct->size = min_offset;
     strct->typ  = typ;
     return typ;
 }
@@ -484,11 +487,20 @@ Node *access(Node *ptr, Node *expr) {
     return node;
 }
 
+// access_member parse expr.ident -> *( expr + 'offset of ident' ) (expr must be struct)
+Node *access_member(Node *expr, int offset, Type *typ) {
+    if (!is_typ(expr->typ, TP_STRUCT)) {
+        error_at(token->str, "cannot access member when expr is not struct.");
+    }
+    Node *node = new_node(ND_ADD, expr, new_node_num(offset), NULL);
+    return new_node(ND_DEREF, node, NULL, typ);
+}
+
 // find_struct searches struct whose name is the same as tok->str
 // otherwise return NULL
-Struct *find_struct(Token *tok) {
+Struct *find_struct(char *name, int len) {
     for (Struct *strct = strcts; strct; strct = strct->next) {
-        if (tok->len == strct->len && !memcmp(tok->str, strct->name, strct->len)) {
+        if (len == strct->len && !memcmp(name, strct->name, strct->len)) {
             return strct;
         }
     }

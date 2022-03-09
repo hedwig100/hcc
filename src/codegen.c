@@ -139,7 +139,7 @@ void gen_expression(Node *node) {
         }
         return;
     case ND_LVAR:
-        gen_lvar(node);
+        gen_addr(node);
         printf("    pop rax # stack%d, get local variable\n", --align);
         gen_load(node->typ, "rax");
         printf("    push rax # stack%d\n", align++);
@@ -173,7 +173,7 @@ void gen_expression(Node *node) {
         return;
     case ND_ADDR:
         // &lvar is ok, &(x + y) is bad
-        gen_lvar(node->lhs);
+        gen_addr(node->lhs);
         return;
     case ND_DEREF:
         gen_expression(node->lhs);

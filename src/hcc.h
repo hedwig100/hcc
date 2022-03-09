@@ -68,6 +68,9 @@ struct Type {
     Type *ptr_to;
     size_t array_size;
 
+    // if kind = TP_STRUCT
+    char *name;
+    int len;
     Type *mem;
     Type *next;
     int offset;
@@ -214,7 +217,7 @@ struct Node {
 
     int val;    // if kind is ND_NUM,its number
     int id;     // if kind is ND_STR,its id
-    int offset; // if kind is ND_LVAR,ND_FUNCDEF,its offset from sp
+    int offset; // if kind is ND_LVAR,ND_FUNCDEFits offset from sp, ND_DOT its offset
     Type *typ;  // when kind is ND_LVAR,ND_FUNCDEF,ND_FUNCCALL its type(or return type)
 
     // operator's left-hand side and right-hand side
@@ -241,6 +244,9 @@ struct Node {
 
     // ND_ARRAY
     Node *initlist;
+
+    // if (ND_LVAR or ND_GVAR) and TP_STRUCT
+    Struct *st;
 };
 
 Node *code[100]; // AST
@@ -277,7 +283,8 @@ Node *eval(Node *lhs, Node *rhs);
 
 Node *add_helper(Node *lhs, Node *rhs, NodeKind kind);
 Node *access(Node *ptr, Node *expr);
-Struct *find_struct(Token *tok);
+Node *access_member(Node *expr, int offset, Type *typ);
+Struct *find_struct(char *name, int len);
 
 /*
     parse.c

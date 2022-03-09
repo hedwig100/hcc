@@ -294,7 +294,7 @@ Type *struct_spec() {
         return new_type_strct(tok, head.next);
     } else {
         // used for declaration of struct variable
-        Struct *st = find_struct(tok);
+        Struct *st = find_struct(tok->str, tok->len);
         assert_at(st, token->str, "this name struct isn't defined ever.");
         return st->typ;
     }
@@ -664,7 +664,7 @@ Node *unary() {
     return postfix();
 }
 
-// postfix = primary ( '[' expr ']' )*
+// postfix = primary ( '[' expr ']' | '.' ident )*
 Node *postfix() {
     Node *node = primary();
     for (;;) {
@@ -672,6 +672,25 @@ Node *postfix() {
             node = access(node, expr());
             expect("]");
             infof("finished until 'ident[ ]'(index access)");
+        } else if (consume(".")) {
+            // struct member access
+            // x.a -> *( x + 'offset of a' ) (struxt x generates its address)
+            Token *tok = expect_ident();
+            assert_at(is_typ(node->typ, TP_STRUCT), token->str, "cannot use \".\" for not struct type variable.");
+            Struct *st = find_struct(node->typ->name, node->typ->len);
+            assert_at(st, token->str, "this struct isn't defined ever.");
+
+            int offset = 0;
+            Type *typ  = NULL;
+            for (Member *now = st->mem; now; now = now->next) {
+                if (now->len == tok->len && !memcmp(now->name, tok->str, tok->len)) {
+                    offset = now->offset;
+                    typ    = now->typ;
+                }
+            }
+
+            assert_at(typ, token->str, "'%s' is not the member of struct '%s'", to_str(tok->str, tok->len), to_str(st->name, st->len));
+            node = access_member(node, offset, typ);
         } else {
             return node;
         }
