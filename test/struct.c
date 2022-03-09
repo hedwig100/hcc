@@ -14,6 +14,15 @@ struct B {
     char y;
 };
 
+struct C {
+    struct D {
+        int a;
+        int b;
+    } ab;
+    int c;
+    int d;
+};
+
 int main() {
     struct A x;
     x.a = 10;
@@ -58,6 +67,16 @@ int main() {
     ASSERT(4, xB.y);
     ASSERT(5, yB.x);
     ASSERT(6, yB.y);
+
+    struct C c;
+    c.ab.a = 4;
+    c.ab.b = 32;
+    c.c    = -4;
+    c.d    = 43;
+    ASSERT(4, c.ab.a);
+    ASSERT(32, c.ab.b);
+    ASSERT(-4, c.c);
+    ASSERT(43, c.d);
 
     ok();
     return 0;
