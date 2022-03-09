@@ -23,6 +23,8 @@ struct C {
     int d;
 };
 
+struct A global_a;
+
 int main() {
     struct A x;
     x.a = 10;
@@ -77,6 +79,14 @@ int main() {
     ASSERT(32, c.ab.b);
     ASSERT(-4, c.c);
     ASSERT(43, c.d);
+
+    global_a.a    = -43;
+    global_a.d    = &y;
+    *(global_a.d) = 4;
+    global_a.c[4] = -42;
+    ASSERT(-43, global_a.a);
+    ASSERT(4, y);
+    ASSERT(-42, global_a.c[4]);
 
     ok();
     return 0;
