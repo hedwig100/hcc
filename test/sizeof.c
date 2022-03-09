@@ -15,9 +15,9 @@ struct C {
     int *a; // -> 8
     char b; // -> 1 (+ 3 for alignment)
     int c;  // -> 4
-}
+};
 
-main() {
+int main() {
     ASSERT(4, ({int a; sizeof(a); }));
     ASSERT(4, ({int a; sizeof a; }));
     ASSERT(8, ({int *a; sizeof(a); }));
