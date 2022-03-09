@@ -60,11 +60,15 @@ void gen_store(Type *typ, const char *reg64, const char *reg32, const char *reg1
         printf("    mov qword ptr [rax],%s # ptr,arr\n", reg64);
         return;
     case TP_STRUCT:
-        for (Type *now = typ->mem; now; now = now->next) {
-            printf("    add rax,%d\n", now->offset - before_offset);
-            gen_store(now, reg64, reg32, reg16, reg8);
-            before_offset = now->offset;
+        // NOTE:this code assumes reg64 is not rax
+        printf("    push %s # stack%d,num\n", reg64, align++);
+        for (int i = 0; i < typ->size; i++) {
+            printf("    pop %s # stack%d,num\n", reg64, --align);
+            printf("    push %s # stack%d,num\n", reg64, align++);
+            printf("    mov %s, byte ptr [%s+%d]\n", reg8, reg64, i);
+            printf("    mov byte ptr [rax+%d],%s # struct\n", i, reg8);
         }
+        printf("    pop %s # stack%d,num\n", reg64, --align);
         return;
     default:
         errorf("typ isn't valid.");

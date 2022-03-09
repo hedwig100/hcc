@@ -128,6 +128,11 @@ Type *can_assign(Type *typ1, Type *typ2) {
             error_at(token->str, "cannot assign here.");
         }
     case TP_ARRAY:
+        error_at(token->str, "cannot assign here.");
+    case TP_STRUCT:
+        if (is_typ(typ2, TP_STRUCT) && typ1->len == typ2->len && !memcmp(typ1->name, typ2->name, typ1->len))
+            return typ1;
+        error_at(token->str, "cannot assign here.");
     default:
         error_at(token->str, "cannot assign here.");
     }

@@ -9,6 +9,11 @@ struct A {
     int f[2][3];
 };
 
+struct B {
+    int x;
+    char y;
+};
+
 int main() {
     struct A x;
     x.a = 10;
@@ -39,6 +44,21 @@ int main() {
     ASSERT(2, *((*abc).e[3]));
     (*abc).f[0][1] = -34;
     ASSERT(-34, (*abc).f[0][1]);
+
+    struct B xB;
+    struct B yB;
+    xB.x = 3;
+    xB.y = 4;
+    yB   = xB;
+    ASSERT(3, yB.x);
+    ASSERT(4, yB.y);
+    yB.x = 5;
+    yB.y = 6;
+    ASSERT(3, xB.x);
+    ASSERT(4, xB.y);
+    ASSERT(5, yB.x);
+    ASSERT(6, yB.y);
+
     ok();
     return 0;
 }
