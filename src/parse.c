@@ -644,6 +644,8 @@ Node *mul() {
 
 // unary = "sizeof" unary
 //       | "sizeof" decl_spec
+//       | "++" unary
+//       | "--" unary
 //       | '&' unary
 //       | '*' unary
 //       | '+' postfix
@@ -660,6 +662,20 @@ Node *unary() {
         }
         Node *node = unary();
         return new_node_num(node->typ->size);
+    }
+    if (consume("++")) {
+        Node *lhs  = unary();
+        Node *rhs  = add_helper(lhs, new_node_num(1), ND_ADD);
+        Node *node = new_node(ND_ASSIGN, lhs, rhs, NULL);
+        node->typ  = can_assign(lhs->typ, rhs->typ);
+        return node;
+    }
+    if (consume("--")) {
+        Node *lhs  = unary();
+        Node *rhs  = add_helper(lhs, new_node_num(1), ND_SUB);
+        Node *node = new_node(ND_ASSIGN, lhs, rhs, NULL);
+        node->typ  = can_assign(lhs->typ, rhs->typ);
+        return node;
     }
     if (consume("&")) {
         Node *lhs = unary();

@@ -1,5 +1,10 @@
 #include "test.h"
 
+int fib(int n) {
+    if (n <= 1) return n;
+    return fib(n - 1) + fib(n - 2);
+}
+
 int main() {
     ASSERT(0, 0);
     ASSERT(42, 42);
@@ -29,6 +34,13 @@ int main() {
     ASSERT(1, (1 == 2) <= 1);
     ASSERT(0, (5 >= 3) != 1);
     ASSERT(1, (-6 < 10) == 1);
+
+    int i = 0;
+    ASSERT(1, ++i);
+    ASSERT(0, --i);
+    i = 9;
+    ASSERT(55, fib(++i));
+
     ok();
     return 0;
 }
