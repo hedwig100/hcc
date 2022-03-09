@@ -25,6 +25,13 @@ struct C {
 
 struct A global_a;
 
+struct Name {
+    char *name;
+    int len;
+};
+
+struct Name *name1;
+
 int main() {
     struct A x;
     x.a = 10;
@@ -87,6 +94,30 @@ int main() {
     ASSERT(-43, global_a.a);
     ASSERT(4, y);
     ASSERT(-42, global_a.c[4]);
+
+    struct Name name2;
+    name2.name = "abcde";
+    name2.len  = 6;
+    name1      = &name2;
+    ASSERT(97, name1->name[0]);
+    ASSERT(98, name1->name[1]);
+    ASSERT(99, name1->name[2]);
+    ASSERT(100, name1->name[3]);
+    ASSERT(101, name1->name[4]);
+    ASSERT(0, name1->name[5]);
+    name1->len = 7;
+    ASSERT(7, name2.len);
+    struct Name *names[10];
+    names[0]       = &name2;
+    names[0]->name = "fgh";
+    ASSERT(102, name2.name[0]);
+    ASSERT(103, name2.name[1]);
+    ASSERT(104, name2.name[2]);
+    ASSERT(0, name2.name[3]);
+    ASSERT(102, name1->name[0]);
+    ASSERT(103, name1->name[1]);
+    ASSERT(104, name1->name[2]);
+    ASSERT(0, name1->name[3]);
 
     ok();
     return 0;

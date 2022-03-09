@@ -664,7 +664,7 @@ Node *unary() {
     return postfix();
 }
 
-// postfix = primary ( '[' expr ']' | '.' ident )*
+// postfix = primary ( '[' expr ']' | '.' ident | "->" ident )*
 Node *postfix() {
     Node *node = primary();
     for (;;) {
@@ -690,6 +690,26 @@ Node *postfix() {
             }
 
             assert_at(typ, token->str, "'%s' is not the member of struct '%s'", to_str(tok->str, tok->len), to_str(st->name, st->len));
+            node = access_member(node, offset, typ);
+        } else if (consume("->")) {
+            // arrow operator
+            // x->a -> (*x).a -> *( *x + 'offset of a')
+            Token *tok = expect_ident();
+            assert_at(is_typ(node->typ, TP_PTR), token->str, "cannot use '->' for not struct pointer type variable.");
+            assert_at(is_typ(node->typ->ptr_to, TP_STRUCT), token->str, "cannot use '->' for not struct pointer type variable.");
+            Struct *st = find_struct(node->typ->ptr_to->name, node->typ->ptr_to->len);
+
+            int offset = 0;
+            Type *typ  = NULL;
+            for (Member *now = st->mem; now; now = now->next) {
+                if (now->len == tok->len && !memcmp(now->name, tok->str, tok->len)) {
+                    offset = now->offset;
+                    typ    = now->typ;
+                }
+            }
+
+            assert_at(typ, token->str, "'%s' is not the member of struct '%s'", to_str(tok->str, tok->len), to_str(st->name, st->len));
+            node = new_node(ND_DEREF, node, NULL, node->typ->ptr_to);
             node = access_member(node, offset, typ);
         } else {
             return node;
