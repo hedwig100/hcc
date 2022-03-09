@@ -246,6 +246,7 @@ Node *code[100]; // AST
 
 Type *new_type(TypeKind kind);
 Type *new_type_ptr(Type *ptr_to);
+int byte_align(Type *typ);
 Type *can_assign(Type *typ1, Type *typ2);
 Type *can_add(Type *typ1, Type *typ2);
 bool is_ptr(Type *typ);
@@ -262,7 +263,7 @@ GVar *find_gvar(Token *tok);
 
 void enter_scope();
 void out_scope();
-void add_offset(Scope *scope, int size);
+void add_offset(Scope *scope, int size, int alignment);
 
 Node *eval_const(Node *node);
 Node *eval(Node *lhs, Node *rhs);

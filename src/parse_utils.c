@@ -32,6 +32,22 @@ Type *new_type_ptr(Type *ptr_to) {
     return typ;
 }
 
+int byte_align(Type *typ) {
+    switch (typ->kind) {
+    case TP_INT:
+        return 4;
+    case TP_CHAR:
+        return 1;
+    case TP_PTR:
+        return 4;
+    case TP_ARRAY:
+        return byte_align(typ->ptr_to);
+    case TP_STRUCT:
+    default:
+        errorf("type isn't valid.");
+    }
+}
+
 // type_cmp checks when 'typ1 = typ2' is valid.
 // if it isn't valid, raise error else return assign type;
 Type *can_assign(Type *typ1, Type *typ2) {
@@ -248,9 +264,11 @@ void out_scope() {
     scopes                 = scopes->before;
 }
 
-void add_offset(Scope *scope, int size) {
-    scope->offset       = scope->offset + size;
-    scope->lvar->offset = scope->offset;
+void add_offset(Scope *scope, int size, int alignment) {
+    int min_offset      = scope->offset + size;
+    int offset          = (min_offset + alignment - 1) / alignment * alignment;
+    scope->offset       = offset;
+    scope->lvar->offset = offset;
 }
 
 /*

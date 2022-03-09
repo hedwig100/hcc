@@ -98,7 +98,7 @@ Node *new_node_lvar(Token *tok, Type *typ) {
     scopes->lvar = lvar;
     lvar->name   = tok->str;
     lvar->len    = tok->len;
-    add_offset(scopes, typ->size);
+    add_offset(scopes, typ->size, byte_align(typ));
     node->offset = lvar->offset;
     lvar->typ    = typ;
     node->typ    = typ;
