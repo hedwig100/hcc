@@ -70,6 +70,7 @@ struct Type {
 
     Type *mem;
     Type *next;
+    int offset;
 };
 
 Type *new_type(TypeKind kind);
@@ -158,6 +159,7 @@ struct Struct {
     int len;
     Member *mem;
     int size;
+    Type *typ;
 };
 
 Struct *strcts;
@@ -249,6 +251,7 @@ Node *code[100]; // AST
 
 Type *new_type(TypeKind kind);
 Type *new_type_ptr(Type *ptr_to);
+Type *new_type_strct(Token *tok, Member *mem);
 int byte_align(Type *typ);
 Type *can_assign(Type *typ1, Type *typ2);
 Type *can_add(Type *typ1, Type *typ2);
@@ -274,6 +277,7 @@ Node *eval(Node *lhs, Node *rhs);
 
 Node *add_helper(Node *lhs, Node *rhs, NodeKind kind);
 Node *access(Node *ptr, Node *expr);
+Struct *find_struct(Token *tok);
 
 /*
     parse.c
@@ -288,7 +292,6 @@ Node *node_gvar(Token *tok);
 Node *new_node_str(Token *tok);
 Node *new_node_mem(Token *tok, Type *typ);
 Member *new_mem(Node *node);
-Type *new_type_strct(Token *tok, Member *mem);
 
 void program();
 Node *ext_def();

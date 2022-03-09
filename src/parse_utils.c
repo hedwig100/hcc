@@ -32,6 +32,39 @@ Type *new_type_ptr(Type *ptr_to) {
     return typ;
 }
 
+Type *new_type_strct(Token *tok, Member *mem) {
+    // register struct
+    Struct *strct = calloc(1, sizeof(Struct));
+    strct->name   = tok->str;
+    strct->len    = tok->len;
+    strct->mem    = mem;
+    strct->next   = strcts;
+    strcts        = strct;
+
+    // type
+    Type *typ = calloc(1, sizeof(Type));
+    typ->kind = TP_STRUCT;
+
+    Type head;
+    head.next  = NULL;
+    Type *cur  = &head;
+    int offset = 0;
+    for (Member *now = mem; now; now = now->next) {
+        cur->next = now->typ;
+        cur       = cur->next;
+
+        offset      = calc_aligment_offset(offset + cur->size, byte_align(cur));
+        cur->offset = offset;
+        now->offset = offset;
+    }
+
+    typ->mem    = head.next;
+    typ->size   = offset;
+    strct->size = offset;
+    strct->typ  = typ;
+    return typ;
+}
+
 int byte_align(Type *typ) {
     int aligment;
 
@@ -449,4 +482,15 @@ Node *access(Node *ptr, Node *expr) {
     }
     node->typ = ptr->typ->ptr_to;
     return node;
+}
+
+// find_struct searches struct whose name is the same as tok->str
+// otherwise return NULL
+Struct *find_struct(Token *tok) {
+    for (Struct *strct = strcts; strct; strct = strct->next) {
+        if (tok->len == strct->len && !memcmp(tok->str, strct->name, strct->len)) {
+            return strct;
+        }
+    }
+    return NULL;
 }

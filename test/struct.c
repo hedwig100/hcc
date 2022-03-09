@@ -10,6 +10,7 @@ struct A {
 };
 
 int main() {
+    struct A a;
     ok();
     return 0;
 }

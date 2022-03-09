@@ -187,37 +187,6 @@ Member *new_mem(Node *node) {
     return mem;
 }
 
-Type *new_type_strct(Token *tok, Member *mem) {
-    // register struct
-    Struct *strct = calloc(1, sizeof(Struct));
-    strct->name   = tok->str;
-    strct->len    = tok->len;
-    strct->mem    = mem;
-    strct->next   = strcts;
-    strcts        = strct;
-
-    // type
-    Type *typ = calloc(1, sizeof(Type));
-    typ->kind = TP_STRUCT;
-
-    Type head;
-    head.next  = NULL;
-    Type *cur  = &head;
-    int offset = 0;
-    for (Member *now = mem; now; now = now->next) {
-        cur->next = now->typ;
-        cur       = cur->next;
-
-        offset      = calc_aligment_offset(offset + cur->size, byte_align(cur));
-        now->offset = offset;
-    }
-
-    typ->mem    = head.next;
-    typ->size   = offset;
-    strct->size = offset;
-    return typ;
-}
-
 // program = ext_def*
 void program() {
     int i = 0;
@@ -307,20 +276,28 @@ Type *decl_spec() {
     return typ;
 }
 
-// struct_spec = ident '{' struct_decl+ '}'
+// struct_spec = ident
+//             | ident '{' struct_decl+ '}'
 Type *struct_spec() {
     Token *tok = expect_ident();
-    expect("{");
-    Member head;
-    head.next   = NULL;
-    Member *cur = &head;
-    while (cur) {
-        cur->next = struct_decl();
-        cur       = cur->next;
+    if (consume("{")) {
+        // struct definition
+        Member head;
+        head.next   = NULL;
+        Member *cur = &head;
+        while (cur) {
+            cur->next = struct_decl();
+            cur       = cur->next;
+        }
+        expect("}");
+        assert_at(head.next, token->str, "there is no struct member.");
+        return new_type_strct(tok, head.next);
+    } else {
+        // used for declaration of struct variable
+        Struct *st = find_struct(tok);
+        assert_at(st, token->str, "this name struct isn't defined ever.");
+        return st->typ;
     }
-    expect("}");
-    assert_at(head.next, token->str, "there is no struct member.");
-    return new_type_strct(tok, head.next);
 }
 
 // struct_decl = decl_spec declarator ';'

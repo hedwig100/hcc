@@ -45,6 +45,7 @@ const char *PARAM_REG8[6]  = {"dil", "sil", "dl", "cl", "r8b", "r9b"};
 
 // gen_store stores data in reg in [rax]
 void gen_store(Type *typ, const char *reg64, const char *reg32, const char *reg16, const char *reg8) {
+    int before_offset = 0;
     switch (typ->kind) {
     case TP_INT:
         printf("    mov dword ptr [rax],%s # int \n", reg32);
@@ -55,6 +56,13 @@ void gen_store(Type *typ, const char *reg64, const char *reg32, const char *reg1
     case TP_ARRAY:
     case TP_PTR:
         printf("    mov qword ptr [rax],%s # ptr,arr\n", reg64);
+        return;
+    case TP_STRUCT:
+        for (Type *now = typ->mem; now; now = now->next) {
+            printf("    add rax,%d\n", now->offset - before_offset);
+            gen_store(now, reg64, reg32, reg16, reg8);
+            before_offset = now->offset;
+        }
         return;
     default:
         errorf("typ isn't valid.");
@@ -74,6 +82,7 @@ void gen_load(Type *typ, const char *reg64) {
         printf("    mov %s,qword ptr [rax] # ptr\n", reg64);
         return;
     case TP_ARRAY:
+    case TP_STRUCT:
         return;
     default:
         errorf("typ isn't valid.");
