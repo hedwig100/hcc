@@ -239,7 +239,7 @@ Node *ext_def();
 Node *eval_const(Node *node);
 Node *eval(Node *lhs, Node *rhs);
 Node *initializer(bool constant);
-Node *func_def_or_decl(Node *node);
+Node *func_param(Node *node);
 Node *stmt();
 Node *expr();
 Node *assign();

@@ -230,7 +230,7 @@ Node *declarator(Type *typ, bool is_global) {
 
 // direct_decl = ident
 //             | ident ( '[' num ']')*
-//             | ident '(' func_def_or_decl
+//             | ident '(' func_param
 Node *direct_decl(Type *typ, bool is_global) {
     Node *node;
     Token *tok = expect_ident();
@@ -239,12 +239,11 @@ Node *direct_decl(Type *typ, bool is_global) {
     if (consume("(")) {
         // function definition or declaration
         assert_at(is_global, token->str, "function definition of declaration can't exist in function.");
-        node         = calloc(1, sizeof(Node));
-        node->name   = tok->str;
-        node->len    = tok->len;
-        node->typ    = typ;
-        node         = func_def_or_decl(node);
-        node->offset = scopes->offset;
+        node       = calloc(1, sizeof(Node));
+        node->name = tok->str;
+        node->len  = tok->len;
+        node->typ  = typ;
+        node       = func_param(node);
         return node;
     } else {
         // variable
@@ -281,28 +280,52 @@ Type *type_array(Type *typ) {
     return typ;
 }
 
-// ext_def = decl_spec declarator
-//         | decl_spec declarator = initializer
+// ext_def = decl_spec declarator ';'
+//         | decl_spec declarator '=' initializer ';'
+//         | decl_spec declarator '{' cmp_stmt
 Node *ext_def() {
     Type *typ = decl_spec();
     assert_at(typ, token->str, "type declaration expected.");
     Node *node = declarator(typ, true);
 
-    if (node->kind == ND_GVAR && consume("=")) { // initiliazer
-        Node *rhs = initializer(true);
-        expect(";");
-        // array assignment is only possible during initialization.
-        if (is_typ(node->typ, TP_ARRAY) && is_typ(rhs->typ, TP_ARRAY)) {
-            return new_node(ND_INIT, node, rhs, node->typ);
+    if (node->kind == ND_GVAR) {
+        if (consume("=")) {
+            // global variable definition
+            Node *rhs = initializer(true);
+            expect(";");
+            // array assignment is only possible during initialization.
+            if (is_typ(node->typ, TP_ARRAY) && is_typ(rhs->typ, TP_ARRAY)) {
+                return new_node(ND_INIT, node, rhs, node->typ);
+            } else {
+                Type *typ = can_assign(node->typ, rhs->typ);
+                assert_at(typ, token->str, "cannot initialize with this value.");
+                return new_node(ND_INIT, node, rhs, typ);
+            }
         } else {
-            Type *typ = can_assign(node->typ, rhs->typ);
-            assert_at(typ, token->str, "cannot initialize with this value.");
-            return new_node(ND_INIT, node, rhs, typ);
+            // global variablee declarator
+            expect(";");
+            return node;
         }
     }
 
-    if (node->kind != ND_FUNCDEF)
-        expect(";");
+    if (node->kind != ND_GVAR) {
+        if (consume("{")) {
+            // function definition
+            node->kind = ND_FUNCDEF;
+            register_func(node);
+            node->body = cmp_stmt();
+            out_scope();
+            node->offset = scopes->offset;
+            return node;
+        } else {
+            // function declaration
+            expect(";");
+            node->kind = ND_FUNCDECL;
+            register_func(node);
+            out_scope();
+            return node;
+        }
+    }
     return node;
 }
 
@@ -472,27 +495,14 @@ Node *initializer(bool is_constant) {
     return is_constant ? eval_const(node) : node;
 }
 
-// func_def_or_decl = ( decl_spec declarator ',' )* ')'
-//                  = ( decl_spec declarator ',' )* ')' '{' cmp_stmt
-Node *func_def_or_decl(Node *node) {
+// func_param = ')'
+//            | decl_spec declarator ( ',' decl_spec declarator )* ')'
+Node *func_param(Node *node) {
     enter_scope();
     if (consume(")")) {
         infof("finished until '()'.");
         node->params = NULL;
-        if (consume("{")) {
-            // function definition
-            node->kind = ND_FUNCDEF;
-            register_func(node);
-            node->body = cmp_stmt();
-            out_scope();
-            return node;
-        } else {
-            // function declaration
-            node->kind = ND_FUNCDECL;
-            register_func(node);
-            out_scope();
-            return node;
-        }
+        return node;
     }
 
     Node head;
@@ -515,20 +525,7 @@ Node *func_def_or_decl(Node *node) {
 
     infof("finished until '(param)'.");
     node->params = head.next;
-    if (consume("{")) {
-        // function definition
-        node->kind = ND_FUNCDEF;
-        register_func(node);
-        node->body = cmp_stmt();
-        out_scope();
-        return node;
-    } else {
-        // function declaration
-        node->kind = ND_FUNCDECL;
-        register_func(node);
-        out_scope();
-        return node;
-    }
+    return node;
 }
 
 // stmt = "if" '(' expr ')' stmt ( "else" stmt )?
@@ -780,7 +777,8 @@ Node *postfix() {
 // primary = "({" cmp_stmt ')'
 //         | '(' expr ')'
 //         | ident
-//         | ident '(' ( expr ',' )* ')'
+//         | ident "()"
+//         | ident '(' expr ( ',' expr )* ')'
 //         | string
 //         | num
 Node *primary() {
