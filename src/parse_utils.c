@@ -14,6 +14,9 @@ Type *new_type(TypeKind kind) {
     case TP_CHAR:
         typ->size = 1;
         return typ;
+    case TP_VOID:
+        typ->size = 1;
+        return typ;
     case TP_ARRAY:
         return typ;
     case TP_STRUCT:
@@ -86,8 +89,9 @@ int byte_align(Type *typ) {
             aligment = max(aligment, byte_align(now)); // actually lcm but max is enough
         }
         return aligment;
+    case TP_VOID:
     default:
-        errorf("type isn't valid.");
+        error_at(token->str, "type isn't valid.");
     }
 }
 
@@ -100,6 +104,7 @@ Type *can_assign(Type *typ1, Type *typ2) {
         case TP_INT:
         case TP_CHAR:
             return new_type(TP_INT);
+        case TP_VOID:
         case TP_PTR:
         case TP_ARRAY:
         default:
@@ -110,15 +115,20 @@ Type *can_assign(Type *typ1, Type *typ2) {
         case TP_INT:
         case TP_CHAR:
             return new_type(TP_CHAR);
+        case TP_VOID:
         case TP_PTR:
         case TP_ARRAY:
         default:
             error_at(token->str, "cannot assign here.");
         }
+    case TP_VOID:
+        error_at(token->str, "cannot assign here.");
     case TP_PTR:
         switch (typ2->kind) {
         case TP_INT:
         case TP_CHAR:
+            error_at(token->str, "cannot assign here.");
+        case TP_VOID:
             error_at(token->str, "cannot assign here.");
         case TP_PTR:
             return typ1;

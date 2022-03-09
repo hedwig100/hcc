@@ -25,6 +25,11 @@ int param6(int a, int b, int c, int d, int e, int f) {
     return a - b + c - d + e - f;
 }
 
+void f(int a) {
+    a = a * a;
+    return;
+}
+
 int main() {
     ASSERT(55, fib(10));
     ASSERT(21, fib(fib(6)));
@@ -36,6 +41,8 @@ int main() {
     ASSERT(0, param6(10, -43, 32, -100, -1, 184));
     ASSERT(1, ({int a;a = 0;{int b;b = 4;a = a + 1;}a; }));
     ASSERT(1, ({{}int a;a = 0;a + 1; }));
+    f(3);
+    void *a;
     ok();
     return 0;
 }

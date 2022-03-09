@@ -274,6 +274,7 @@ Node *ext_def() {
 
 // decl_spec = "int"
 //           | "char"
+//           | "void"
 //           | "struct" struct_spec
 // if not,return NULL;
 Type *decl_spec() {
@@ -282,6 +283,8 @@ Type *decl_spec() {
         typ = new_type(TP_INT);
     } else if (consume("char")) {
         typ = new_type(TP_CHAR);
+    } else if (consume("void")) {
+        typ = new_type(TP_VOID);
     } else if (consume("struct")) {
         typ = struct_spec();
     } else {
@@ -321,7 +324,8 @@ Member *struct_decl() {
     if (!typ) {
         return NULL;
     }
-    Node *node  = declarator(typ, STRUCT);
+    Node *node = declarator(typ, STRUCT);
+    assert_at(!is_typ(node->typ, TP_VOID), token->str, "cannot use void here.");
     Member *mem = new_mem(node);
     expect(";");
     return mem;
@@ -410,6 +414,7 @@ Node *func_param(Node *node) {
         assert_at(typ, token->str, "type declaration expected.");
         now->next = declarator(typ, LOCAL);
         now       = now->next;
+        assert_at(!is_typ(now->typ, TP_VOID), token->str, "cannot use void here.");
         if (now->typ->kind == TP_ARRAY) {
             now->typ->kind = TP_PTR;
         }
@@ -473,7 +478,7 @@ Node *cmp_stmt() {
 }
 
 // stmt = "if" '(' expr ')' stmt ( "else" stmt )?
-//      | "return" expr ';'
+//      | "return" expr? ';'
 //      | "while" '(' expr ')' stmt
 //      | "for" '(' expr? ';' expr? ';' expr; ')' stmt
 //      | '{' cmp_stmt
@@ -501,9 +506,12 @@ Node *stmt() {
     } else if (consume("return")) {
         node       = calloc(1, sizeof(Node));
         node->kind = ND_RETURN;
-        node->lhs  = expr();
+        if (consume(";")) {
+            node->lhs = NULL;
+            return node;
+        }
+        node->lhs = expr();
         expect(";");
-        infof("finished until 'return expr;'");
         return node;
     } else if (consume("while")) {
         expect("(");
@@ -556,6 +564,7 @@ Node *expr() {
 
     if (typ) {
         node = declarator(typ, LOCAL);
+        assert_at(!is_typ(node->typ, TP_VOID), token->str, "cannot use void here.");
         if (consume("=")) { // initiliazer
             return eval(node, initializer(false));
         }
@@ -653,7 +662,7 @@ Node *mul() {
 //       | postfix
 Node *unary() {
     if (consume("sizeof")) {
-        if (lookahead("(", "int") || lookahead("(", "char") || lookahead("(", "struct")) {
+        if (lookahead("(", "int") || lookahead("(", "char") || lookahead("(", "struct") || lookahead("(", "void")) {
             expect("(");
             Type *typ = decl_spec();
             expect(")");

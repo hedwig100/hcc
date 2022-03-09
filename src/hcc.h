@@ -51,6 +51,7 @@ Token *tokenize(char *p);
 typedef enum {
     TP_INT,    // int
     TP_CHAR,   // char
+    TP_VOID,   // void
     TP_PTR,    // pointer
     TP_ARRAY,  // array
     TP_STRUCT, // struct

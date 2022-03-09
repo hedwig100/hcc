@@ -270,8 +270,10 @@ void gen_statement(Node *node) {
 
         return;
     case ND_RETURN:
-        gen_expression(node->lhs);
-        printf("    pop rax # stack%d,return\n", --align);
+        if (node->lhs) {
+            gen_expression(node->lhs);
+            printf("    pop rax # stack%d,return\n", --align);
+        }
         printf("    mov rsp,rbp\n");
         printf("    pop rbp # stack%d \n", --align);
         printf("    ret\n");

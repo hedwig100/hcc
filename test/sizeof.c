@@ -30,6 +30,7 @@ int main() {
 
     ASSERT(4, sizeof(int));
     ASSERT(1, sizeof(char));
+    ASSERT(1, sizeof(void));
     ASSERT(5, sizeof(struct A));
     ASSERT(19, sizeof(struct B));
     ASSERT(16, sizeof(struct C));
