@@ -16,6 +16,8 @@ Type *new_type(TypeKind kind) {
         return typ;
     case TP_ARRAY:
         return typ;
+    case TP_STRUCT:
+        return typ;
     default:
         error_at(token->str, "kind isn't valid.");
     }

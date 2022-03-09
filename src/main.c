@@ -30,6 +30,7 @@ int main(int argc, char **argv) {
     scopes->before = NULL;
     scopes->offset = 0;
     scopes->lvar   = calloc(1, sizeof(LVar));
+    strcts         = calloc(1, sizeof(Struct));
     program();
 
     // generate code

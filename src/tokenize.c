@@ -85,6 +85,13 @@ Token *tokenize(char *p) {
             continue;
         }
 
+        if (strncmp(p, "struct", 6) == 0 && !isalnum(p[6])) {
+            cur      = new_token(TK_RESERVED, cur, p);
+            cur->len = 6;
+            p += 6;
+            continue;
+        }
+
         if (strncmp(p, "if", 2) == 0 && !isalnum(p[2])) {
             cur      = new_token(TK_RESERVED, cur, p);
             cur->len = 2;

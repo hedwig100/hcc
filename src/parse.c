@@ -170,24 +170,79 @@ Node *new_node_str(Token *tok) {
     return node;
 }
 
+Node *new_node_mem(Token *tok, Type *typ) {
+    Node *node = calloc(1, sizeof(Node));
+    node->kind = ND_MEMBER;
+    node->name = tok->str;
+    node->len  = tok->len;
+    node->typ  = typ;
+    return node;
+}
+
+Member *new_mem(Node *node) {
+    Member *mem = calloc(1, sizeof(Member));
+    mem->name   = node->name;
+    mem->len    = node->len;
+    mem->typ    = node->typ;
+    return mem;
+}
+
+Type *new_type_strct(Token *tok, Member *mem) {
+    // register struct
+    Struct *strct = calloc(1, sizeof(Struct));
+    strct->name   = tok->str;
+    strct->len    = tok->len;
+    strct->mem    = mem;
+    strct->next   = strcts;
+    strcts        = strct;
+
+    // type
+    Type *typ = calloc(1, sizeof(Type));
+    typ->kind = TP_STRUCT;
+
+    Type head;
+    head.next = NULL;
+    Type *cur = &head;
+    int size  = 0;
+    for (Member *now = mem; now; now = now->next) {
+        cur->next = now->typ;
+        cur       = cur->next;
+        size += cur->size;
+    }
+    typ->mem  = head.next;
+    typ->size = size;
+    return typ;
+}
+
 // program = ext_def*
 void program() {
     int i = 0;
     while (!at_eof()) {
         scopes->offset = 0;
-        code[i++]      = ext_def();
-        infof("finished ext definition(%d)", i);
+        Node *node     = ext_def();
+        if (node) {
+            code[i++] = node;
+            infof("finished ext definition(%d)", i);
+        }
     }
     code[i] = NULL;
 }
 
-// ext_def = decl_spec declarator ';'
+// ext_def = decl_spec ';'
+//         | decl_spec declarator ';'
 //         | decl_spec declarator '=' initializer ';'
 //         | decl_spec declarator '{' cmp_stmt
 Node *ext_def() {
     Type *typ = decl_spec();
     assert_at(typ, token->str, "type declaration expected.");
-    Node *node = declarator(typ, true);
+    Node *node = declarator(typ, GLOBAL);
+
+    if (!node) {
+        assert_at(is_typ(typ, TP_STRUCT), token->str, "need declarator when youn don't define struct");
+        expect(";");
+        // struct definition
+        return NULL;
+    }
 
     if (node->kind == ND_GVAR) {
         if (consume("=")) {
@@ -203,7 +258,7 @@ Node *ext_def() {
                 return new_node(ND_INIT, node, rhs, typ);
             }
         } else {
-            // global variablee declarator
+            // global variable declarator
             expect(";");
             return node;
         }
@@ -232,6 +287,7 @@ Node *ext_def() {
 
 // decl_spec = "int"
 //           | "char"
+//           | "struct" struct_spec
 // if not,return NULL;
 Type *decl_spec() {
     Type *typ;
@@ -239,16 +295,47 @@ Type *decl_spec() {
         typ = new_type(TP_INT);
     } else if (consume("char")) {
         typ = new_type(TP_CHAR);
+    } else if (consume("struct")) {
+        typ = struct_spec();
     } else {
         return NULL;
     }
     return typ;
 }
 
+// struct_spec = ident '{' struct_decl+ '}'
+Type *struct_spec() {
+    Token *tok = expect_ident();
+    expect("{");
+    Member head;
+    head.next   = NULL;
+    Member *cur = &head;
+    while (cur) {
+        cur->next = struct_decl();
+        cur       = cur->next;
+    }
+    expect("}");
+    assert_at(head.next, token->str, "there is no struct member.");
+    return new_type_strct(tok, head.next);
+}
+
+// struct_decl = decl_spec declarator ';'
+// if not,return NULL
+Member *struct_decl() {
+    Type *typ = decl_spec();
+    if (!typ) {
+        return NULL;
+    }
+    Node *node  = declarator(typ, STRUCT);
+    Member *mem = new_mem(node);
+    expect(";");
+    return mem;
+}
+
 // declarator = pointer direct_decl
-Node *declarator(Type *typ, bool is_global) {
+Node *declarator(Type *typ, Param p) {
     typ = pointer(typ);
-    return direct_decl(typ, is_global);
+    return direct_decl(typ, p);
 }
 
 // pointer = '*' *
@@ -263,23 +350,30 @@ Type *pointer(Type *typ) {
 // direct_decl = ident
 //             | ident typ_array
 //             | ident '(' func_param
-Node *direct_decl(Type *typ, bool is_global) {
+// if not,return NULL
+Node *direct_decl(Type *typ, Param p) {
     Node *node;
-    Token *tok = expect_ident();
-    typ        = type_array(typ);
+    Token *tok = consume_ident();
+    if (!tok) {
+        return NULL;
+    }
+    typ = type_array(typ);
 
     if (consume("(")) {
         // function definition or declaration
-        assert_at(is_global, token->str, "function definition of declaration can't exist in function.");
+        assert_at(p == GLOBAL, token->str, "function definition of declaration can't exist in function.");
         node       = calloc(1, sizeof(Node));
         node->name = tok->str;
         node->len  = tok->len;
         node->typ  = typ;
         node       = func_param(node);
         return node;
+    } else if (p == STRUCT) {
+        // struct member
+        return new_node_mem(tok, typ);
     } else {
         // variable
-        return is_global ? new_node_gvar(tok, typ) : new_node_lvar(tok, typ);
+        return p == GLOBAL ? new_node_gvar(tok, typ) : new_node_lvar(tok, typ);
     }
 }
 
@@ -319,7 +413,7 @@ Node *func_param(Node *node) {
     while (1) {
         Type *typ = decl_spec();
         assert_at(typ, token->str, "type declaration expected.");
-        now->next = declarator(typ, false);
+        now->next = declarator(typ, LOCAL);
         now       = now->next;
         if (now->typ->kind == TP_ARRAY) {
             now->typ->kind = TP_PTR;
@@ -466,7 +560,7 @@ Node *expr() {
     Node *node;
 
     if (typ) {
-        node = declarator(typ, false);
+        node = declarator(typ, LOCAL);
         if (consume("=")) { // initiliazer
             return eval(node, initializer(false));
         }

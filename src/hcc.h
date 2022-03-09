@@ -48,10 +48,11 @@ Token *tokenize(char *p);
 // typekind
 
 typedef enum {
-    TP_INT,   // int
-    TP_CHAR,  // char
-    TP_PTR,   // pointer
-    TP_ARRAY, // array
+    TP_INT,    // int
+    TP_CHAR,   // char
+    TP_PTR,    // pointer
+    TP_ARRAY,  // array
+    TP_STRUCT, // struct
 } TypeKind;
 
 // type
@@ -60,11 +61,14 @@ typedef struct Type Type;
 
 struct Type {
     TypeKind kind;
+    int size;
 
     // ptr_to is valid when kind = TP_PTR.
     Type *ptr_to;
-    int size;
     size_t array_size;
+
+    Type *mem;
+    Type *next;
 };
 
 Type *new_type(TypeKind kind);
@@ -133,6 +137,36 @@ struct Scope {
 
 Scope *scopes;
 
+// Member
+typedef struct Member Member;
+
+struct Member {
+    Member *next;
+    char *name;
+    int len;
+    Type *typ;
+};
+
+// Struct
+typedef struct Struct Struct;
+
+struct Struct {
+    Struct *next;
+    char *name;
+    int len;
+    Member *mem;
+};
+
+Struct *strcts;
+
+// for function parameter
+
+typedef enum {
+    GLOBAL,
+    LOCAL,
+    STRUCT,
+} Param;
+
 // nodekind
 typedef enum {
     ND_ADD,      // +
@@ -161,6 +195,7 @@ typedef enum {
     ND_STMTEXPR, // "({" block "})"
     ND_INIT,     // initializer
     ND_ARRAY,    // initializer list
+    ND_MEMBER,   // struct member
 } NodeKind;
 
 // node
@@ -246,13 +281,18 @@ Node *node_lvar(Token *tok);
 Node *new_node_gvar(Token *tok, Type *typ);
 Node *node_gvar(Token *tok);
 Node *new_node_str(Token *tok);
+Node *new_node_mem(Token *tok, Type *typ);
+Member *new_mem(Node *node);
+Type *new_type_strct(Token *tok, Member *mem);
 
 void program();
 Node *ext_def();
 Type *decl_spec();
-Node *declarator(Type *typ, bool is_global);
+Type *struct_spec();
+Member *struct_decl();
+Node *declarator(Type *typ, Param p);
 Type *pointer(Type *typ);
-Node *direct_decl(Type *typ, bool is_global);
+Node *direct_decl(Type *typ, Param p);
 Type *type_array(Type *typ);
 Node *func_param(Node *node);
 Node *initializer(bool constant);

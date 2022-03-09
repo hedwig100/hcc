@@ -394,6 +394,7 @@ void gen_program() {
     // data section
     int start = 1;
     for (int i = 0; code[i]; i++) {
+        if (!code[i]) continue;
         if (code[i]->kind == ND_GVAR || code[i]->kind == ND_INIT) {
             if (start) {
                 printf(".data\n");
@@ -410,6 +411,7 @@ void gen_program() {
     // text section
     start = 1;
     for (int i = 0; code[i]; i++) { // finish if code[i] is NULL
+        if (!code[i]) continue;
         if (code[i]->kind == ND_FUNCDEF) {
             if (start) {
                 printf(".text\n");
@@ -422,6 +424,7 @@ void gen_program() {
     }
     printf("\n");
     for (int i = 0; code[i]; i++) {
+        if (!code[i]) continue;
         if (code[i]->kind == ND_FUNCDEF) {
             gen_ext_def(code[i]);
         }
