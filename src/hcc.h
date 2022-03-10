@@ -333,6 +333,7 @@ Node *initializer_list(bool is_constant);
 Node *cmp_stmt();
 Node *labeled_stmt();
 Node *stmt();
+Node *declaration();
 Node *init_decl(Type *typ);
 Node *expr();
 Node *assign();

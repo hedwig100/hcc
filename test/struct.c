@@ -119,6 +119,13 @@ int main() {
     ASSERT(104, name1->name[2]);
     ASSERT(0, name1->name[3]);
 
+    struct A {
+        int abc;
+    };
+    struct A xyz;
+    xyz.abc = 4;
+    ASSERT(4, xyz.abc);
+
     ok();
     return 0;
 }

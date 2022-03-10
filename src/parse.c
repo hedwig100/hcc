@@ -28,7 +28,7 @@ bool lookahead(char *op, Token *tok) {
 }
 
 bool is_type(Token *tok) {
-    return lookahead("int", tok) || lookahead("char", tok) || lookahead("struct", tok) || lookahead("void", tok);
+    return lookahead("int", tok) || lookahead("char", tok) || lookahead("struct", tok) || lookahead("void", tok) || lookahead("enum", tok);
 }
 
 // consume_ident read a token and return the token if next token is identifier,
@@ -574,10 +574,11 @@ Node *labeled_stmt() {
 //      | "switch" '(' expr ')' '{' stmt* labeled_stmt* '}'
 //      | "return" expr? ';'
 //      | "while" '(' expr ')' stmt
-//      | "for" '(' expr? ';' expr? ';' expr; ')' stmt
+//      | "for" '(' ( expr | declaration )? ';' expr? ';' expr; ')' stmt
 //      | "break" ';'
 //      | "continue" ';'
 //      | '{' cmp_stmt
+//      | declaration ';'
 //      | expr ';'
 Node *stmt() {
     Node *node;
@@ -666,7 +667,10 @@ Node *stmt() {
         enter_scope(true, true);
         scopes->label = node->label;
         if (!consume(";")) {
-            node->ini = expr();
+            if (is_type(token))
+                node->ini = declaration();
+            else
+                node->ini = expr();
             consume(";");
         }
         if (!consume(";")) {
@@ -697,11 +701,46 @@ Node *stmt() {
         node = cmp_stmt();
         out_scope();
         return node;
+    } else if (is_type(token)) {
+        node = declaration();
+        expect(";");
+        return node;
     }
 
     node = expr();
     expect(";");
     return node;
+}
+
+// declaration = decl_spec
+//             | decl_spec init_decl ( ',' init_decl )*
+//
+// this is expression.
+Node *declaration() {
+    Type *typ = decl_spec();
+    assert_at(typ, token->str, "declaration specifier expected.");
+
+    if (lookahead(";", token)) {
+        return new_node_num(0); // meaningless node
+    }
+
+    // int a=0,*b=&a,c[3]={0,1},d transforms to ({ int a=0,*b=&a,c[3]={0,1},d }) like expression
+    Node *node = calloc(1, sizeof(Node));
+    node->kind = ND_BLOCK;
+    Node head;
+    Node *now = &head;
+    now->next = init_decl(typ);
+    now       = now->next;
+    now->next = NULL;
+    node->typ = now->typ;
+    while (consume(",")) {
+        now->next = init_decl(typ);
+        now       = now->next;
+        now->next = NULL;
+        node->typ = now->typ;
+    }
+    node->block = head.next;
+    return new_node(ND_STMTEXPR, node, NULL, node->typ);
 }
 
 // init_decl = declarator | declarator '=' initializer
@@ -714,32 +753,8 @@ Node *init_decl(Type *typ) {
     return node;
 }
 
-// expr = decl_spec init_decl ( ',' init_decl )*
-//      | assign
+// expr = assign
 Node *expr() {
-    Type *typ = decl_spec();
-    Node *node;
-
-    if (typ) {
-        // int a=0,*b=&a,c[3]={0,1},d transforms to ({ int a=0,*b=&a,c[3]={0,1},d }) like expression
-        Node *node = calloc(1, sizeof(Node));
-        node->kind = ND_BLOCK;
-        Node head;
-        Node *now = &head;
-
-        now->next = init_decl(typ);
-        now       = now->next;
-        now->next = NULL;
-        node->typ = now->typ;
-        while (consume(",")) {
-            now->next = init_decl(typ);
-            now       = now->next;
-            now->next = NULL;
-            node->typ = now->typ;
-        }
-        node->block = head.next;
-        return new_node(ND_STMTEXPR, node, NULL, node->typ);
-    }
     return assign();
 }
 
