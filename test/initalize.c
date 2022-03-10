@@ -116,6 +116,14 @@ int main() {
     ASSERT(100, fae[3]);
     ASSERT(0, fae[4]);
 
+    int xa = 0, *xb = &xa, xc[3] = {0, 1, 2};
+    ASSERT(0, xa);
+    *xb = 4;
+    ASSERT(4, xa);
+    ASSERT(0, xc[0]);
+    ASSERT(1, xc[1]);
+    ASSERT(2, xc[2]);
+
     ok();
     return 0;
 }

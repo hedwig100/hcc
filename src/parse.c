@@ -580,20 +580,41 @@ Node *stmt() {
     return node;
 }
 
-// expr = decl_spec declarator
-//      | decl_spec declarator '=' initializer
+// init_decl = declarator | declarator '=' initializer
+Node *init_decl(Type *typ) {
+    Node *node = declarator(typ, LOCAL);
+    assert_at(!is_typ(node->typ, TP_VOID), token->str, "cannot use void here.");
+    if (consume("=")) { // initiliazer
+        return eval(node, initializer(false));
+    }
+    return node;
+}
+
+// expr = decl_spec init_decl ( ',' init_decl )*
 //      | assign
 Node *expr() {
     Type *typ = decl_spec();
     Node *node;
 
     if (typ) {
-        node = declarator(typ, LOCAL);
-        assert_at(!is_typ(node->typ, TP_VOID), token->str, "cannot use void here.");
-        if (consume("=")) { // initiliazer
-            return eval(node, initializer(false));
+        // int a=0,*b=&a,c[3]={0,1},d transforms to ({ int a=0,*b=&a,c[3]={0,1},d }) like expression
+        Node *node = calloc(1, sizeof(Node));
+        node->kind = ND_BLOCK;
+        Node head;
+        Node *now = &head;
+
+        now->next = init_decl(typ);
+        now       = now->next;
+        now->next = NULL;
+        node->typ = now->typ;
+        while (consume(",")) {
+            now->next = init_decl(typ);
+            now       = now->next;
+            now->next = NULL;
+            node->typ = now->typ;
         }
-        return node;
+        node->block = head.next;
+        return new_node(ND_STMTEXPR, node, NULL, node->typ);
     }
     return assign();
 }
