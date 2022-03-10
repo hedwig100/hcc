@@ -142,10 +142,10 @@ Node *new_node_gvar(Token *tok, Type *typ) {
     node->kind = ND_GVAR;
 
     // check if the same name global variable isn't defined
-    GVar *gvar = find_gvar(tok);
+    Object *gvar = find_gvar(tok);
     assert_at(!gvar, token->str, "the same name global variable is defined ever.");
 
-    gvar       = calloc(1, sizeof(GVar));
+    gvar       = new_object(OBJ_GVAR);
     gvar->next = globals;
     gvar->name = tok->str;
     node->name = tok->str;
@@ -158,7 +158,7 @@ Node *new_node_gvar(Token *tok, Type *typ) {
 }
 
 Node *node_gvar(Token *tok) {
-    GVar *gvar = find_gvar(tok);
+    Object *gvar = find_gvar(tok);
     if (!gvar) {
         error_at(token->str, "this variable isn't defined.");
     }

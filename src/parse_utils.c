@@ -305,8 +305,8 @@ bool can_defined_lvar(Token *tok) {
 
 // find_gvar searches local variables,if exists return the global variable
 // otherwise return NULL
-GVar *find_gvar(Token *tok) {
-    for (GVar *var = globals; var; var = var->next) {
+Object *find_gvar(Token *tok) {
+    for (Object *var = globals; var; var = var->next) {
         if (var->len == tok->len && !memcmp(tok->str, var->name, var->len)) {
             return var;
         }

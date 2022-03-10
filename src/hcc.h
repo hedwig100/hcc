@@ -17,13 +17,10 @@ typedef struct Token Token;
 typedef struct Type Type;
 typedef struct Func Func;
 typedef struct Object Object;
-// typedef struct LVar LVar;
-typedef struct GVar GVar;
 typedef struct Str Str;
 typedef struct Scope Scope;
 typedef struct Member Member;
 typedef struct Struct Struct;
-// typedef struct Enum Enum;
 
 /*
     tokenize.c
@@ -114,7 +111,7 @@ struct Object {
     char *name;
     int len;
 
-    // lvar
+    // lvar,gvar
     int offset;
     Type *typ;
 
@@ -124,16 +121,8 @@ struct Object {
     bool is_init;
 };
 
-// global variable
-struct GVar {
-    GVar *next; // next glocal variable if exists,otherwise NULL
-    char *name; // local variable name
-    int len;    // local variable length
-    Type *typ;
-};
-
 // global variables
-GVar *globals;
+Object *globals;
 
 // string literal
 struct Str {
@@ -298,7 +287,7 @@ Func *find_func(Node *node);
 Object *find_lvar(Token *tok);
 bool can_defined_lvar(Token *tok);
 
-GVar *find_gvar(Token *tok);
+Object *find_gvar(Token *tok);
 
 void enter_scope(bool can_break, bool can_cont);
 void out_scope();

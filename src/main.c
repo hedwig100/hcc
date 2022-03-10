@@ -23,7 +23,7 @@ int main(int argc, char **argv) {
 
     // construct AST
     infof("try to construct AST...");
-    globals        = calloc(1, sizeof(GVar));
+    globals        = new_object(OBJ_GVAR);
     strs           = NULL;
     funcs          = NULL;
     scopes         = calloc(1, sizeof(Scope));
