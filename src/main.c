@@ -30,7 +30,7 @@ int main(int argc, char **argv) {
     scopes->before = NULL;
     scopes->offset = 0;
     scopes->lvar   = new_object(OBJ_LVAR);
-    strcts         = calloc(1, sizeof(Struct));
+    scopes->strct  = calloc(1, sizeof(Struct));
     program();
 
     // generate code

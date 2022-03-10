@@ -41,8 +41,8 @@ Type *new_type_strct(Token *tok, Member *mem) {
     strct->name   = tok->str;
     strct->len    = tok->len;
     strct->mem    = mem;
-    strct->next   = strcts;
-    strcts        = strct;
+    strct->next   = scopes->strct;
+    scopes->strct = strct;
 
     // type
     Type *typ = calloc(1, sizeof(Type));
@@ -534,12 +534,26 @@ Node *access_member(Node *expr, int offset, Type *typ) {
 // find_struct searches struct whose name is the same as tok->str
 // otherwise return NULL
 Struct *find_struct(char *name, int len) {
-    for (Struct *strct = strcts; strct; strct = strct->next) {
-        if (len == strct->len && !memcmp(name, strct->name, strct->len)) {
-            return strct;
+    for (Scope *scp = scopes; scp; scp = scp->before) {
+        for (Struct *strct = scp->strct; strct; strct = strct->next) {
+            if (len == strct->len && !memcmp(name, strct->name, strct->len)) {
+                return strct;
+            }
         }
     }
     return NULL;
+}
+
+// can_defined_struct checks if the tok->name struct can be defined
+// if OK (the same name struct is not defined), return true;
+// else return false;
+bool can_defined_struct(Token *tok) {
+    for (Struct *st = scopes->strct; st; st = st->next) {
+        if (st->len == tok->len && !memcmp(tok->str, st->name, st->len)) {
+            return false;
+        }
+    }
+    return true;
 }
 
 Object *new_object(ObjectKind kind) {

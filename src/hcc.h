@@ -140,6 +140,7 @@ struct Scope {
     Scope *before;
     Object *lvar;
     Object *en;
+    Struct *strct;
 
     // maximal offset in this scope
     int offset;
@@ -169,8 +170,6 @@ struct Struct {
     int size;
     Type *typ;
 };
-
-Struct *strcts;
 
 // for function parameter
 
