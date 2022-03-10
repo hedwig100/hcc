@@ -105,6 +105,24 @@ int main() {
     ASSERT(3, f3(4));
     ASSERT(8, f3(9));
 
+    int a = 10;
+    switch (a)
+        ++a;
+    ASSERT(10, a);
+    switch (a)
+    default:
+        ++a;
+    ASSERT(11, a);
+    switch (a)
+    case 11:
+        ++a;
+    ASSERT(12, a);
+    switch (a)
+    case 1:
+        ++a;
+    ++a;
+    ASSERT(13, a);
+
     ok();
     return 0;
 }

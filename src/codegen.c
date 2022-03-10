@@ -281,7 +281,7 @@ void gen_statement(Node *node) {
         if (node->defa) {
             printf("    jmp .L%ddefa\n", node->label);
         }
-        printf("    pop rax # stack%d\n", --align);
+        printf("    jmp .Lend%d\n", node->label);
         i = 0;
         for (Node *now = node->block; now; now = now->next) {
             printf(".L%dcase%d:\n", node->label, i++);
@@ -292,6 +292,7 @@ void gen_statement(Node *node) {
             gen_statement(node->defa);
         }
         printf(".Lend%d:\n", node->label);
+        printf("    pop rax # stack%d\n", --align);
         return;
     case ND_CASE:
     case ND_DEFAULT:

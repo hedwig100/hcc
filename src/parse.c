@@ -583,7 +583,7 @@ Node *labeled_stmt() {
 }
 
 // stmt = "if" '(' expr ')' stmt ( "else" stmt )?
-//      | "switch" '(' expr ')' '{' stmt* labeled_stmt* '}'
+//      | "switch" '(' expr ')' ( stmt | "case" expr ':' stmt | "default" ':' stmt | '{' stmt* labeled_stmt* '}' )
 //      | "return" expr? ';'
 //      | "while" '(' expr ')' stmt
 //      | "for" '(' ( expr | declaration )? ';' expr? ';' expr; ')' stmt
@@ -623,7 +623,28 @@ Node *stmt() {
         expect(")");
         enter_scope(true, false);
         scopes->label = node->label;
-        expect("{");
+
+        if (!consume("{")) {
+            Node *candi;
+            if (consume("case")) {
+                candi       = calloc(1, sizeof(Node));
+                candi->kind = ND_CASE;
+                candi->cond = expr();
+                expect(":");
+                candi->block = stmt();
+                node->block  = candi;
+            } else if (consume("default")) {
+                candi       = calloc(1, sizeof(Node));
+                candi->kind = ND_DEFAULT;
+                expect(":");
+                candi->block = stmt();
+                node->defa   = candi;
+            } else {
+                stmt();
+            }
+            out_scope();
+            return node;
+        }
 
         Node head;
         head.next = NULL;
