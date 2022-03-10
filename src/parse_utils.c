@@ -275,13 +275,20 @@ Func *find_func(Node *node) {
     local variable
 */
 
-// find_lvar searches local variables,if exists return the local variable
+// find_obj searches local variables or enum,if exists return the local variable or enum
 // otherwise return NULL
-Object *find_lvar(Token *tok) {
+Object *find_obj(Token *tok) {
     for (Scope *scp = scopes; scp; scp = scp->before) {
         for (Object *var = scp->lvar; var; var = var->next) {
             if (var->len == tok->len && !memcmp(tok->str, var->name, var->len)) {
                 return var;
+            }
+        }
+        for (Object *ens = scp->en; ens; ens = ens->next) {
+            for (Object *en = ens->enum_list; en; en = en->next) {
+                if (en->len == tok->len && !memcmp(tok->str, en->name, en->len)) {
+                    return en;
+                }
             }
         }
     }

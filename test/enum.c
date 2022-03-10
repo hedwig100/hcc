@@ -3,10 +3,25 @@
 enum TypeKind {
     TP_A,
     TP_B = 1,
-    TP_C,
+    TP_C = 0,
+    TP_D,
+    TP_E = 50 + 50,
 };
 
 int main() {
+    ASSERT(0, TP_A);
+    ASSERT(1, TP_B);
+    ASSERT(0, TP_C);
+    ASSERT(1, TP_D);
+    ASSERT(100, TP_E);
+    enum Type {
+        TP_A = 43,
+        TP_B,
+        TP_C = 32,
+    };
+    ASSERT(43, TP_A);
+    ASSERT(44, TP_B);
+    ASSERT(32, TP_C);
     ok();
     return 0;
 }

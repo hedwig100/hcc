@@ -125,16 +125,21 @@ Node *new_node_lvar(Token *tok, Type *typ) {
     return node;
 }
 
-Node *node_lvar(Token *tok) {
-    Node *node   = calloc(1, sizeof(Node));
-    node->kind   = ND_LVAR;
-    Object *lvar = find_lvar(tok);
-    if (!lvar) {
+Node *node_obj(Token *tok) {
+    Object *obj = find_obj(tok);
+    if (!obj) {
         return NULL;
     }
-    node->offset = lvar->offset;
-    node->typ    = lvar->typ;
-    return node;
+    if (obj->kind == OBJ_LVAR) {
+        // lvar
+        Node *node   = calloc(1, sizeof(Node));
+        node->kind   = ND_LVAR;
+        node->offset = obj->offset;
+        node->typ    = obj->typ;
+    } else if (obj->kind == OBJ_ENUM) {
+        // enum
+        return new_node_num(obj->val);
+    }
 }
 
 Node *new_node_gvar(Token *tok, Type *typ) {
@@ -1011,7 +1016,7 @@ Node *primary() {
             return node;
         }
 
-        node = node_lvar(tok);
+        node = node_obj(tok);
         if (node) {
             return node;
         }

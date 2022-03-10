@@ -284,7 +284,7 @@ int type_size(Type *typ);
 void register_func(Node *node);
 Func *find_func(Node *node);
 
-Object *find_lvar(Token *tok);
+Object *find_obj(Token *tok);
 bool can_defined_lvar(Token *tok);
 
 Object *find_gvar(Token *tok);
@@ -310,7 +310,7 @@ Object *new_object(ObjectKind kind);
 Node *new_node(NodeKind kind, Node *lhs, Node *rhs, Type *typ);
 Node *new_node_num(int val);
 Node *new_node_lvar(Token *tok, Type *typ);
-Node *node_lvar(Token *tok);
+Node *node_obj(Token *tok);
 Node *new_node_gvar(Token *tok, Type *typ);
 Node *node_gvar(Token *tok);
 Node *new_node_str(Token *tok);
