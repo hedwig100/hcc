@@ -852,7 +852,7 @@ Node *add() {
     }
 }
 
-// mul = unary ( '*' unary | '/' unary )*
+// mul = unary ( '*' unary | '/' unary | '%' unary )*
 Node *mul() {
     Node *node = unary();
 
@@ -863,6 +863,8 @@ Node *mul() {
         } else if (consume("/")) {
             node      = new_node(ND_DIV, node, unary(), NULL);
             node->typ = node->lhs->typ;
+        } else if (consume("%")) {
+            node = new_node(ND_MOD, node, unary(), node->typ);
         } else {
             return node;
         }

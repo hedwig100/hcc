@@ -212,6 +212,11 @@ void gen_expression(Node *node) {
         printf("    cqo # div\n");
         printf("    idiv rdi\n");
         break;
+    case ND_MOD:
+        printf("    cqo # mod\n");
+        printf("    idiv rdi\n");
+        printf("    mov rax,rdx\n");
+        break;
     case ND_EQ:
         printf("    cmp rax,rdi # equal\n");
         printf("    sete al\n");
