@@ -231,7 +231,7 @@ Node *ext_def() {
     Node *node = declarator(typ, GLOBAL);
 
     if (!node) {
-        assert_at(is_typ(typ, TP_STRUCT), token->str, "need declarator when youn don't define struct");
+        assert_at(is_typ(typ, TP_STRUCT) || is_typ(typ, TP_ENUM), token->str, "need declarator when you don't define struct");
         expect(";");
         // struct definition
         return NULL;
@@ -281,6 +281,7 @@ Node *ext_def() {
 // decl_spec = "int"
 //           | "char"
 //           | "void"
+//           | "enum" enum_spec
 //           | "struct" struct_spec
 // if not,return NULL;
 Type *decl_spec() {
@@ -291,6 +292,8 @@ Type *decl_spec() {
         typ = new_type(TP_CHAR);
     } else if (consume("void")) {
         typ = new_type(TP_VOID);
+    } else if (consume("enum")) {
+        typ = enum_spec();
     } else if (consume("struct")) {
         typ = struct_spec();
     } else {
@@ -335,6 +338,51 @@ Member *struct_decl() {
     Member *mem = new_mem(node);
     expect(";");
     return mem;
+}
+
+// enum_spec = ident '{'( enumerator ',' )+ '}'
+Type *enum_spec() {
+    Token *tok = expect_ident();
+    Enum *en   = calloc(1, sizeof(Enum));
+    en->name   = tok->str;
+    en->len    = tok->len;
+    expect("{");
+
+    int val = 0;
+    Enum head;
+    head.next = NULL;
+    Enum *now = &head;
+    while (!consume("}")) {
+        now->next = enumerator();
+        now       = now->next;
+        now->next = NULL;
+        if (now->is_init) {
+            val = now->val + 1;
+        } else {
+            now->val = val++;
+        }
+    }
+    assert_at(head.next, token->str, "there is no enumerator.");
+    en->enum_list = head.next;
+    return new_type_enum(en);
+}
+
+// enumerator = ( ident | ident '=' expr ) ','
+Enum *enumerator() {
+    Token *tok  = expect_ident();
+    Enum *en    = calloc(1, sizeof(Enum));
+    en->name    = tok->str;
+    en->len     = tok->len;
+    en->is_init = false;
+    if (consume("=")) {
+        Node *node = expr();
+        node       = eval_const(node);
+        assert_at(node->kind == ND_NUM, token->str, "cannot use not integer value as enum initializer.");
+        en->val     = node->val;
+        en->is_init = true;
+    }
+    expect(",");
+    return en;
 }
 
 // declarator = pointer direct_decl

@@ -71,11 +71,26 @@ Type *new_type_strct(Token *tok, Member *mem) {
     return typ;
 }
 
+Type *new_type_enum(Enum *en) {
+    // register enum
+    en->next   = scopes->en;
+    scopes->en = en;
+
+    // type
+    Type *typ = calloc(1, sizeof(Type));
+    typ->kind = TP_ENUM;
+    typ->size = 4;
+    typ->name = en->name;
+    typ->len  = en->len;
+    return typ;
+}
+
 int byte_align(Type *typ) {
     int aligment;
 
     switch (typ->kind) {
     case TP_INT:
+    case TP_ENUM:
         return 4;
     case TP_CHAR:
         return 1;

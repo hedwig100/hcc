@@ -13,6 +13,17 @@
 char *user_input;
 char *filename;
 
+typedef struct Token Token;
+typedef struct Type Type;
+typedef struct Func Func;
+typedef struct LVar LVar;
+typedef struct GVar GVar;
+typedef struct Str Str;
+typedef struct Scope Scope;
+typedef struct Member Member;
+typedef struct Struct Struct;
+typedef struct Enum Enum;
+
 /*
     tokenize.c
 */
@@ -27,8 +38,6 @@ typedef enum {
 } TokenKind;
 
 // token
-typedef struct Token Token;
-
 struct Token {
     TokenKind kind; // token kind
     Token *next;    // next input token
@@ -55,12 +64,10 @@ typedef enum {
     TP_PTR,    // pointer
     TP_ARRAY,  // array
     TP_STRUCT, // struct
+    TP_ENUM,   // enum
 } TypeKind;
 
 // type
-
-typedef struct Type Type;
-
 struct Type {
     TypeKind kind;
     int size;
@@ -69,7 +76,7 @@ struct Type {
     Type *ptr_to;
     size_t array_size;
 
-    // if kind = TP_STRUCT
+    // if kind = TP_STRUCT or TP_ENUM
     char *name;
     int len;
     Type *mem;
@@ -80,8 +87,6 @@ struct Type {
 Type *new_type(TypeKind kind);
 
 // function
-typedef struct Func Func;
-
 struct Func {
     Func *next;
     char *name;
@@ -94,8 +99,6 @@ struct Func {
 Func *funcs;
 
 // local variable
-typedef struct LVar LVar;
-
 struct LVar {
     LVar *next; // next local variable if exists,otherwise NULL
     char *name; // local variable name
@@ -105,8 +108,6 @@ struct LVar {
 };
 
 // global variable
-typedef struct GVar GVar;
-
 struct GVar {
     GVar *next; // next glocal variable if exists,otherwise NULL
     char *name; // local variable name
@@ -118,8 +119,6 @@ struct GVar {
 GVar *globals;
 
 // string literal
-typedef struct Str Str;
-
 struct Str {
     Str *next;
     char *val;
@@ -130,12 +129,11 @@ struct Str {
 Str *strs;
 
 // Scope
-typedef struct Scope Scope;
-
 struct Scope {
     Scope *next;
     Scope *before;
     LVar *lvar;
+    Enum *en;
 
     // maximal offset in this scope
     int offset;
@@ -148,8 +146,6 @@ struct Scope {
 Scope *scopes;
 
 // Member
-typedef struct Member Member;
-
 struct Member {
     Member *next;
     char *name;
@@ -159,8 +155,6 @@ struct Member {
 };
 
 // Struct
-typedef struct Struct Struct;
-
 struct Struct {
     Struct *next;
     char *name;
@@ -171,6 +165,16 @@ struct Struct {
 };
 
 Struct *strcts;
+
+// enum
+struct Enum {
+    Enum *next;
+    Enum *enum_list;
+    char *name;
+    int len;
+    int val;
+    bool is_init;
+};
 
 // for function parameter
 
@@ -273,6 +277,7 @@ Node *code[100]; // AST
 Type *new_type(TypeKind kind);
 Type *new_type_ptr(Type *ptr_to);
 Type *new_type_strct(Token *tok, Member *mem);
+Type *new_type_enum(Enum *en);
 int byte_align(Type *typ);
 Type *can_assign(Type *typ1, Type *typ2);
 Type *can_add(Type *typ1, Type *typ2);
@@ -320,6 +325,8 @@ Node *ext_def();
 Type *decl_spec();
 Type *struct_spec();
 Member *struct_decl();
+Type *enum_spec();
+Enum *enumerator();
 Node *declarator(Type *typ, Param p);
 Type *pointer(Type *typ);
 Node *direct_decl(Type *typ, Param p);

@@ -135,6 +135,13 @@ Token *tokenize(char *p) {
             continue;
         }
 
+        if (strncmp(p, "enum", 4) == 0 && !isalnum(p[4])) {
+            cur      = new_token(TK_RESERVED, cur, p);
+            cur->len = 4;
+            p += 4;
+            continue;
+        }
+
         if (strncmp(p, "case", 4) == 0 && !isalnum(p[4])) {
             cur      = new_token(TK_RESERVED, cur, p);
             cur->len = 4;
