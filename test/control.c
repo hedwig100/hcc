@@ -10,7 +10,7 @@ int f1(int a) {
             int a;
             ++a;
         }
-        return -1;
+        break;
     case 2:
     case 3:
         return 2;
@@ -38,6 +38,30 @@ int f2(int a) {
     default:
         return 100;
     }
+}
+
+int f3(int a) {
+    switch (a) {
+        int b;
+    case 0:
+        if (b == 4) {
+            break;
+        }
+        return 0;
+    case 1:
+        for (int i = 0; i < 4; ++i) {
+            a = a + 1;
+            if (i == 0) break;
+        }
+        break;
+    case 2:
+        while (a > 0)
+            --a;
+        return a + 2;
+    default:
+        break;
+    }
+    return a - 1;
 }
 
 int main() {
@@ -75,6 +99,11 @@ int main() {
     ASSERT(1, f2(1));
     ASSERT(2, f2(2));
     ASSERT(100, f2(4));
+    ASSERT(0, f3(0));
+    ASSERT(1, f3(1));
+    ASSERT(2, f3(2));
+    ASSERT(3, f3(4));
+    ASSERT(8, f3(9));
 
     ok();
     return 0;

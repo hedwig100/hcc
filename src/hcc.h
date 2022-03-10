@@ -140,7 +140,8 @@ struct Scope {
     // maximal offset in this scope
     int offset;
 
-    bool can_bc; // true if you can break or continue
+    bool can_break; // truee if you can break
+    bool can_cont;  // true if you can continue
     int label;
 };
 
@@ -287,7 +288,7 @@ bool can_defined_lvar(Token *tok);
 
 GVar *find_gvar(Token *tok);
 
-void enter_scope(bool can_bc);
+void enter_scope(bool can_break, bool can_cont);
 void out_scope();
 int calc_aligment_offset(int min_offset, int alignment);
 void add_offset(Scope *scope, int size, int alignment);

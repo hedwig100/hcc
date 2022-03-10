@@ -405,7 +405,7 @@ Type *type_array(Type *typ) {
 // func_param = ')'
 //            | decl_spec declarator ( ',' decl_spec declarator )* ')'
 Node *func_param(Node *node) {
-    enter_scope(false);
+    enter_scope(false, false);
     if (consume(")")) {
         infof("finished until '()'.");
         node->params = NULL;
@@ -542,7 +542,7 @@ Node *stmt() {
         node->cond  = expr();
         expect(")");
         infof("finished until 'if ( cond )'");
-        enter_scope(false);
+        enter_scope(false, false);
         node->then = stmt();
         out_scope();
         infof("finished until 'if ( cond ) then'");
@@ -560,7 +560,7 @@ Node *stmt() {
         expect("(");
         node->cond = expr();
         expect(")");
-        enter_scope(true);
+        enter_scope(true, false);
         scopes->label = node->label;
         expect("{");
 
@@ -605,7 +605,7 @@ Node *stmt() {
         node->label = counter();
         node->cond  = expr();
         expect(")");
-        enter_scope(true);
+        enter_scope(true, true);
         scopes->label = node->label;
         node->then    = stmt();
         out_scope();
@@ -615,7 +615,7 @@ Node *stmt() {
         node        = calloc(1, sizeof(Node));
         node->kind  = ND_FOR;
         node->label = counter();
-        enter_scope(true);
+        enter_scope(true, true);
         scopes->label = node->label;
         if (!consume(";")) {
             node->ini = expr();
@@ -633,19 +633,19 @@ Node *stmt() {
         out_scope();
         return node;
     } else if (consume("break")) {
-        assert_at(scopes->can_bc, token->str, "cannot 'break' here.");
+        assert_at(scopes->can_break, token->str, "cannot 'break' here.");
         expect(";");
         node        = new_node(ND_BREAK, NULL, NULL, NULL);
         node->label = scopes->label;
         return node;
     } else if (consume("continue")) {
-        assert_at(scopes->can_bc, token->str, "cannot 'continue' here.");
+        assert_at(scopes->can_cont, token->str, "cannot 'continue' here.");
         expect(";");
         node        = new_node(ND_CONTINUE, NULL, NULL, NULL);
         node->label = scopes->label;
         return node;
     } else if (consume("{")) {
-        enter_scope(false);
+        enter_scope(false, false);
         node = cmp_stmt();
         out_scope();
         return node;
@@ -900,7 +900,7 @@ Node *primary() {
 
     if (consume("(")) {
         if (consume("{")) { // statement expression
-            enter_scope(false);
+            enter_scope(false, false);
             node = cmp_stmt();
             out_scope();
             Type *typ;
