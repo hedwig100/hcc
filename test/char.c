@@ -19,6 +19,11 @@ int main() {
     char *w[3];
     w[0] = "joga";
     ASSERT(97, ({ w[0][3]; }));
+
+    char y = 'a';
+    ASSERT(97, y);
+    char abc = '4';
+    ASSERT(52, abc);
     ok();
     return 0;
 }

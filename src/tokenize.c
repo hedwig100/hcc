@@ -68,6 +68,14 @@ Token *tokenize(char *p) {
             continue;
         }
 
+        if (*p == '\'') {
+            cur      = new_token(TK_NUM, cur, p++);
+            cur->val = *p - '\0';
+            assert_at(*(++p) == '\'', cur->str, "char literal must be 1-character.");
+            p++;
+            continue;
+        }
+
         if (*p == '"') {
             cur     = new_token(TK_STR, cur, p);
             char *q = strstr(++p, "\"");
@@ -204,7 +212,7 @@ Token *tokenize(char *p) {
             continue;
         }
 
-        error_at(token->str, "cannot tokenize");
+        error_at(cur->str, "cannot tokenize");
     }
 
     new_token(TK_EOF, cur, p);
