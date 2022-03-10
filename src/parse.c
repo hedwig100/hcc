@@ -185,13 +185,14 @@ Node *new_node_str(Token *tok) {
     } else {
         str->id = 0;
     }
-    node->id   = str->id;
-    str->val   = tok->str;
-    node->name = tok->str;
-    str->len   = tok->len;
-    node->len  = tok->len;
-    node->typ  = new_type_ptr(new_type(TP_CHAR));
-    strs       = str;
+    node->id        = str->id;
+    str->val        = tok->str;
+    node->name      = tok->str;
+    str->len        = tok->len;
+    node->len       = tok->len;
+    node->typ       = new_type_ptr(new_type(TP_CHAR));
+    node->type_size = tok->type_len;
+    strs            = str;
     return node;
 }
 
@@ -866,6 +867,7 @@ Node *unary() {
             return new_node_num(typ->size);
         }
         Node *node = unary();
+        if (node->kind == ND_STR) return new_node_num(node->type_size);
         return new_node_num(node->typ->size);
     }
     if (consume("++")) {

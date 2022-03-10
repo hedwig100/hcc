@@ -24,6 +24,11 @@ int main() {
     ASSERT(97, y);
     char abc = '4';
     ASSERT(52, abc);
+    ASSERT(3, sizeof("abc"));
+    ASSERT(4, sizeof("abc\n"));
+    ASSERT(4, sizeof("abcn"));
+    y = '\n';
+    ASSERT(10, y);
     ok();
     return 0;
 }

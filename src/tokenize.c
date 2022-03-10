@@ -22,6 +22,74 @@ Token *new_token(TokenKind kind, Token *cur, char *str) {
     return tok;
 }
 
+char read_escape_char(char *p) {
+    switch (*p) {
+    case 'a':
+        return '\a';
+    case 'b':
+        return '\b';
+    case 't':
+        return '\t';
+    case 'n':
+        return '\n';
+    case 'v':
+        return '\v';
+    case 'f':
+        return '\f';
+    case 'r':
+        return '\r';
+    case 'e':
+        return 27;
+    case '0':
+        return 0;
+    default:
+        return *p;
+    }
+}
+
+char *read_string_end(char *start) {
+    char *p = start + 1;
+    while ((*p) != '"') {
+        if (*p == '\0' || *p == '\n') {
+            error_at(p, "missing terminationg \" character ");
+        }
+        if (*p == '\\') {
+            p++;
+        }
+        p++;
+    }
+    return p;
+}
+
+int count_escase(char *start) {
+    char *p = start + 1;
+    int ans = 0;
+    while ((*p) != '"') {
+        if (*p == '\0' || *p == '\n') {
+            error_at(p, "missing terminationg \" character ");
+        }
+        if (*p == '\\') {
+            p++;
+            ans++;
+        }
+        p++;
+    }
+    return ans;
+}
+
+Token *read_string(Token *cur, char *p) {
+    Token *tok    = calloc(1, sizeof(Token));
+    tok->kind     = TK_STR;
+    tok->str      = p;
+    char *start   = p;
+    char *end     = read_string_end(p);
+    tok->len      = end - start + 1;
+    tok->str      = p;
+    tok->type_len = tok->len - 2 - count_escase(p);
+    cur->next     = tok;
+    return tok;
+}
+
 Token *tokenize(char *p) {
     Token head;
     head.next  = NULL;
@@ -69,21 +137,20 @@ Token *tokenize(char *p) {
         }
 
         if (*p == '\'') {
-            cur      = new_token(TK_NUM, cur, p++);
-            cur->val = *p - '\0';
+            cur = new_token(TK_NUM, cur, ++p);
+            if (*p == '\\') {
+                cur->val = read_escape_char(++p);
+            } else {
+                cur->val = *p - '\0';
+            }
             assert_at(*(++p) == '\'', cur->str, "char literal must be 1-character.");
             p++;
             continue;
         }
 
         if (*p == '"') {
-            cur     = new_token(TK_STR, cur, p);
-            char *q = strstr(++p, "\"");
-            if (!q) {
-                error_at(token->str, "string literal is not valid.");
-            }
-            p        = q + 1;
-            cur->len = p - cur->str;
+            cur = read_string(cur, p);
+            p += cur->len;
             continue;
         }
 

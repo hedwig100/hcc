@@ -42,6 +42,7 @@ struct Token {
     int val;        // if kind is TK_NUM,its number
     char *str;      // token string
     int len;
+    int type_len;
 };
 
 // token sequence
@@ -225,11 +226,12 @@ struct Node {
     char *name; // if kind is ND_CALLFUNC,ND_FUNCDEF,its name
     int len;    // name's length
 
-    int val;    // if kind is ND_NUM,its number
-    int id;     // if kind is ND_STR,its id
-    int offset; // if kind is ND_LVAR,ND_FUNCDEFits offset from sp, ND_DOT its offset
-    Type *typ;  // when kind is ND_LVAR,ND_FUNCDEF,ND_FUNCCALL its type(or return type)
-    int label;  // used when kind is ND_WHEN,ND_WHILE
+    int val;       // if kind is ND_NUM,its number
+    int id;        // if kind is ND_STR,its id
+    int type_size; // if kind is ND_STR,its length
+    int offset;    // if kind is ND_LVAR,ND_FUNCDEFits offset from sp, ND_DOT its offset
+    Type *typ;     // when kind is ND_LVAR,ND_FUNCDEF,ND_FUNCCALL its type(or return type)
+    int label;     // used when kind is ND_WHEN,ND_WHILE
 
     // operator's left-hand side and right-hand side
     Node *lhs;
