@@ -345,13 +345,19 @@ Member *struct_decl() {
     return mem;
 }
 
-// enum_spec = ident '{'( enumerator ',' )+ '}'
+// enum_spec = ident
+//           | ident '{'( enumerator ',' )+ '}'
 Type *enum_spec() {
     Token *tok = expect_ident();
     Object *en = new_object(OBJ_ENUM);
     en->name   = tok->str;
     en->len    = tok->len;
-    expect("{");
+
+    if (!consume("{")) {
+        Object *obj = find_enum(tok);
+        assert_at(obj, token->str, "not enum specifier");
+        return obj->typ;
+    }
 
     int val = 0;
     Object head;

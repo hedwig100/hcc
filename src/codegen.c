@@ -44,6 +44,7 @@ void gen_store(Type *typ, const char *reg64, const char *reg32, const char *reg1
     int before_offset = 0;
     switch (typ->kind) {
     case TP_INT:
+    case TP_ENUM:
         printf("    mov dword ptr [rax],%s # int \n", reg32);
         return;
     case TP_CHAR:
@@ -73,6 +74,7 @@ void gen_store(Type *typ, const char *reg64, const char *reg32, const char *reg1
 void gen_load(Type *typ, const char *reg64) {
     switch (typ->kind) {
     case TP_INT:
+    case TP_ENUM:
         printf("    movsx %s,dword ptr [rax] # int\n", reg64);
         return;
     case TP_CHAR:

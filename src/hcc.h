@@ -302,6 +302,7 @@ Node *access(Node *ptr, Node *expr);
 Node *access_member(Node *expr, int offset, Type *typ);
 Struct *find_struct(char *name, int len);
 Object *new_object(ObjectKind kind);
+Object *find_enum(Token *tok);
 
 /*
     parse.c

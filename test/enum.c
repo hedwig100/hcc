@@ -22,6 +22,22 @@ int main() {
     ASSERT(43, TP_A);
     ASSERT(44, TP_B);
     ASSERT(32, TP_C);
+
+    enum Type a = TP_A;
+    ASSERT(43, a);
+    enum TypeKind b = TP_A;
+    ASSERT(43, b);
+    enum TypeKind c = TP_E;
+    ASSERT(100, c);
+
+    enum TypeBB {
+        TP_A = 10,
+    };
+
+    enum TypeBB x   = TP_A;
+    enum TypeKind y = TP_A;
+    ASSERT(10, x);
+    ASSERT(10, x);
     ok();
     return 0;
 }

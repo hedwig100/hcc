@@ -83,6 +83,7 @@ Type *new_type_enum(Object *en) {
     typ->size = 4;
     typ->name = en->name;
     typ->len  = en->len;
+    en->typ   = typ;
     return typ;
 }
 
@@ -116,8 +117,10 @@ int byte_align(Type *typ) {
 Type *can_assign(Type *typ1, Type *typ2) {
     switch (typ1->kind) {
     case TP_INT:
+    case TP_ENUM:
         switch (typ2->kind) {
         case TP_INT:
+        case TP_ENUM:
         case TP_CHAR:
             return new_type(TP_INT);
         case TP_VOID:
@@ -129,6 +132,7 @@ Type *can_assign(Type *typ1, Type *typ2) {
     case TP_CHAR:
         switch (typ2->kind) {
         case TP_INT:
+        case TP_ENUM:
         case TP_CHAR:
             return new_type(TP_CHAR);
         case TP_VOID:
@@ -142,6 +146,7 @@ Type *can_assign(Type *typ1, Type *typ2) {
     case TP_PTR:
         switch (typ2->kind) {
         case TP_INT:
+        case TP_ENUM:
         case TP_CHAR:
             error_at(token->str, "cannot assign here.");
         case TP_VOID:
@@ -569,4 +574,15 @@ Object *new_object(ObjectKind kind) {
     Object *obj = calloc(1, sizeof(Object));
     obj->kind   = kind;
     return obj;
+}
+
+Object *find_enum(Token *tok) {
+    for (Scope *scp = scopes; scp; scp = scp->before) {
+        for (Object *ens = scp->en; ens; ens = ens->next) {
+            if (ens->len == tok->len && !memcmp(ens->name, tok->str, tok->len)) {
+                return ens;
+            }
+        }
+    }
+    return NULL;
 }
