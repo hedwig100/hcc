@@ -539,6 +539,8 @@ Node *stmt() {
         node        = calloc(1, sizeof(Node));
         node->kind  = ND_FOR;
         node->label = counter();
+        enter_scope(true);
+        scopes->label = node->label;
         if (!consume(";")) {
             node->ini = expr();
             consume(";");
@@ -551,20 +553,18 @@ Node *stmt() {
             node->step = expr();
             consume(")");
         }
-        enter_scope(true);
-        scopes->label = node->label;
-        node->then    = stmt();
+        node->then = stmt();
         out_scope();
         return node;
     } else if (consume("break")) {
-        expect(";");
         assert_at(scopes->can_bc, token->str, "cannot 'break' here.");
+        expect(";");
         node        = new_node(ND_BREAK, NULL, NULL, NULL);
         node->label = scopes->label;
         return node;
     } else if (consume("continue")) {
-        expect(";");
         assert_at(scopes->can_bc, token->str, "cannot 'continue' here.");
+        expect(";");
         node        = new_node(ND_CONTINUE, NULL, NULL, NULL);
         node->label = scopes->label;
         return node;
