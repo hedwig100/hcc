@@ -29,7 +29,7 @@ int main(int argc, char **argv) {
     scopes         = calloc(1, sizeof(Scope));
     scopes->before = NULL;
     scopes->offset = 0;
-    scopes->lvar   = calloc(1, sizeof(LVar));
+    scopes->lvar   = new_object(OBJ_LVAR);
     strcts         = calloc(1, sizeof(Struct));
     program();
 

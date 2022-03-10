@@ -16,13 +16,14 @@ char *filename;
 typedef struct Token Token;
 typedef struct Type Type;
 typedef struct Func Func;
-typedef struct LVar LVar;
+typedef struct Object Object;
+// typedef struct LVar LVar;
 typedef struct GVar GVar;
 typedef struct Str Str;
 typedef struct Scope Scope;
 typedef struct Member Member;
 typedef struct Struct Struct;
-typedef struct Enum Enum;
+// typedef struct Enum Enum;
 
 /*
     tokenize.c
@@ -98,13 +99,29 @@ struct Func {
 
 Func *funcs;
 
-// local variable
-struct LVar {
-    LVar *next; // next local variable if exists,otherwise NULL
-    char *name; // local variable name
-    int len;    // local variable length
-    int offset; // offset from RBP
+// Object kind
+typedef enum {
+    OBJ_LVAR,
+    OBJ_GVAR,
+    OBJ_STRUCT,
+    OBJ_ENUM,
+} ObjectKind;
+
+// Object
+struct Object {
+    ObjectKind kind;
+    Object *next;
+    char *name;
+    int len;
+
+    // lvar
+    int offset;
     Type *typ;
+
+    // enum
+    Object *enum_list;
+    int val;
+    bool is_init;
 };
 
 // global variable
@@ -132,8 +149,8 @@ Str *strs;
 struct Scope {
     Scope *next;
     Scope *before;
-    LVar *lvar;
-    Enum *en;
+    Object *lvar;
+    Object *en;
 
     // maximal offset in this scope
     int offset;
@@ -165,16 +182,6 @@ struct Struct {
 };
 
 Struct *strcts;
-
-// enum
-struct Enum {
-    Enum *next;
-    Enum *enum_list;
-    char *name;
-    int len;
-    int val;
-    bool is_init;
-};
 
 // for function parameter
 
@@ -277,7 +284,7 @@ Node *code[100]; // AST
 Type *new_type(TypeKind kind);
 Type *new_type_ptr(Type *ptr_to);
 Type *new_type_strct(Token *tok, Member *mem);
-Type *new_type_enum(Enum *en);
+Type *new_type_enum(Object *en);
 int byte_align(Type *typ);
 Type *can_assign(Type *typ1, Type *typ2);
 Type *can_add(Type *typ1, Type *typ2);
@@ -288,7 +295,7 @@ int type_size(Type *typ);
 void register_func(Node *node);
 Func *find_func(Node *node);
 
-LVar *find_lvar(Token *tok);
+Object *find_lvar(Token *tok);
 bool can_defined_lvar(Token *tok);
 
 GVar *find_gvar(Token *tok);
@@ -305,6 +312,7 @@ Node *add_helper(Node *lhs, Node *rhs, NodeKind kind);
 Node *access(Node *ptr, Node *expr);
 Node *access_member(Node *expr, int offset, Type *typ);
 Struct *find_struct(char *name, int len);
+Object *new_object(ObjectKind kind);
 
 /*
     parse.c
@@ -326,7 +334,7 @@ Type *decl_spec();
 Type *struct_spec();
 Member *struct_decl();
 Type *enum_spec();
-Enum *enumerator();
+Object *enumerator();
 Node *declarator(Type *typ, Param p);
 Type *pointer(Type *typ);
 Node *direct_decl(Type *typ, Param p);

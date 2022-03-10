@@ -113,7 +113,7 @@ Node *new_node_lvar(Token *tok, Type *typ) {
         error_at(token->str, "the same name local variable is defined in this scope.");
     }
 
-    LVar *lvar   = calloc(1, sizeof(LVar));
+    Object *lvar = new_object(OBJ_LVAR);
     lvar->next   = scopes->lvar;
     scopes->lvar = lvar;
     lvar->name   = tok->str;
@@ -126,9 +126,9 @@ Node *new_node_lvar(Token *tok, Type *typ) {
 }
 
 Node *node_lvar(Token *tok) {
-    Node *node = calloc(1, sizeof(Node));
-    node->kind = ND_LVAR;
-    LVar *lvar = find_lvar(tok);
+    Node *node   = calloc(1, sizeof(Node));
+    node->kind   = ND_LVAR;
+    Object *lvar = find_lvar(tok);
     if (!lvar) {
         return NULL;
     }
@@ -343,15 +343,15 @@ Member *struct_decl() {
 // enum_spec = ident '{'( enumerator ',' )+ '}'
 Type *enum_spec() {
     Token *tok = expect_ident();
-    Enum *en   = calloc(1, sizeof(Enum));
+    Object *en = new_object(OBJ_ENUM);
     en->name   = tok->str;
     en->len    = tok->len;
     expect("{");
 
     int val = 0;
-    Enum head;
-    head.next = NULL;
-    Enum *now = &head;
+    Object head;
+    head.next   = NULL;
+    Object *now = &head;
     while (!consume("}")) {
         now->next = enumerator();
         now       = now->next;
@@ -368,9 +368,9 @@ Type *enum_spec() {
 }
 
 // enumerator = ( ident | ident '=' expr ) ','
-Enum *enumerator() {
+Object *enumerator() {
     Token *tok  = expect_ident();
-    Enum *en    = calloc(1, sizeof(Enum));
+    Object *en  = new_object(OBJ_ENUM);
     en->name    = tok->str;
     en->len     = tok->len;
     en->is_init = false;

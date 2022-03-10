@@ -71,7 +71,7 @@ Type *new_type_strct(Token *tok, Member *mem) {
     return typ;
 }
 
-Type *new_type_enum(Enum *en) {
+Type *new_type_enum(Object *en) {
     // register enum
     en->next   = scopes->en;
     scopes->en = en;
@@ -276,9 +276,9 @@ Func *find_func(Node *node) {
 
 // find_lvar searches local variables,if exists return the local variable
 // otherwise return NULL
-LVar *find_lvar(Token *tok) {
+Object *find_lvar(Token *tok) {
     for (Scope *scp = scopes; scp; scp = scp->before) {
-        for (LVar *var = scp->lvar; var; var = var->next) {
+        for (Object *var = scp->lvar; var; var = var->next) {
             if (var->len == tok->len && !memcmp(tok->str, var->name, var->len)) {
                 return var;
             }
@@ -291,7 +291,7 @@ LVar *find_lvar(Token *tok) {
 // if OK (the same name local variable is not defined), return true;
 // else return false;
 bool can_defined_lvar(Token *tok) {
-    for (LVar *var = scopes->lvar; var; var = var->next) {
+    for (Object *var = scopes->lvar; var; var = var->next) {
         if (var->len == tok->len && !memcmp(tok->str, var->name, var->len)) {
             return false;
         }
@@ -322,7 +322,7 @@ void enter_scope(bool can_break, bool can_cont) {
     Scope *new        = calloc(1, sizeof(Scope));
     new->before       = scopes;
     scopes->next      = new;
-    new->lvar         = calloc(1, sizeof(LVar));
+    new->lvar         = new_object(OBJ_LVAR);
     new->lvar->next   = NULL;
     new->offset       = scopes->offset;
     new->lvar->offset = new->offset;
@@ -540,4 +540,10 @@ Struct *find_struct(char *name, int len) {
         }
     }
     return NULL;
+}
+
+Object *new_object(ObjectKind kind) {
+    Object *obj = calloc(1, sizeof(Object));
+    obj->kind   = kind;
+    return obj;
 }
