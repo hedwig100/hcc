@@ -139,6 +139,9 @@ struct Scope {
 
     // maximal offset in this scope
     int offset;
+
+    bool can_bc; // true if you can break or continue
+    int label;
 };
 
 Scope *scopes;
@@ -199,6 +202,8 @@ typedef enum {
     ND_IF,       // "if"
     ND_WHILE,    // "while"
     ND_FOR,      // "for"
+    ND_BREAK,    // "break"
+    ND_CONTINUE, // "continue"
     ND_ADDR,     // &
     ND_DEREF,    // *
     ND_STMTEXPR, // "({" block "})"
@@ -220,6 +225,7 @@ struct Node {
     int id;     // if kind is ND_STR,its id
     int offset; // if kind is ND_LVAR,ND_FUNCDEFits offset from sp, ND_DOT its offset
     Type *typ;  // when kind is ND_LVAR,ND_FUNCDEF,ND_FUNCCALL its type(or return type)
+    int label;  // used when kind is ND_WHEN,ND_WHILE
 
     // operator's left-hand side and right-hand side
     Node *lhs;
@@ -274,7 +280,7 @@ bool can_defined_lvar(Token *tok);
 
 GVar *find_gvar(Token *tok);
 
-void enter_scope();
+void enter_scope(bool can_bc);
 void out_scope();
 int calc_aligment_offset(int min_offset, int alignment);
 void add_offset(Scope *scope, int size, int alignment);

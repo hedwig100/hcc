@@ -1,5 +1,11 @@
 #include "hcc.h"
 
+// counter create unique number
+int counter() {
+    static int count = 0;
+    return count++;
+}
+
 // consume read a token and return true if next token is expected kind of token,
 // otherwise,return false
 bool consume(char *op) {
@@ -399,7 +405,7 @@ Type *type_array(Type *typ) {
 // func_param = ')'
 //            | decl_spec declarator ( ',' decl_spec declarator )* ')'
 Node *func_param(Node *node) {
-    enter_scope();
+    enter_scope(false);
     if (consume(")")) {
         infof("finished until '()'.");
         node->params = NULL;
@@ -481,6 +487,8 @@ Node *cmp_stmt() {
 //      | "return" expr? ';'
 //      | "while" '(' expr ')' stmt
 //      | "for" '(' expr? ';' expr? ';' expr; ')' stmt
+//      | "break" ';'
+//      | "continue" ';'
 //      | '{' cmp_stmt
 //      | expr ';'
 Node *stmt() {
@@ -488,12 +496,13 @@ Node *stmt() {
 
     if (consume("if")) {
         expect("(");
-        node       = calloc(1, sizeof(Node));
-        node->kind = ND_IF;
-        node->cond = expr();
+        node        = calloc(1, sizeof(Node));
+        node->kind  = ND_IF;
+        node->label = counter();
+        node->cond  = expr();
         expect(")");
         infof("finished until 'if ( cond )'");
-        enter_scope();
+        enter_scope(false);
         node->then = stmt();
         out_scope();
         infof("finished until 'if ( cond ) then'");
@@ -515,18 +524,21 @@ Node *stmt() {
         return node;
     } else if (consume("while")) {
         expect("(");
-        node       = calloc(1, sizeof(Node));
-        node->kind = ND_WHILE;
-        node->cond = expr();
+        node        = calloc(1, sizeof(Node));
+        node->kind  = ND_WHILE;
+        node->label = counter();
+        node->cond  = expr();
         expect(")");
-        enter_scope();
-        node->then = stmt();
+        enter_scope(true);
+        scopes->label = node->label;
+        node->then    = stmt();
         out_scope();
         return node;
     } else if (consume("for")) {
         expect("(");
-        node       = calloc(1, sizeof(Node));
-        node->kind = ND_FOR;
+        node        = calloc(1, sizeof(Node));
+        node->kind  = ND_FOR;
+        node->label = counter();
         if (!consume(";")) {
             node->ini = expr();
             consume(";");
@@ -539,12 +551,25 @@ Node *stmt() {
             node->step = expr();
             consume(")");
         }
-        enter_scope();
-        node->then = stmt();
+        enter_scope(true);
+        scopes->label = node->label;
+        node->then    = stmt();
         out_scope();
         return node;
+    } else if (consume("break")) {
+        expect(";");
+        assert_at(scopes->can_bc, token->str, "cannot 'break' here.");
+        node        = new_node(ND_BREAK, NULL, NULL, NULL);
+        node->label = scopes->label;
+        return node;
+    } else if (consume("continue")) {
+        expect(";");
+        assert_at(scopes->can_bc, token->str, "cannot 'continue' here.");
+        node        = new_node(ND_CONTINUE, NULL, NULL, NULL);
+        node->label = scopes->label;
+        return node;
     } else if (consume("{")) {
-        enter_scope();
+        enter_scope(false);
         node = cmp_stmt();
         out_scope();
         return node;
@@ -778,7 +803,7 @@ Node *primary() {
 
     if (consume("(")) {
         if (consume("{")) { // statement expression
-            enter_scope();
+            enter_scope(false);
             node = cmp_stmt();
             out_scope();
             Type *typ;

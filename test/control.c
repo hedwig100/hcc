@@ -16,6 +16,13 @@ int main() {
     ASSERT(100, ({int ans;int i;int j;ans=0;for(i=0;i<10;i=i+1){for(j=0;j<10;j=j+1){ans=ans+1;}} ans; }));
     ASSERT(24, ({int ans;int i;ans=1;i=0;while(i<30){if(i<10){ans=ans*2;}else{ans=ans-50;}i=i+1;} ans; }));
     ASSERT(3, ({int a1;int b_1;a1=0;b_1=3; a1+b_1; }));
+
+    ASSERT(2, ({int ans = 0;int i;for (i = 0; i < 5; ++i) {if (ans == 2)break;ans = ans + 1;}ans; }));
+    ASSERT(3, ({ int ans = 0; int i; for (i = 0;i < 4;++i){if (i == 0) continue; ans = ans + 1;}ans; }));
+    ASSERT(3, ({ int ans = 0; int i = 0; while (i < 4){if (i == 3) break;++i;ans = ans + 1;}ans; }));
+    ASSERT(5, ({ int ans = 0; int i = 5; while (i >= 0){if (--i == 3) continue; ans = ans + 1;}ans; }));
+    ASSERT(5, ({int ans = 0;int i;for (i = 0; i < 4; ++i) {if (i == 0) continue;while (++i < 10) {ans = ans + i;if (ans == 5) break;}}ans; }));
+    ASSERT(1920, ({int ans = 0;int i;for (i = 0; i < 50; ++i) {int j;if (i == 5) continue;for (j = 0; j < 10; ++j) {if (j / 4 == 2) break;ans = ans + i - 20;}}ans; }));
     ok();
     return 0;
 }

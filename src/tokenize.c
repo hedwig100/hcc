@@ -93,6 +93,13 @@ Token *tokenize(char *p) {
             continue;
         }
 
+        if (strncmp(p, "continue", 8) == 0 && !isalnum(p[8])) {
+            cur      = new_token(TK_RESERVED, cur, p);
+            cur->len = 8;
+            p += 8;
+            continue;
+        }
+
         if (strncmp(p, "if", 2) == 0 && !isalnum(p[2])) {
             cur      = new_token(TK_RESERVED, cur, p);
             cur->len = 2;
@@ -115,6 +122,13 @@ Token *tokenize(char *p) {
         }
 
         if (strncmp(p, "while", 5) == 0 && !isalnum(p[5])) {
+            cur      = new_token(TK_RESERVED, cur, p);
+            cur->len = 5;
+            p += 5;
+            continue;
+        }
+
+        if (strncmp(p, "break", 5) == 0 && !isalnum(p[5])) {
             cur      = new_token(TK_RESERVED, cur, p);
             cur->len = 5;
             p += 5;

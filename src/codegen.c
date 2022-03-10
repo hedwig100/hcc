@@ -3,12 +3,6 @@
 // for 16byte alignment
 int align = 0;
 
-// counter create unique number
-int counter() {
-    static int count = 0;
-    return count++;
-}
-
 // gen_lvar generates local variable address (expression)
 void gen_lvar(Node *node) {
     if (node->kind != ND_LVAR) errorf("node kind is not ND_LVAR.");
@@ -253,19 +247,18 @@ void gen_statement(Node *node) {
         gen_expression(node->cond);
         printf("    pop rax # stack%d\n", --align);
         printf("    cmp rax,0\n");
-        cnt = counter();
 
         if (node->els) {
-            printf("    je .Lelse%d # if\n", cnt);
+            printf("    je .Lelse%d # if\n", node->label);
             gen_statement(node->then);
-            printf("    jmp .Lend%d\n", cnt);
-            printf(".Lelse%d: # else\n", cnt);
+            printf("    jmp .Lend%d\n", node->label);
+            printf(".Lelse%d: # else\n", node->label);
             gen_statement(node->els);
-            printf(".Lend%d:\n", cnt);
+            printf(".Lend%d:\n", node->label);
         } else {
-            printf("    je .Lend%d # if \n", cnt);
+            printf("    je .Lend%d # if \n", node->label);
             gen_statement(node->then);
-            printf(".Lend%d:\n", cnt);
+            printf(".Lend%d:\n", node->label);
         }
 
         return;
@@ -279,36 +272,42 @@ void gen_statement(Node *node) {
         printf("    ret\n");
         return;
     case ND_WHILE:
-        cnt = counter();
-        printf(".Lbegin%d: # while\n", cnt);
+        printf(".Lbegin%d: # while\n", node->label);
+        printf(".Lcont%d:\n", node->label);
         gen_expression(node->cond);
         printf("    pop rax # stack%d\n", --align);
         printf("    cmp rax,0\n");
-        printf("    je .Lend%d\n", cnt);
+        printf("    je .Lend%d\n", node->label);
         gen_statement(node->then);
-        printf("    jmp .Lbegin%d\n", cnt);
-        printf(".Lend%d:\n", cnt);
+        printf("    jmp .Lbegin%d\n", node->label);
+        printf(".Lend%d:\n", node->label);
         return;
     case ND_FOR:
-        cnt = counter();
         if (node->ini) {
             gen_expression(node->ini);
             printf("    pop rax # stack%d\n", --align);
         }
-        printf(".Lbegin%d: # for\n", cnt);
+        printf(".Lbegin%d: # for\n", node->label);
         if (node->cond) {
             gen_expression(node->cond);
             printf("    pop rax # stack%d\n", --align);
             printf("    cmp rax,0\n");
-            printf("    je .Lend%d\n", cnt);
+            printf("    je .Lend%d\n", node->label);
         }
         gen_statement(node->then);
+        printf(".Lcont%d:\n", node->label);
         if (node->step) {
             gen_expression(node->step);
             printf("    pop rax # stack%d\n", --align);
         }
-        printf("    jmp .Lbegin%d\n", cnt);
-        printf(".Lend%d:\n", cnt);
+        printf("    jmp .Lbegin%d\n", node->label);
+        printf(".Lend%d:\n", node->label);
+        return;
+    case ND_BREAK:
+        printf("    jmp .Lend%d # break \n", node->label);
+        return;
+    case ND_CONTINUE:
+        printf("    jmp .Lcont%d # continue \n", node->label);
         return;
     case ND_BLOCK:
         for (Node *now = node->block; now; now = now->next) {

@@ -303,7 +303,7 @@ GVar *find_gvar(Token *tok) {
     scope
 */
 
-void enter_scope() {
+void enter_scope(bool can_bc) {
     Scope *new        = calloc(1, sizeof(Scope));
     new->before       = scopes;
     scopes->next      = new;
@@ -311,7 +311,11 @@ void enter_scope() {
     new->lvar->next   = NULL;
     new->offset       = scopes->offset;
     new->lvar->offset = new->offset;
-    scopes            = new;
+
+    // break or continue
+    new->can_bc = can_bc | scopes->can_bc;
+    new->label  = scopes->label;
+    scopes      = new;
 }
 
 void out_scope() {
