@@ -483,7 +483,47 @@ Node *cmp_stmt() {
     return node;
 }
 
+// labeled_stmt = "case" expr ':' stmt* | "default" ':' stmt*
+// expr must be constant expression
+// otherwise return NULL
+Node *labeled_stmt() {
+    Node *node = calloc(1, sizeof(Node));
+    Node head;
+    head.next = NULL;
+    Node *now = &head;
+    if (consume("case")) {
+        node->kind = ND_CASE;
+        node->cond = expr();
+        expect(":");
+        while (1) {
+            if (lookahead("case", token) || lookahead("default", token) || lookahead("}", token)) {
+                break;
+            }
+            now->next = stmt();
+            now       = now->next;
+            now->next = NULL;
+        }
+        node->block = head.next;
+        return node;
+    } else if (consume("default")) {
+        node->kind = ND_DEFAULT;
+        expect(":");
+        while (1) {
+            if (lookahead("case", token) || lookahead("default", token) || lookahead("}", token)) {
+                break;
+            }
+            now->next = stmt();
+            now       = now->next;
+            now->next = NULL;
+        }
+        node->block = head.next;
+        return node;
+    }
+    return NULL;
+}
+
 // stmt = "if" '(' expr ')' stmt ( "else" stmt )?
+//      | "switch" '(' expr ')' '{' stmt* labeled_stmt* '}'
 //      | "return" expr? ';'
 //      | "while" '(' expr ')' stmt
 //      | "for" '(' expr? ';' expr? ';' expr; ')' stmt
@@ -511,6 +551,42 @@ Node *stmt() {
             node->els = stmt();
         }
 
+        return node;
+    } else if (consume("switch")) {
+        node        = calloc(1, sizeof(Node));
+        node->kind  = ND_SWITCH;
+        node->label = counter();
+        node->defa  = NULL;
+        expect("(");
+        node->cond = expr();
+        expect(")");
+        enter_scope(true);
+        scopes->label = node->label;
+        expect("{");
+
+        Node head;
+        head.next = NULL;
+        Node *now = &head;
+        while (1) {
+            now->next = labeled_stmt();
+            if (now->next) {
+                if (now->next->kind == ND_DEFAULT) {
+                    // default
+                    assert_at(!(node->defa), token->str, "two 'default' statement exist in one 'switch' statement.");
+                    node->defa = now->next;
+                } else {
+                    // case
+                    now       = now->next;
+                    now->next = NULL;
+                }
+            } else if (consume("}")) {
+                break;
+            } else {
+                stmt(); // ignore
+            }
+        }
+        out_scope();
+        node->block = head.next;
         return node;
     } else if (consume("return")) {
         node       = calloc(1, sizeof(Node));

@@ -210,6 +210,9 @@ typedef enum {
     ND_INIT,     // initializer
     ND_ARRAY,    // initializer list
     ND_MEMBER,   // struct member
+    ND_SWITCH,   // "switch"
+    ND_CASE,     // "case"
+    ND_DEFAULT,  // "default"
 } NodeKind;
 
 // node
@@ -234,11 +237,15 @@ struct Node {
     // "if" ( cond ) then "else" els
     // "while" ( cond ) then
     // "for" ( ini ";" cond ";" step ) then
+    // "switch" '(' cond ')' block ( defa )
+    // "case" cond ':' block
+    // "default" ':' block
     Node *cond;
     Node *then;
     Node *els;
     Node *ini;
     Node *step;
+    Node *defa;
 
     // ND_BLOCK
     // { block }

@@ -62,7 +62,7 @@ Token *tokenize(char *p) {
         if (*p == '+' || *p == '-' || *p == '*' || *p == '/' || *p == '(' ||
             *p == ')' || *p == '<' || *p == '>' || *p == ';' || *p == '=' ||
             *p == '{' || *p == '}' || *p == ',' || *p == '&' || *p == '[' ||
-            *p == ']' || *p == '.') {
+            *p == ']' || *p == '.' || *p == ':') {
             cur      = new_token(TK_RESERVED, cur, p++);
             cur->len = 1;
             continue;
@@ -93,10 +93,24 @@ Token *tokenize(char *p) {
             continue;
         }
 
+        if (strncmp(p, "switch", 6) == 0 && !isalnum(p[6])) {
+            cur      = new_token(TK_RESERVED, cur, p);
+            cur->len = 6;
+            p += 6;
+            continue;
+        }
+
         if (strncmp(p, "continue", 8) == 0 && !isalnum(p[8])) {
             cur      = new_token(TK_RESERVED, cur, p);
             cur->len = 8;
             p += 8;
+            continue;
+        }
+
+        if (strncmp(p, "default", 7) == 0 && !isalnum(p[7])) {
+            cur      = new_token(TK_RESERVED, cur, p);
+            cur->len = 7;
+            p += 7;
             continue;
         }
 
@@ -115,6 +129,13 @@ Token *tokenize(char *p) {
         }
 
         if (strncmp(p, "void", 4) == 0 && !isalnum(p[4])) {
+            cur      = new_token(TK_RESERVED, cur, p);
+            cur->len = 4;
+            p += 4;
+            continue;
+        }
+
+        if (strncmp(p, "case", 4) == 0 && !isalnum(p[4])) {
             cur      = new_token(TK_RESERVED, cur, p);
             cur->len = 4;
             p += 4;

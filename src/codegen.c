@@ -240,7 +240,7 @@ void gen_expression(Node *node) {
 
 // gen_statement generates statement
 void gen_statement(Node *node) {
-    int cnt;
+    int i;
 
     switch (node->kind) {
     case ND_IF:
@@ -261,6 +261,41 @@ void gen_statement(Node *node) {
             printf(".Lend%d:\n", node->label);
         }
 
+        return;
+    case ND_SWITCH:
+        i = 0;
+        gen_expression(node->cond);
+        for (Node *now = node->block; now; now = now->next) {
+            gen_expression(now->cond);
+            printf("    pop rdi # stack%d\n", --align);
+            printf("    pop rax # stack%d\n", --align);
+            printf("    push rax # stack%d\n", align++);
+            printf("    cmp rax,rdi\n");
+            printf("    setne al\n");
+            printf("    movzb rax,al\n");
+            printf("    cmp rax,0\n");
+            printf("    je .L%dcase%d\n", node->label, i++);
+        }
+        if (node->defa) {
+            printf("    jmp .L%ddefa\n", node->label);
+        }
+        printf("    pop rax # stack%d\n", --align);
+        i = 0;
+        for (Node *now = node->block; now; now = now->next) {
+            printf(".L%dcase%d:\n", node->label, i++);
+            gen_statement(now);
+        }
+        if (node->defa) {
+            printf(".L%ddefa:\n", node->label);
+            gen_statement(node->defa);
+        }
+        printf(".Lend%d:\n", node->label);
+        return;
+    case ND_CASE:
+    case ND_DEFAULT:
+        for (Node *now = node->block; now; now = now->next) {
+            gen_statement(now);
+        }
         return;
     case ND_RETURN:
         if (node->lhs) {

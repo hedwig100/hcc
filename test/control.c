@@ -1,5 +1,45 @@
 #include "test.h"
 
+int f1(int a) {
+    switch (a) {
+    case 0:
+        return a;
+    case 1:
+        a = 10;
+        {
+            int a;
+            ++a;
+        }
+        return -1;
+    case 2:
+    case 3:
+        return 2;
+    default:
+        return 100;
+    }
+    return -1; // a = 1
+}
+
+int f2(int a) {
+    switch (a) {
+        int b;
+    case 0:
+        b = 3;
+        return 0;
+    case 1:
+        b = 4;
+    case 2:
+        switch (b) {
+        case 4:
+            return 1;
+        default:
+            return 2;
+        }
+    default:
+        return 100;
+    }
+}
+
 int main() {
     ASSERT(0, ({int a;a = 0;if (3 == 4) a = 1;  a; }));
     ASSERT(71, ({int a;int b;a = 34;b = a + 3; if (b - a == 3) b = b*2; b-3; }));
@@ -23,6 +63,19 @@ int main() {
     ASSERT(5, ({ int ans = 0; int i = 5; while (i >= 0){if (--i == 3) continue; ans = ans + 1;}ans; }));
     ASSERT(5, ({int ans = 0;for (int i = 0; i < 4; ++i) {if (i == 0) continue;while (++i < 10) {ans = ans + i;if (ans == 5) break;}}ans; }));
     ASSERT(1920, ({int ans = 0;for (int i = 0; i < 50; ++i) {if (i == 5) continue;for (int j = 0; j < 10; ++j) {if (j / 4 == 2) break;ans = ans + i - 20;}}ans; }));
+
+    ASSERT(0, f1(0));
+    ASSERT(-1, f1(1));
+    ASSERT(2, f1(2));
+    ASSERT(2, f1(3));
+    ASSERT(100, f1(4));
+    ASSERT(100, f1(100));
+    ASSERT(100, f1(-5));
+    ASSERT(0, f2(0));
+    ASSERT(1, f2(1));
+    ASSERT(2, f2(2));
+    ASSERT(100, f2(4));
+
     ok();
     return 0;
 }
