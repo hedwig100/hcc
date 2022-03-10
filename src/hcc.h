@@ -80,6 +80,7 @@ struct Type {
     Type *mem;
     Type *next;
     int offset;
+    Struct *st;
 };
 
 Type *new_type(TypeKind kind);

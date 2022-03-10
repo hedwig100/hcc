@@ -68,6 +68,7 @@ Type *new_type_strct(Token *tok, Member *mem) {
     typ->size   = min_offset;
     strct->size = min_offset;
     strct->typ  = typ;
+    typ->st     = strct;
     return typ;
 }
 
@@ -533,6 +534,7 @@ Node *access_member(Node *expr, int offset, Type *typ) {
 
 // find_struct searches struct whose name is the same as tok->str
 // otherwise return NULL
+// this is used when struct variable is defined
 Struct *find_struct(char *name, int len) {
     for (Scope *scp = scopes; scp; scp = scp->before) {
         for (Struct *strct = scp->strct; strct; strct = strct->next) {

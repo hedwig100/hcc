@@ -909,7 +909,7 @@ Node *postfix() {
             // x.a -> *( x + 'offset of a' ) (struxt x generates its address)
             Token *tok = expect_ident();
             assert_at(is_typ(node->typ, TP_STRUCT), token->str, "cannot use \".\" for not struct type variable.");
-            Struct *st = find_struct(node->typ->name, node->typ->len);
+            Struct *st = node->typ->st;
             assert_at(st, token->str, "this struct isn't defined ever.");
 
             int offset = 0;
@@ -929,7 +929,7 @@ Node *postfix() {
             Token *tok = expect_ident();
             assert_at(is_typ(node->typ, TP_PTR), token->str, "cannot use '->' for not struct pointer type variable.");
             assert_at(is_typ(node->typ->ptr_to, TP_STRUCT), token->str, "cannot use '->' for not struct pointer type variable.");
-            Struct *st = find_struct(node->typ->ptr_to->name, node->typ->ptr_to->len);
+            Struct *st = node->typ->ptr_to->st;
 
             int offset = 0;
             Type *typ  = NULL;
