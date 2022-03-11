@@ -561,6 +561,13 @@ Node *eval_const(Node *node) {
         node->typ         = new_type(TP_ARRAY);
         node->typ->ptr_to = new_type(TP_CHAR);
         return node;
+    case ND_STMTEXPR:
+        for (Node *now = node->lhs->block; now; now = now->next) {
+            if (now->next)
+                continue;
+            else
+                return eval_const(now);
+        }
     default:
         error_at(token->str, "cannot evaluate this value.");
     }

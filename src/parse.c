@@ -418,7 +418,7 @@ Type *enum_spec() {
     return new_type_enum(en);
 }
 
-// enumerator = ( ident | ident '=' expr ) ','
+// enumerator = ( ident | ident '=' constant ) ','
 Object *enumerator() {
     Token *tok  = expect_ident();
     Object *en  = new_object(OBJ_ENUM);
@@ -426,7 +426,7 @@ Object *enumerator() {
     en->len     = tok->len;
     en->is_init = false;
     if (consume("=")) {
-        Node *node = expr();
+        Node *node = constant();
         node       = eval_const(node);
         assert_at(node->kind == ND_NUM, token->str, "cannot use not integer value as enum initializer.");
         en->val     = node->val;
@@ -540,8 +540,8 @@ Node *func_param(Node *node) {
     return node;
 }
 
-// initializer = expr
-//             = "{" initializer_list ','? "}"
+// initializer = assign
+//             | "{" initializer_list ','? "}"
 Node *initializer(bool is_constant) {
     if (consume("{")) {
         Node *node = initializer_list(is_constant);
@@ -549,7 +549,7 @@ Node *initializer(bool is_constant) {
         expect("}");
         return is_constant ? eval_const(node) : node;
     }
-    Node *node = expr();
+    Node *node = assign();
     return is_constant ? eval_const(node) : node;
 }
 
@@ -597,7 +597,7 @@ Node *labeled_stmt() {
     Node *now = &head;
     if (consume("case")) {
         node->kind = ND_CASE;
-        node->cond = expr();
+        node->cond = constant();
         expect(":");
         while (1) {
             if (lookahead("case", token) || lookahead("default", token) || lookahead("}", token)) {
@@ -842,9 +842,31 @@ Node *init_decl(Type *typ) {
     return node;
 }
 
-// expr = assign
+// expr = assign ( ',' assign )*
 Node *expr() {
-    return assign();
+    Node *nd = assign();
+    if (!lookahead(",", token)) {
+        return nd;
+    }
+    // a=0,b=0 transforms to ({ a=0,b=0 }) like expression
+    Node *node = calloc(1, sizeof(Node));
+    node->kind = ND_BLOCK;
+    Node head;
+    head.next = NULL;
+    Node *now = &head;
+    now->next = nd;
+    now       = now->next;
+    now->next = NULL;
+    node->typ = now->typ;
+    while (consume(",")) {
+        now->next = assign();
+        now       = now->next;
+        now->next = NULL;
+        node->typ = now->typ;
+    }
+    assert_at(head.next, token->str, "there must be at least one assign.");
+    node->block = head.next;
+    return new_node(ND_STMTEXPR, node, NULL, node->typ);
 }
 
 // assign = conditional
@@ -857,6 +879,11 @@ Node *assign() {
         infof("finished until 'a = b'.");
     }
     return node;
+}
+
+// constant = conditional
+Node *constant() {
+    return conditional();
 }
 
 // conditional = log_or
@@ -1179,7 +1206,7 @@ Node *postfix() {
 //         | '(' expr ')'
 //         | ident
 //         | ident "()"
-//         | ident '(' expr ( ',' expr )* ')'
+//         | ident '(' assign ( ',' assign )* ')'
 //         | string
 //         | num
 // otherwise return NULL
@@ -1225,7 +1252,7 @@ Node *primary() {
             head.next = NULL;
             Node *now = &head;
             while (1) {
-                now->next = expr();
+                now->next = assign();
                 now       = now->next;
                 // TODO:type check of argment
                 if (!consume(",")) {

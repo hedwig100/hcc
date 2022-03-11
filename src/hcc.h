@@ -362,6 +362,7 @@ Node *declaration();
 Node *init_decl(Type *typ);
 Node *expr();
 Node *assign();
+Node *constant();
 Node *conditional();
 Node *log_or();
 Node *log_and();

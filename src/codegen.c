@@ -29,6 +29,14 @@ void gen_addr(Node *node) {
     case ND_DEREF:
         gen_expression(node->lhs);
         return;
+    case ND_STMTEXPR:
+        for (Node *now = node->lhs->block; now; now = now->next) {
+            if (now->next)
+                gen_statement(now);
+            else
+                gen_addr(now);
+        }
+        return;
     default:
         errorf("Left side value of assignment is not variable.");
     }
