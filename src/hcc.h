@@ -224,6 +224,7 @@ typedef enum {
     ND_INC,      // ident++
     ND_DEC,      // ident--
     ND_AND,      // &
+    ND_XOR,      // ^
 } NodeKind;
 
 // node
@@ -356,6 +357,7 @@ Node *declaration();
 Node *init_decl(Type *typ);
 Node *expr();
 Node *assign();
+Node *xor_expr();
 Node *and_expr();
 Node *equality();
 Node *relational();
