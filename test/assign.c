@@ -19,6 +19,12 @@ int main() {
     n *= (m - 3);
     ASSERT(0, n);
 
+    int abc = 93, fei = 30;
+    abc /= fei;
+    ASSERT(3, abc);
+    fei /= (abc + 1);
+    ASSERT(7, fei);
+
     ok();
     return 0;
 }

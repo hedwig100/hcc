@@ -870,7 +870,7 @@ Node *expr() {
 }
 
 // assign = conditional
-//        | conditional ( '=' assign | "+=" assign | "-=" assign | "*=" assign )
+//        | conditional ( '=' assign | "+=" assign | "-=" assign | "*=" assign | "/=" assign )
 Node *assign() {
     Node *node = conditional();
     if (consume("=")) {
@@ -892,6 +892,12 @@ Node *assign() {
     } else if (consume("*=")) {
         Node *lhs = node;
         Node *rhs = new_node(ND_MUL, lhs, assign(), lhs->typ);
+        node      = new_node(ND_ASSIGN, lhs, rhs, NULL);
+        node->typ = can_assign(lhs->typ, rhs->typ);
+        return node;
+    } else if (consume("/=")) {
+        Node *lhs = node;
+        Node *rhs = new_node(ND_DIV, lhs, assign(), lhs->typ);
         node      = new_node(ND_ASSIGN, lhs, rhs, NULL);
         node->typ = can_assign(lhs->typ, rhs->typ);
         return node;
