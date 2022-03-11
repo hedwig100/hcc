@@ -290,6 +290,23 @@ int type_size(Type *typ) {
     return typ->size;
 }
 
+Node *new_typdef(Token *tok, Type *typ) {
+    assert_at(typ->is_typdef, token->str, "must be typedef");
+
+    Node *node = calloc(1, sizeof(Node));
+    node->kind = ND_TYPEDEF;
+
+    // register typdef
+    Object *td = calloc(1, sizeof(Object));
+    td->kind   = OBJ_TYPEDEF;
+    td->name   = tok->str;
+    td->len    = tok->len;
+    td->typ    = typ;
+    td->next   = scopes->td;
+    scopes->td = td;
+
+    return node;
+}
 /*
     func
 */

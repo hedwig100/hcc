@@ -189,6 +189,13 @@ Token *tokenize(char *p) {
             continue;
         }
 
+        if (strncmp(p, "typedef", 7) == 0 && !isalnum(p[7])) {
+            cur      = new_token(TK_RESERVED, cur, p);
+            cur->len = 7;
+            p += 7;
+            continue;
+        }
+
         if (strncmp(p, "if", 2) == 0 && !isalnum(p[2])) {
             cur      = new_token(TK_RESERVED, cur, p);
             cur->len = 2;

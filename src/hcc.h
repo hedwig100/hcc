@@ -70,6 +70,7 @@ typedef enum {
 struct Type {
     TypeKind kind;
     int size;
+    bool is_typdef;
 
     // ptr_to is valid when kind = TP_PTR.
     Type *ptr_to;
@@ -104,6 +105,7 @@ typedef enum {
     OBJ_GVAR,
     OBJ_STRUCT,
     OBJ_ENUM,
+    OBJ_TYPEDEF,
 } ObjectKind;
 
 // Object
@@ -142,6 +144,7 @@ struct Scope {
     Scope *before;
     Object *lvar;
     Object *en;
+    Object *td;
     Struct *strct;
 
     // maximal offset in this scope
@@ -217,6 +220,7 @@ typedef enum {
     ND_SWITCH,   // "switch"
     ND_CASE,     // "case"
     ND_DEFAULT,  // "default"
+    ND_TYPEDEF,  // typdef
 } NodeKind;
 
 // node
@@ -285,6 +289,7 @@ Type *can_add(Type *typ1, Type *typ2);
 bool is_ptr(Type *typ);
 bool is_typ(Type *typ, TypeKind kind);
 int type_size(Type *typ);
+Node *new_typdef(Token *tok, Type *typ);
 
 void register_func(Node *node);
 Func *find_func(Node *node);
@@ -327,6 +332,7 @@ Member *new_mem(Node *node);
 void program();
 Node *ext_def();
 Type *decl_spec();
+Type *type_spec();
 Type *struct_spec();
 Member *struct_decl();
 Type *enum_spec();

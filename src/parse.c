@@ -237,9 +237,9 @@ Node *ext_def() {
     Node *node = declarator(typ, GLOBAL);
 
     if (!node) {
-        assert_at(is_typ(typ, TP_STRUCT) || is_typ(typ, TP_ENUM), token->str, "need declarator when you don't define struct");
+        assert_at(is_typ(typ, TP_STRUCT) || is_typ(typ, TP_ENUM), token->str, "need declarator when you don't define struct,or enum");
         expect(";");
-        // struct definition
+        // struct,enum definition
         return NULL;
     }
 
@@ -261,9 +261,11 @@ Node *ext_def() {
             expect(";");
             return node;
         }
-    }
-
-    if (node->kind != ND_GVAR) {
+    } else if (node->kind == ND_TYPEDEF) {
+        // typedef
+        expect(";");
+        return NULL;
+    } else {
         if (consume("{")) {
             // function definition
             node->kind = ND_FUNCDEF;
@@ -284,13 +286,31 @@ Node *ext_def() {
     return node;
 }
 
-// decl_spec = "int"
+// decl_spec = ( "typedef" | type_spec )*
+Type *decl_spec() {
+    Type *typ      = NULL;
+    bool is_typdef = false;
+    for (;;) {
+        if (consume("typedef")) {
+            is_typdef = true;
+        } else {
+            Type *new = type_spec();
+            if (!new) break;
+            assert_at(!typ, token->str, "two type specifier exists at the same time.");
+            typ = new;
+        }
+    }
+    typ->is_typdef = is_typdef;
+    return typ;
+}
+
+// type_spec = "int"
 //           | "char"
 //           | "void"
 //           | "enum" enum_spec
 //           | "struct" struct_spec
 // if not,return NULL;
-Type *decl_spec() {
+Type *type_spec() {
     Type *typ;
     if (consume("int")) {
         typ = new_type(TP_INT);
@@ -344,10 +364,10 @@ Type *struct_spec() {
     }
 }
 
-// struct_decl = decl_spec declarator ';'
+// struct_decl = type_spec declarator ';'
 // if not,return NULL
 Member *struct_decl() {
-    Type *typ = decl_spec();
+    Type *typ = type_spec();
     if (!typ) {
         return NULL;
     }
@@ -418,8 +438,9 @@ Node *declarator(Type *typ, Param p) {
 // pointer = '*' *
 Type *pointer(Type *typ) {
     while (consume("*")) {
-        Type *next = new_type_ptr(typ);
-        typ        = next;
+        Type *next      = new_type_ptr(typ);
+        next->is_typdef = typ->is_typdef;
+        typ             = next;
     }
     return typ;
 }
@@ -439,6 +460,7 @@ Node *direct_decl(Type *typ, Param p) {
     if (consume("(")) {
         // function definition or declaration
         assert_at(p == GLOBAL, token->str, "function definition of declaration can't exist in function.");
+        assert_at(!(typ->is_typdef), token->str, "typedef cannot be used for function declaration.");
         node       = calloc(1, sizeof(Node));
         node->name = tok->str;
         node->len  = tok->len;
@@ -448,6 +470,8 @@ Node *direct_decl(Type *typ, Param p) {
     } else if (p == STRUCT) {
         // struct member
         return new_node_mem(tok, typ);
+    } else if (typ->is_typdef) {
+        return new_typdef(tok, typ);
     } else {
         // variable
         return p == GLOBAL ? new_node_gvar(tok, typ) : new_node_lvar(tok, typ);
@@ -461,9 +485,10 @@ Type *type_array(Type *typ) {
     while (consume("[")) {
         arr_size[i++] = expect_number();
         expect("]");
-        Type *next   = new_type(TP_ARRAY);
-        next->ptr_to = typ;
-        typ          = next;
+        Type *next      = new_type(TP_ARRAY);
+        next->ptr_to    = typ;
+        next->is_typdef = typ->is_typdef;
+        typ             = next;
     }
     Type *now = typ;
     for (int j = 0; j < i; j++) {
@@ -475,7 +500,7 @@ Type *type_array(Type *typ) {
 }
 
 // func_param = ')'
-//            | decl_spec declarator ( ',' decl_spec declarator )* ')'
+//            | type_spec declarator ( ',' type_spec declarator )* ')'
 Node *func_param(Node *node) {
     enter_scope(false, false);
     if (consume(")")) {
@@ -488,7 +513,7 @@ Node *func_param(Node *node) {
     head.next = NULL;
     Node *now = &head;
     while (1) {
-        Type *typ = decl_spec();
+        Type *typ = type_spec();
         assert_at(typ, token->str, "type declaration expected.");
         now->next = declarator(typ, LOCAL);
         now       = now->next;
@@ -771,23 +796,32 @@ Node *declaration() {
         return new_node_num(0); // meaningless node
     }
 
-    // int a=0,*b=&a,c[3]={0,1},d transforms to ({ int a=0,*b=&a,c[3]={0,1},d }) like expression
-    Node *node = calloc(1, sizeof(Node));
-    node->kind = ND_BLOCK;
-    Node head;
-    Node *now = &head;
-    now->next = init_decl(typ);
-    now       = now->next;
-    now->next = NULL;
-    node->typ = now->typ;
-    while (consume(",")) {
+    if (typ->is_typdef) {
+        // typdef int a,b;
+        init_decl(typ);
+        while (consume(",")) {
+            init_decl(typ);
+        }
+        return new_node_num(0); // meaningless node
+    } else {
+        // int a=0,*b=&a,c[3]={0,1},d transforms to ({ int a=0,*b=&a,c[3]={0,1},d }) like expression
+        Node *node = calloc(1, sizeof(Node));
+        node->kind = ND_BLOCK;
+        Node head;
+        Node *now = &head;
         now->next = init_decl(typ);
         now       = now->next;
         now->next = NULL;
         node->typ = now->typ;
+        while (consume(",")) {
+            now->next = init_decl(typ);
+            now       = now->next;
+            now->next = NULL;
+            node->typ = now->typ;
+        }
+        node->block = head.next;
+        return new_node(ND_STMTEXPR, node, NULL, node->typ);
     }
-    node->block = head.next;
-    return new_node(ND_STMTEXPR, node, NULL, node->typ);
 }
 
 // init_decl = declarator | declarator '=' initializer
@@ -795,6 +829,7 @@ Node *init_decl(Type *typ) {
     Node *node = declarator(typ, LOCAL);
     assert_at(!is_typ(node->typ, TP_VOID), token->str, "cannot use void here.");
     if (consume("=")) { // initiliazer
+        assert_at(node->kind != ND_TYPEDEF, token->str, "cannot use '=' here.");
         return eval(node, initializer(false));
     }
     return node;
