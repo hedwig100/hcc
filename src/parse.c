@@ -870,13 +870,19 @@ Node *expr() {
 }
 
 // assign = conditional
-//        | conditional '=' assign
+//        | conditional ( '=' assign | "+=" assign )
 Node *assign() {
     Node *node = conditional();
     if (consume("=")) {
         node      = new_node(ND_ASSIGN, node, assign(), NULL);
         node->typ = can_assign(node->lhs->typ, node->rhs->typ);
-        infof("finished until 'a = b'.");
+        return node;
+    } else if (consume("+=")) {
+        Node *lhs = node;
+        Node *rhs = add_helper(lhs, assign(), ND_ADD);
+        node      = new_node(ND_ASSIGN, lhs, rhs, NULL);
+        node->typ = can_assign(node->lhs->typ, node->rhs->typ);
+        return node;
     }
     return node;
 }
