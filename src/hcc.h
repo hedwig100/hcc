@@ -290,6 +290,8 @@ bool is_ptr(Type *typ);
 bool is_typ(Type *typ, TypeKind kind);
 int type_size(Type *typ);
 Node *new_typdef(Token *tok, Type *typ);
+bool lookahead_typdef(Token *tok);
+Object *find_typdef(Token *tok);
 
 void register_func(Node *node);
 Func *find_func(Node *node);

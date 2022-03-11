@@ -28,7 +28,7 @@ bool lookahead(char *op, Token *tok) {
 }
 
 bool is_type(Token *tok) {
-    return lookahead("int", tok) || lookahead("char", tok) || lookahead("struct", tok) || lookahead("void", tok) || lookahead("enum", tok);
+    return lookahead("int", tok) || lookahead("char", tok) || lookahead("struct", tok) || lookahead("void", tok) || lookahead("enum", tok) || lookahead("typedef", tok) || lookahead_typdef(tok);
 }
 
 // consume_ident read a token and return the token if next token is identifier,
@@ -293,11 +293,15 @@ Type *decl_spec() {
     for (;;) {
         if (consume("typedef")) {
             is_typdef = true;
-        } else {
+            continue;
+        } else if (is_type(token)) {
             Type *new = type_spec();
-            if (!new) break;
+            assert_at(new, token->str, "type specifier expected.");
             assert_at(!typ, token->str, "two type specifier exists at the same time.");
             typ = new;
+            continue;
+        } else {
+            break;
         }
     }
     typ->is_typdef = is_typdef;
@@ -309,23 +313,26 @@ Type *decl_spec() {
 //           | "void"
 //           | "enum" enum_spec
 //           | "struct" struct_spec
+//           | typedef_name
 // if not,return NULL;
 Type *type_spec() {
-    Type *typ;
     if (consume("int")) {
-        typ = new_type(TP_INT);
+        return new_type(TP_INT);
     } else if (consume("char")) {
-        typ = new_type(TP_CHAR);
+        return new_type(TP_CHAR);
     } else if (consume("void")) {
-        typ = new_type(TP_VOID);
+        return new_type(TP_VOID);
     } else if (consume("enum")) {
-        typ = enum_spec();
+        return enum_spec();
     } else if (consume("struct")) {
-        typ = struct_spec();
+        return struct_spec();
     } else {
-        return NULL;
+        Token *tok = consume_ident();
+        if (!tok) return NULL;
+        Object *td = find_typdef(tok);
+        if (!td) return NULL;
+        return td->typ;
     }
-    return typ;
 }
 
 // struct_spec = ident

@@ -292,6 +292,7 @@ int type_size(Type *typ) {
 
 Node *new_typdef(Token *tok, Type *typ) {
     assert_at(typ->is_typdef, token->str, "must be typedef");
+    typ->is_typdef = false;
 
     Node *node = calloc(1, sizeof(Node));
     node->kind = ND_TYPEDEF;
@@ -307,6 +308,34 @@ Node *new_typdef(Token *tok, Type *typ) {
 
     return node;
 }
+
+bool lookahead_typdef(Token *tok) {
+    for (Scope *scp = scopes; scp; scp = scp->before) {
+        for (Object *lvar = scp->lvar; lvar; lvar = lvar->next) {
+            if (lvar->len == tok->len && !memcmp(lvar->name, tok->str, lvar->len)) {
+                return false;
+            }
+        }
+        for (Object *td = scp->td; td; td = td->next) {
+            if (td->len == tok->len && !memcmp(td->name, tok->str, td->len)) {
+                return true;
+            }
+        }
+    }
+    return false;
+}
+
+Object *find_typdef(Token *tok) {
+    for (Scope *scp = scopes; scp; scp = scp->before) {
+        for (Object *td = scp->td; td; td = td->next) {
+            if (td->len == tok->len && !memcmp(td->name, tok->str, td->len)) {
+                return td;
+            }
+        }
+    }
+    return NULL;
+}
+
 /*
     func
 */
