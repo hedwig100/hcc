@@ -241,7 +241,7 @@ struct Node {
     // "if" ( cond ) then "else" els
     // "while" ( cond ) then
     // "for" ( ini ";" cond ";" step ) then
-    // "switch" '(' cond ')' block ( defa )
+    // "switch" '(' cond ')' block
     // "case" cond ':' block
     // "default" ':' block
     Node *cond;
@@ -249,7 +249,6 @@ struct Node {
     Node *els;
     Node *ini;
     Node *step;
-    Node *defa;
 
     // ND_BLOCK
     // { block }

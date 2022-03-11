@@ -64,6 +64,18 @@ int f3(int a) {
     return a - 1;
 }
 
+int f4(int a) {
+    switch (a) {
+    default:
+    case 0:
+        ++a;
+    case 1:
+        ++a;
+    case 2:
+        return a;
+    }
+}
+
 int main() {
     ASSERT(0, ({int a;a = 0;if (3 == 4) a = 1;  a; }));
     ASSERT(71, ({int a;int b;a = 34;b = a + 3; if (b - a == 3) b = b*2; b-3; }));
@@ -122,6 +134,11 @@ int main() {
         ++a;
     ++a;
     ASSERT(13, a);
+
+    ASSERT(2, f4(0));
+    ASSERT(2, f4(1));
+    ASSERT(2, f4(2));
+    ASSERT(7, f4(5));
 
     ok();
     return 0;

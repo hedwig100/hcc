@@ -270,31 +270,41 @@ void gen_statement(Node *node) {
 
         return;
     case ND_SWITCH:
-        i = 0;
+        i                = 0;
+        bool has_default = false;
         gen_expression(node->cond);
         for (Node *now = node->block; now; now = now->next) {
-            gen_expression(now->cond);
-            printf("    pop rdi # stack%d\n", --align);
-            printf("    pop rax # stack%d\n", --align);
-            printf("    push rax # stack%d\n", align++);
-            printf("    cmp rax,rdi\n");
-            printf("    setne al\n");
-            printf("    movzb rax,al\n");
-            printf("    cmp rax,0\n");
-            printf("    je .L%dcase%d\n", node->label, i++);
+            if (now->kind == ND_CASE) {
+                // case
+                gen_expression(now->cond);
+                printf("    pop rdi # stack%d\n", --align);
+                printf("    pop rax # stack%d\n", --align);
+                printf("    push rax # stack%d\n", align++);
+                printf("    cmp rax,rdi\n");
+                printf("    setne al\n");
+                printf("    movzb rax,al\n");
+                printf("    cmp rax,0\n");
+                printf("    je .L%dcase%d\n", node->label, i++);
+            } else if (now->kind == ND_DEFAULT) {
+                // default
+                has_default = true;
+            } else {
+                errorf(token->str, "node kind isn't valid for switch");
+            }
         }
-        if (node->defa) {
-            printf("    jmp .L%ddefa\n", node->label);
-        }
+        if (has_default) printf("   jmp .L%ddefa\n", node->label);
         printf("    jmp .Lend%d\n", node->label);
         i = 0;
         for (Node *now = node->block; now; now = now->next) {
-            printf(".L%dcase%d:\n", node->label, i++);
-            gen_statement(now);
-        }
-        if (node->defa) {
-            printf(".L%ddefa:\n", node->label);
-            gen_statement(node->defa);
+            if (now->kind == ND_CASE) {
+                // case
+                printf(".L%dcase%d:\n", node->label, i++);
+                gen_statement(now);
+            } else {
+                // default
+                printf(".L%ddefa:\n", node->label);
+                gen_statement(now);
+            }
         }
         printf(".Lend%d:\n", node->label);
         printf("    pop rax # stack%d\n", --align);

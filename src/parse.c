@@ -617,7 +617,6 @@ Node *stmt() {
         node        = calloc(1, sizeof(Node));
         node->kind  = ND_SWITCH;
         node->label = counter();
-        node->defa  = NULL;
         expect("(");
         node->cond = expr();
         expect(")");
@@ -638,7 +637,7 @@ Node *stmt() {
                 candi->kind = ND_DEFAULT;
                 expect(":");
                 candi->block = stmt();
-                node->defa   = candi;
+                node->block  = candi;
             } else {
                 stmt();
             }
@@ -647,15 +646,18 @@ Node *stmt() {
         }
 
         Node head;
-        head.next = NULL;
-        Node *now = &head;
+        head.next        = NULL;
+        Node *now        = &head;
+        bool has_default = false;
         while (1) {
             now->next = labeled_stmt();
             if (now->next) {
                 if (now->next->kind == ND_DEFAULT) {
                     // default
-                    assert_at(!(node->defa), token->str, "two 'default' statement exist in one 'switch' statement.");
-                    node->defa = now->next;
+                    assert_at(!has_default, token->str, "two 'default' statement exist in one 'switch' statement.");
+                    has_default = true;
+                    now         = now->next;
+                    now->next = NULL;
                 } else {
                     // case
                     now       = now->next;
