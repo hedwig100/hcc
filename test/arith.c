@@ -37,6 +37,9 @@ int main() {
     ASSERT(1, (1 == 2) <= 1);
     ASSERT(0, (5 >= 3) != 1);
     ASSERT(1, (-6 < 10) == 1);
+    ASSERT(0, 2 & 1);
+    ASSERT(4, (12 & 8 - 4) & 4);
+    ASSERT(8, 10 & 8 * 1 & (20 - 6));
 
     int i = 0;
     ASSERT(1, ++i);

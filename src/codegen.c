@@ -257,6 +257,9 @@ void gen_expression(Node *node) {
         printf("    setle al\n");
         printf("    movzb rax,al\n");
         break;
+    case ND_AND:
+        printf("    and rax,rdi # and\n");
+        break;
     default:
         errorf("not type of expression");
         break;

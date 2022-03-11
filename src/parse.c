@@ -847,16 +847,29 @@ Node *expr() {
     return assign();
 }
 
-// assign = equality
-//        | equality '=' assign
+// assign = and_expr
+//        | and_expr '=' assign
 Node *assign() {
-    Node *node = equality();
+    Node *node = and_expr();
     if (consume("=")) {
         node      = new_node(ND_ASSIGN, node, assign(), NULL);
         node->typ = can_assign(node->lhs->typ, node->rhs->typ);
         infof("finished until 'a = b'.");
     }
     return node;
+}
+
+// and_expr = equality ( '&' equality )*
+Node *and_expr() {
+    Node *node = equality();
+    for (;;) {
+        if (consume("&")) {
+            node = new_node(ND_AND, node, equality(), new_type(TP_INT));
+            assert_at(is_typ(node->lhs->typ, TP_INT) || is_typ(node->rhs->typ, TP_CHAR), token->str, "cannot use '&' here.");
+        } else {
+            return node;
+        }
+    }
 }
 
 // equality = relational ( "==" relational | "!=" relational )*
