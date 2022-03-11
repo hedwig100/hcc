@@ -971,19 +971,38 @@ Node *equality() {
     }
 }
 
-// relational = add ( '<' add | "<=" add | '>' add | ">=" add)*
+// relational = shift ( '<' shift | "<=" shift | '>' shift | ">=" shift )*
 Node *relational() {
-    Node *node = add();
+    Node *node = shift();
 
     for (;;) {
         if (consume("<")) {
-            node = new_node(ND_LT, node, add(), new_type(TP_INT)); // actually bool
+            node = new_node(ND_LT, node, shift(), new_type(TP_INT)); // actually bool
         } else if (consume("<=")) {
-            node = new_node(ND_LEQ, node, add(), new_type(TP_INT)); // actually bool
+            node = new_node(ND_LEQ, node, shift(), new_type(TP_INT)); // actually bool
         } else if (consume(">")) {
-            node = new_node(ND_LT, add(), node, new_type(TP_INT)); // actually bool
+            node = new_node(ND_LT, shift(), node, new_type(TP_INT)); // actually bool
         } else if (consume(">=")) {
-            node = new_node(ND_LEQ, add(), node, new_type(TP_INT)); // actually bool
+            node = new_node(ND_LEQ, shift(), node, new_type(TP_INT)); // actually bool
+        } else {
+            return node;
+        }
+    }
+}
+
+// shift = add ( "<<" add | ">>" add )*
+Node *shift() {
+    Node *node = add();
+
+    for (;;) {
+        if (consume("<<")) {
+            node = new_node(ND_LSHIFT, node, add(), new_type(TP_INT));
+            assert_at(is_typ(node->lhs->typ, TP_INT) || is_typ(node->lhs->typ, TP_CHAR), token->str, "cannot use '<<' here.");
+            assert_at(is_typ(node->rhs->typ, TP_INT) || is_typ(node->rhs->typ, TP_CHAR), token->str, "cannot use '<<' here.");
+        } else if (consume(">>")) {
+            node = new_node(ND_RSHIFT, node, add(), new_type(TP_INT));
+            assert_at(is_typ(node->lhs->typ, TP_INT) || is_typ(node->lhs->typ, TP_CHAR), token->str, "cannot use '>>' here.");
+            assert_at(is_typ(node->rhs->typ, TP_INT) || is_typ(node->rhs->typ, TP_CHAR), token->str, "cannot use '>>' here.");
         } else {
             return node;
         }

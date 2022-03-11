@@ -227,6 +227,8 @@ typedef enum {
     ND_XOR,      // ^
     ND_OR,       // |
     ND_TERNARY,  // cond '?' then ':' else
+    ND_LSHIFT,   // <<
+    ND_RSHIFT,   // >>
 } NodeKind;
 
 // node
@@ -367,6 +369,7 @@ Node *xor_expr();
 Node *and_expr();
 Node *equality();
 Node *relational();
+Node *shift();
 Node *add();
 Node *mul();
 Node *unary();

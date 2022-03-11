@@ -277,6 +277,14 @@ void gen_expression(Node *node) {
     case ND_OR:
         printf("    or rax,rdi # or \n");
         break;
+    case ND_LSHIFT:
+        printf("    mov rcx,rdi\n");
+        printf("    sal rax,cl # signed left shift\n");
+        break;
+    case ND_RSHIFT:
+        printf("    mov rcx,rdi\n");
+        printf("    sar rax,cl # signed right shift\n");
+        break;
     default:
         errorf("not type of expression");
         break;
