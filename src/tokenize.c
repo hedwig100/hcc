@@ -283,7 +283,7 @@ Token *tokenize(char *p) {
             continue;
         }
 
-        if (isalpha(*p)) {
+        if (isalpha(*p) || *p == '_') {
             cur      = new_token(TK_IDENT, cur, p);
             cur->len = ident_len(p);
             p += cur->len;

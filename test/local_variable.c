@@ -21,6 +21,7 @@ int main() {
     ASSERT(10, ({int pwoef;int goiao;int garhi;pwoef=34;goiao=-354+pwoef;garhi=goiao/32; garhi+20; }));
     ASSERT(100, ({int ieii;int ge;int A;ieii = 143;ge = -43;A = ieii + ge;A; }));
     ASSERT(3, ({int a1;int b_1;a1=0;b_1=3; a1+b_1; }));
+    ASSERT(20, ({ int _a1 = 0; char *__ok;char __ng = 20;__ng; }));
     ok();
     return 0;
 }
