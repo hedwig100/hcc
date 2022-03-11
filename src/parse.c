@@ -1051,6 +1051,7 @@ Node *mul() {
 //       | '*' unary
 //       | '+' unary
 //       | '-' unary
+//       | '!' unary
 //       | postfix
 Node *unary() {
     if (consume("sizeof")) {
@@ -1100,6 +1101,19 @@ Node *unary() {
             error_at(token->str, "unary '-' cannot be used for address.");
         }
         return node;
+    }
+    if (consume("!")) {
+        Node *node  = calloc(1, sizeof(Node));
+        node->kind  = ND_QUESTION;
+        node->label = counter();
+        node->lhs   = unary();
+        node->typ   = new_type(TP_INT);
+        if (node->lhs->kind == ND_STR)
+            return new_node_num(0);
+        else if (is_typ(node->lhs->typ, TP_ARRAY))
+            return new_node_num(0);
+        else
+            return node;
     }
     return postfix();
 }

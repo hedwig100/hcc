@@ -62,6 +62,15 @@ int main() {
     ASSERT(1216, 19 << 3 + 3);
     ASSERT(3, (19 << 1) & 2 | 3);
     ASSERT(-1, (-2 >> 1) | 3);
+    ASSERT(0, !(1 != 2));
+    ASSERT(0, !(1 != !2));
+    ASSERT(0, !"");
+    ASSERT(0, !"abc");
+    ASSERT(0, !'a');
+    ASSERT(1, !'\0');
+    int x[3];
+    ASSERT(0, !x);
+    ASSERT(3, (3 - !1));
 
     int i = 0;
     ASSERT(1, ++i);

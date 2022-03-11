@@ -229,6 +229,7 @@ typedef enum {
     ND_TERNARY,  // cond '?' then ':' else
     ND_LSHIFT,   // <<
     ND_RSHIFT,   // >>
+    ND_QUESTION, // !
 } NodeKind;
 
 // node

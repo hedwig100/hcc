@@ -221,6 +221,18 @@ void gen_expression(Node *node) {
         gen_expression(node->els);
         printf(".Lend%d:\n", node->label);
         return;
+    case ND_QUESTION:
+        gen_expression(node->lhs);
+        printf("    pop rax # stack%d\n", --align);
+        printf("    cmp rax,0\n");
+        printf("    je .Lbegin%d\n", node->label);
+        printf("    push 0 # stack%d\n", align);
+        printf("    jmp .Lend%d\n", node->label);
+        printf(".Lbegin%d:\n", node->label);
+        printf("    push 1 # stack%d\n", align);
+        align++;
+        printf(".Lend%d:\n", node->label);
+        return;
     }
 
     gen_expression(node->lhs);
