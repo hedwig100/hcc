@@ -7,6 +7,12 @@ int main() {
     i += j - 8;
     ASSERT(0, i);
 
+    int k = 0, l = -43;
+    k -= l;
+    ASSERT(43, k);
+    l -= (i + 4) * (l + 44);
+    ASSERT(-47, l);
+
     ok();
     return 0;
 }
