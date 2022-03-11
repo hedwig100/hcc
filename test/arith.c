@@ -55,6 +55,9 @@ int main() {
     ASSERT(1, 0 || -1);
     ASSERT(1, 41 || -43);
     ASSERT(1, 10 && 43 || 43 - 43 ^ 3 & 4 | 3);
+    ASSERT(-32, 1 != 0 ? -32 : 10);
+    ASSERT(3, 0 ? 13 - 43 : 1 ^ 43 & 2);
+    ASSERT(1, 'a' ? 1 - 0 : 76);
 
     int i = 0;
     ASSERT(1, ++i);

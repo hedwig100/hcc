@@ -847,14 +847,33 @@ Node *expr() {
     return assign();
 }
 
-// assign = log_or
-//        | log_or '=' assign
+// assign = conditional
+//        | conditional '=' assign
 Node *assign() {
-    Node *node = log_or();
+    Node *node = conditional();
     if (consume("=")) {
         node      = new_node(ND_ASSIGN, node, assign(), NULL);
         node->typ = can_assign(node->lhs->typ, node->rhs->typ);
         infof("finished until 'a = b'.");
+    }
+    return node;
+}
+
+// conditional = log_or
+//             | log_or '?' expr ':' conditional
+Node *conditional() {
+    Node *node = log_or();
+    if (consume("?")) {
+        Node *cond  = node;
+        node        = calloc(1, sizeof(Node));
+        node->kind  = ND_TERNARY;
+        node->label = counter();
+        node->cond  = cond;
+        node->then  = expr();
+        consume(":");
+        node->els = conditional();
+        node->typ = can_assign(node->then->typ, node->els->typ);
+        return node;
     }
     return node;
 }

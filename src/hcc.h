@@ -226,6 +226,7 @@ typedef enum {
     ND_AND,      // &
     ND_XOR,      // ^
     ND_OR,       // |
+    ND_TERNARY,  // cond '?' then ':' else
 } NodeKind;
 
 // node
@@ -358,6 +359,7 @@ Node *declaration();
 Node *init_decl(Type *typ);
 Node *expr();
 Node *assign();
+Node *conditional();
 Node *log_or();
 Node *log_and();
 Node *or_expr();

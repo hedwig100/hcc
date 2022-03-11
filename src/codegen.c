@@ -210,6 +210,17 @@ void gen_expression(Node *node) {
         printf("    sub rsi,rdi\n");
         gen_store(node->lhs->typ, "rsi", "esi", "si", "sil");
         return;
+    case ND_TERNARY:
+        gen_expression(node->cond);
+        printf("    pop rax # stack%d\n", --align);
+        printf("    cmp rax,0\n");
+        printf("    je .Lbegin%d\n", node->label);
+        gen_expression(node->then);
+        printf("    jmp .Lend%d\n", node->label);
+        printf(".Lbegin%d:\n", node->label);
+        gen_expression(node->els);
+        printf(".Lend%d:\n", node->label);
+        return;
     }
 
     gen_expression(node->lhs);
