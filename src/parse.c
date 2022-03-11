@@ -386,14 +386,19 @@ Member *struct_decl() {
 }
 
 // enum_spec = ident
-//           | ident '{'( enumerator ',' )+ '}'
+//           | ident? '{'( enumerator ',' )+ '}'
 Type *enum_spec() {
-    Token *tok = expect_ident();
+    Token *tok = consume_ident();
     Object *en = new_object(OBJ_ENUM);
-    en->name   = tok->str;
-    en->len    = tok->len;
+    if (tok) {
+        en->name = tok->str;
+        en->len  = tok->len;
+    } else {
+        en->len = 0;
+    }
 
     if (!consume("{")) {
+        assert_at(tok, token->str, "there must be enum definition.");
         Object *obj = find_enum(tok);
         assert_at(obj, token->str, "not enum specifier");
         return obj->typ;

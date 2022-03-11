@@ -8,6 +8,11 @@ enum TypeKind {
     TP_E = 50 + 50,
 };
 
+typedef enum {
+    ND_ADD,
+    ND_SUB,
+} NodeKind;
+
 int main() {
     ASSERT(0, TP_A);
     ASSERT(1, TP_B);
@@ -38,6 +43,12 @@ int main() {
     enum TypeKind y = TP_A;
     ASSERT(10, x);
     ASSERT(10, x);
+
+    NodeKind k1 = ND_ADD;
+    ASSERT(0, k1);
+    NodeKind k2 = ND_SUB;
+    ASSERT(1, k2);
+
     ok();
     return 0;
 }
