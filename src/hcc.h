@@ -358,6 +358,7 @@ Node *declaration();
 Node *init_decl(Type *typ);
 Node *expr();
 Node *assign();
+Node *log_or();
 Node *log_and();
 Node *or_expr();
 Node *xor_expr();

@@ -847,16 +847,34 @@ Node *expr() {
     return assign();
 }
 
-// assign = log_and
-//        | log_and '=' assign
+// assign = log_or
+//        | log_or '=' assign
 Node *assign() {
-    Node *node = log_and();
+    Node *node = log_or();
     if (consume("=")) {
         node      = new_node(ND_ASSIGN, node, assign(), NULL);
         node->typ = can_assign(node->lhs->typ, node->rhs->typ);
         infof("finished until 'a = b'.");
     }
     return node;
+}
+
+// log_or = log_and ( "||" log_and )*
+Node *log_or() {
+    Node *node = log_and();
+    for (;;) {
+        if (consume("||")) {
+            Node *lhs = node;
+            Node *rhs = log_and();
+            assert_at(is_typ(lhs->typ, TP_INT) || is_typ(lhs->typ, TP_CHAR), token->str, "cannot use '||' here.");
+            assert_at(is_typ(rhs->typ, TP_INT) || is_typ(rhs->typ, TP_CHAR), token->str, "cannot use '||' here.");
+            lhs  = new_node(ND_NEQ, lhs, new_node_num(0), new_type(TP_INT));
+            rhs  = new_node(ND_NEQ, rhs, new_node_num(0), new_type(TP_INT));
+            node = new_node(ND_OR, lhs, rhs, new_type(TP_INT));
+        } else {
+            return node;
+        }
+    }
 }
 
 // log_and = or_expr ( "&&" or_expr )*
