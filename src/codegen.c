@@ -403,6 +403,16 @@ void gen_statement(Node *node) {
         printf("    jmp .Lbegin%d\n", node->label);
         printf(".Lend%d:\n", node->label);
         return;
+    case ND_DOWHILE:
+        printf(".Lbegin%d:\n", node->label);
+        gen_statement(node->then);
+        printf(".Lcont%d:\n", node->label);
+        gen_expression(node->cond);
+        printf("    pop rax # stack%d\n", --align);
+        printf("    cmp rax,0\n");
+        printf("    jne .Lbegin%d\n", node->label);
+        printf(".Lend%d:\n", node->label);
+        return;
     case ND_FOR:
         if (node->ini) {
             gen_expression(node->ini);

@@ -230,6 +230,7 @@ typedef enum {
     ND_LSHIFT,   // <<
     ND_RSHIFT,   // >>
     ND_QUESTION, // !
+    ND_DOWHILE,  // do while
 } NodeKind;
 
 // node
@@ -254,6 +255,7 @@ struct Node {
 
     // "if" ( cond ) then "else" els
     // "while" ( cond ) then
+    // "do" then "while" '(' cond ')' ';'
     // "for" ( ini ";" cond ";" step ) then
     // "switch" '(' cond ')' block
     // "case" cond ':' block

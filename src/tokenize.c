@@ -262,6 +262,13 @@ Token *tokenize(char *p) {
             continue;
         }
 
+        if (strncmp(p, "do", 2) == 0 && !isalnum(p[2])) {
+            cur      = new_token(TK_RESERVED, cur, p);
+            cur->len = 2;
+            p += 2;
+            continue;
+        }
+
         if (strncmp(p, "sizeof", 6) == 0 && !isalnum(p[6])) {
             cur      = new_token(TK_RESERVED, cur, p);
             cur->len = 6;

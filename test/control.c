@@ -140,6 +140,32 @@ int main() {
     ASSERT(2, f4(2));
     ASSERT(7, f4(5));
 
+    int xyz = 0;
+    do {
+        xyz++;
+    } while (xyz < 10);
+    ASSERT(10, xyz);
+    int hoge = 10;
+    do {
+        hoge++;
+    } while (hoge < 10);
+    ASSERT(11, hoge);
+    do {
+        hoge++;
+        if (hoge > 0) {
+            break;
+        }
+        hoge++;
+    } while (hoge < 100);
+    ASSERT(12, hoge);
+    int woi = 1;
+    do {
+        woi++;
+        continue;
+        woi++;
+    } while (woi < 10);
+    ASSERT(10, woi);
+
     ok();
     return 0;
 }

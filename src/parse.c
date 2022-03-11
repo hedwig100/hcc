@@ -635,6 +635,7 @@ Node *labeled_stmt() {
 //      | "switch" '(' expr ')' ( stmt | "case" expr ':' stmt | "default" ':' stmt | '{' stmt* labeled_stmt* '}' )
 //      | "return" expr? ';'
 //      | "while" '(' expr ')' stmt
+//      | "do" stmt "while" '(' expr ')' ';'
 //      | "for" '(' ( expr | declaration )? ';' expr? ';' expr; ')' stmt
 //      | "break" ';'
 //      | "continue" ';'
@@ -742,6 +743,24 @@ Node *stmt() {
         scopes->label = node->label;
         node->then    = stmt();
         out_scope();
+        return node;
+    } else if (consume("do")) {
+        int label = counter();
+        enter_scope(true, true);
+        scopes->label = label;
+        Node *then    = stmt();
+        out_scope();
+        expect("while");
+        expect("(");
+        Node *cond = expr();
+        expect(")");
+        expect(";");
+
+        node        = calloc(1, sizeof(Node));
+        node->kind  = ND_DOWHILE;
+        node->label = label;
+        node->cond  = cond;
+        node->then  = then;
         return node;
     } else if (consume("for")) {
         expect("(");
