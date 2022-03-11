@@ -263,6 +263,9 @@ void gen_expression(Node *node) {
     case ND_XOR:
         printf("    xor rax,rdi # xor\n");
         break;
+    case ND_OR:
+        printf("    or rax,rdi # or \n");
+        break;
     default:
         errorf("not type of expression");
         break;

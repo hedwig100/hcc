@@ -847,16 +847,29 @@ Node *expr() {
     return assign();
 }
 
-// assign = xor_expr
-//        | xor_expr '=' assign
+// assign = or_expr
+//        | or_expr '=' assign
 Node *assign() {
-    Node *node = xor_expr();
+    Node *node = or_expr();
     if (consume("=")) {
         node      = new_node(ND_ASSIGN, node, assign(), NULL);
         node->typ = can_assign(node->lhs->typ, node->rhs->typ);
         infof("finished until 'a = b'.");
     }
     return node;
+}
+
+// or_expr = xor_expr ( '|' xor_expr )*
+Node *or_expr() {
+    Node *node = xor_expr();
+    for (;;) {
+        if (consume("|")) {
+            node = new_node(ND_OR, node, xor_expr(), new_type(TP_INT));
+            assert_at(is_typ(node->lhs->typ, TP_INT) || is_typ(node->rhs->typ, TP_CHAR), token->str, "cannot use '|' here.");
+        } else {
+            return node;
+        }
+    }
 }
 
 // xor_expr = and_expr ( '^' and_expr )*
