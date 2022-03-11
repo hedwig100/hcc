@@ -13,6 +13,12 @@ int main() {
     l -= (i + 4) * (l + 44);
     ASSERT(-47, l);
 
+    int m = 1, n = -27;
+    m *= (n + 30);
+    ASSERT(3, m);
+    n *= (m - 3);
+    ASSERT(0, n);
+
     ok();
     return 0;
 }
