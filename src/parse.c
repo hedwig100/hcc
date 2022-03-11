@@ -883,7 +883,8 @@ Node *or_expr() {
     for (;;) {
         if (consume("|")) {
             node = new_node(ND_OR, node, xor_expr(), new_type(TP_INT));
-            assert_at(is_typ(node->lhs->typ, TP_INT) || is_typ(node->rhs->typ, TP_CHAR), token->str, "cannot use '|' here.");
+            assert_at(is_typ(node->lhs->typ, TP_INT) || is_typ(node->lhs->typ, TP_CHAR), token->str, "cannot use '|' here.");
+            assert_at(is_typ(node->rhs->typ, TP_INT) || is_typ(node->rhs->typ, TP_CHAR), token->str, "cannot use '|' here.");
         } else {
             return node;
         }
@@ -896,7 +897,8 @@ Node *xor_expr() {
     for (;;) {
         if (consume("^")) {
             node = new_node(ND_XOR, node, and_expr(), new_type(TP_INT));
-            assert_at(is_typ(node->lhs->typ, TP_INT) || is_typ(node->rhs->typ, TP_CHAR), token->str, "cannot use '^' here.");
+            assert_at(is_typ(node->lhs->typ, TP_INT) || is_typ(node->lhs->typ, TP_CHAR), token->str, "cannot use '^' here.");
+            assert_at(is_typ(node->rhs->typ, TP_INT) || is_typ(node->rhs->typ, TP_CHAR), token->str, "cannot use '^' here.");
         } else {
             return node;
         }
@@ -909,7 +911,8 @@ Node *and_expr() {
     for (;;) {
         if (consume("&")) {
             node = new_node(ND_AND, node, equality(), new_type(TP_INT));
-            assert_at(is_typ(node->lhs->typ, TP_INT) || is_typ(node->rhs->typ, TP_CHAR), token->str, "cannot use '&' here.");
+            assert_at(is_typ(node->lhs->typ, TP_INT) || is_typ(node->lhs->typ, TP_CHAR), token->str, "cannot use '&' here.");
+            assert_at(is_typ(node->rhs->typ, TP_INT) || is_typ(node->rhs->typ, TP_CHAR), token->str, "cannot use '&' here.");
         } else {
             return node;
         }
