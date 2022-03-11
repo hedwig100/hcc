@@ -323,12 +323,24 @@ Type *struct_spec() {
         }
         expect("}");
         assert_at(head.next, token->str, "there is no struct member.");
-        return new_type_strct(tok, head.next);
-    } else {
-        // used for declaration of struct variable
+        assert_at(can_define_strct(tok), token->str, "double definition of struct.");
         Struct *st = find_struct(tok->str, tok->len);
-        assert_at(st, token->str, "this name struct isn't defined ever.");
-        return st->typ;
+        // if st->is_defined, this means st is out of scope, and defined there,
+        // so we have to define the same name struct in this scope, but isn't defined,
+        // there are declaration of struct in this scope.
+        return (!st || st->is_defined) ? new_type_strct(tok, head.next) : define_type_strct(st, head.next);
+    } else {
+        Struct *st = find_struct(tok->str, tok->len);
+        if (!st) {
+            // this struct isn't declared yet
+            return declare_type_strct(tok);
+        } else if (st->is_defined) {
+            // struct is already defined
+            return st->typ;
+        } else {
+            // this struct is declared, but not defined.
+            return st->typ;
+        }
     }
 }
 
@@ -657,7 +669,7 @@ Node *stmt() {
                     assert_at(!has_default, token->str, "two 'default' statement exist in one 'switch' statement.");
                     has_default = true;
                     now         = now->next;
-                    now->next = NULL;
+                    now->next   = NULL;
                 } else {
                     // case
                     now       = now->next;

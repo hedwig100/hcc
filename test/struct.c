@@ -126,6 +126,19 @@ int main() {
     xyz.abc = 4;
     ASSERT(4, xyz.abc);
 
+    struct ABDOE;
+    struct Node {
+        struct Node *next;
+        int label;
+    };
+    struct Node *node;
+    struct Node xyx;
+    node        = &xyx;
+    node->label = 5;
+    node->next  = node;
+    ASSERT(5, xyx.label);
+    ASSERT(5, (node->next)->label);
+
     ok();
     return 0;
 }

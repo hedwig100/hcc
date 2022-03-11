@@ -171,6 +171,7 @@ struct Struct {
     Member *mem;
     int size;
     Type *typ;
+    bool is_defined;
 };
 
 // for function parameter
@@ -275,6 +276,8 @@ Node *code[100]; // AST
 Type *new_type(TypeKind kind);
 Type *new_type_ptr(Type *ptr_to);
 Type *new_type_strct(Token *tok, Member *mem);
+Type *declare_type_strct(Token *tok);
+Type *define_type_strct(Struct *st, Member *mem);
 Type *new_type_enum(Object *en);
 int byte_align(Type *typ);
 Type *can_assign(Type *typ1, Type *typ2);
@@ -303,6 +306,7 @@ Node *add_helper(Node *lhs, Node *rhs, NodeKind kind);
 Node *access(Node *ptr, Node *expr);
 Node *access_member(Node *expr, int offset, Type *typ);
 Struct *find_struct(char *name, int len);
+bool can_define_strct(Token *tok);
 Object *new_object(ObjectKind kind);
 Object *find_enum(Token *tok);
 

@@ -37,12 +37,13 @@ Type *new_type_ptr(Type *ptr_to) {
 
 Type *new_type_strct(Token *tok, Member *mem) {
     // register struct
-    Struct *strct = calloc(1, sizeof(Struct));
-    strct->name   = tok->str;
-    strct->len    = tok->len;
-    strct->mem    = mem;
-    strct->next   = scopes->strct;
-    scopes->strct = strct;
+    Struct *strct     = calloc(1, sizeof(Struct));
+    strct->name       = tok->str;
+    strct->len        = tok->len;
+    strct->mem        = mem;
+    strct->is_defined = true;
+    strct->next       = scopes->strct;
+    scopes->strct     = strct;
 
     // type
     Type *typ = calloc(1, sizeof(Type));
@@ -70,6 +71,52 @@ Type *new_type_strct(Token *tok, Member *mem) {
     strct->typ  = typ;
     typ->st     = strct;
     return typ;
+}
+
+Type *declare_type_strct(Token *tok) {
+    // register struct declaration
+    Struct *strct     = calloc(1, sizeof(Struct));
+    strct->name       = tok->str;
+    strct->len        = tok->len;
+    strct->mem        = NULL;
+    strct->is_defined = false;
+    strct->next       = scopes->strct;
+    scopes->strct     = strct;
+
+    // type
+    Type *typ = calloc(1, sizeof(Type));
+    typ->kind = TP_STRUCT;
+    typ->name = tok->str;
+    typ->len  = tok->len;
+    typ->mem  = NULL;
+
+    strct->typ = typ;
+    typ->st    = strct;
+    return typ;
+}
+
+Type *define_type_strct(Struct *st, Member *mem) {
+    st->mem        = mem;
+    st->is_defined = true;
+
+    Type head;
+    head.next      = NULL;
+    Type *cur      = &head;
+    int min_offset = 0;
+    for (Member *now = mem; now; now = now->next) {
+        cur->next = now->typ;
+        cur       = cur->next;
+
+        int offset  = calc_aligment_offset(min_offset, byte_align(cur));
+        cur->offset = offset;
+        now->offset = offset;
+        min_offset  = offset + cur->size;
+    }
+
+    st->typ->mem  = head.next;
+    st->typ->size = min_offset;
+    st->size      = min_offset;
+    return st->typ;
 }
 
 Type *new_type_enum(Object *en) {
@@ -558,12 +605,12 @@ Struct *find_struct(char *name, int len) {
     return NULL;
 }
 
-// can_defined_struct checks if the tok->name struct can be defined
+// can_define_strct checks if the tok->name struct can be defined
 // if OK (the same name struct is not defined), return true;
-// else return false;
-bool can_defined_struct(Token *tok) {
+// else return false
+bool can_define_strct(Token *tok) {
     for (Struct *st = scopes->strct; st; st = st->next) {
-        if (st->len == tok->len && !memcmp(tok->str, st->name, st->len)) {
+        if (st->len == tok->len && !memcmp(tok->str, st->name, st->len) && st->is_defined) {
             return false;
         }
     }
