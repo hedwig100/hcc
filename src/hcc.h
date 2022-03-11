@@ -221,6 +221,8 @@ typedef enum {
     ND_CASE,     // "case"
     ND_DEFAULT,  // "default"
     ND_TYPEDEF,  // typdef
+    ND_INC,      // ident++
+    ND_DEC,      // ident--
 } NodeKind;
 
 // node

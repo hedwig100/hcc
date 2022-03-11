@@ -43,6 +43,11 @@ int main() {
     ASSERT(0, --i);
     i = 9;
     ASSERT(55, fib(++i));
+    ASSERT(55, fib(i++));
+    int a[15] = {0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14};
+    ASSERT(11, a[i--]);
+    ASSERT(10, a[i++]);
+    ASSERT(12, a[++i]);
 
     ok();
     return 0;

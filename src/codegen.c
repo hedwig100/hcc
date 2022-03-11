@@ -190,6 +190,26 @@ void gen_expression(Node *node) {
         }
         printf("    push rax # stack%d\n", align++);
         return;
+    case ND_INC:
+        gen_addr(node->lhs);
+        gen_expression(node->rhs);
+        printf("    pop rdi # stack%d\n", --align);
+        printf("    pop rax # stack%d\n", --align);
+        gen_load(node->lhs->typ, "rsi");
+        printf("    push rsi # stack%d\n", align++);
+        printf("    add rsi,rdi\n");
+        gen_store(node->lhs->typ, "rsi", "esi", "si", "sil");
+        return;
+    case ND_DEC:
+        gen_addr(node->lhs);
+        gen_expression(node->rhs);
+        printf("    pop rdi # stack%d\n", --align);
+        printf("    pop rax # stack%d\n", --align);
+        gen_load(node->lhs->typ, "rsi");
+        printf("    push rsi # stack%d\n", align++);
+        printf("    sub rsi,rdi\n");
+        gen_store(node->lhs->typ, "rsi", "esi", "si", "sil");
+        return;
     }
 
     gen_expression(node->lhs);

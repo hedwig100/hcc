@@ -933,8 +933,8 @@ Node *mul() {
 //       | "--" unary
 //       | '&' unary
 //       | '*' unary
-//       | '+' postfix
-//       | '-' postfix
+//       | '+' unary
+//       | '-' unary
 //       | postfix
 Node *unary() {
     if (consume("sizeof")) {
@@ -976,10 +976,10 @@ Node *unary() {
         return node;
     }
     if (consume("+")) {
-        return postfix();
+        return unary();
     }
     if (consume("-")) {
-        Node *node = new_node(ND_SUB, new_node_num(0), postfix(), new_type(TP_INT));
+        Node *node = new_node(ND_SUB, new_node_num(0), unary(), new_type(TP_INT));
         if (is_ptr(node->rhs->typ)) {
             error_at(token->str, "unary '-' cannot be used for address.");
         }
@@ -988,7 +988,7 @@ Node *unary() {
     return postfix();
 }
 
-// postfix = primary ( '[' expr ']' | '.' ident | "->" ident )*
+// postfix = primary ( '[' expr ']' | '.' ident | "->" ident | "++" | "--" )*
 Node *postfix() {
     Node *node = primary();
     for (;;) {
@@ -1035,6 +1035,10 @@ Node *postfix() {
             assert_at(typ, token->str, "'%s' is not the member of struct '%s'", to_str(tok->str, tok->len), to_str(st->name, st->len));
             node = new_node(ND_DEREF, node, NULL, node->typ->ptr_to);
             node = access_member(node, offset, typ);
+        } else if (consume("++")) {
+            node = add_helper(node, new_node_num(1), ND_INC);
+        } else if (consume("--")) {
+            node = add_helper(node, new_node_num(1), ND_DEC);
         } else {
             return node;
         }
