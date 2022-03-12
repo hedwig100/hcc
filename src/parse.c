@@ -283,7 +283,6 @@ Node *ext_def() {
             expect(";");
             node->kind = ND_FUNCDECL;
             register_func(node);
-            out_scope();
             return node;
         }
     }
@@ -557,6 +556,10 @@ Node *func_param(Node *node) {
     }
 
     infof("finished until '(param)'.");
+    if (!lookahead("{", token)) {
+        // function declaration
+        out_scope();
+    }
     node->params = head.next;
     return node;
 }
