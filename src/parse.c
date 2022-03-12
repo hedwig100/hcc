@@ -28,7 +28,7 @@ bool lookahead(char *op, Token *tok) {
 }
 
 bool is_decl(Token *tok) {
-    return lookahead("int", tok) || lookahead("char", tok) || lookahead("struct", tok) || lookahead("void", tok) || lookahead("enum", tok) || lookahead("typedef", tok) || lookahead("static", tok) || lookahead_typdef(tok);
+    return lookahead("int", tok) || lookahead("char", tok) || lookahead("struct", tok) || lookahead("void", tok) || lookahead("enum", tok) || lookahead("typedef", tok) || lookahead("static", tok) || lookahead("const", tok) || lookahead_typdef(tok);
 }
 
 // consume_ident read a token and return the token if next token is identifier,
@@ -290,7 +290,7 @@ Node *ext_def() {
     return node;
 }
 
-// decl_spec = ( "typedef" | "static" | type_spec )*
+// decl_spec = ( "typedef" | "static" | "const" | type_spec )*
 Type *decl_spec() {
     Type *typ      = NULL;
     bool is_typdef = false;
@@ -303,6 +303,8 @@ Type *decl_spec() {
         } else if (consume("static")) {
             assert_at(!is_typdef, token->str, "'typedef static' isn't valid.");
             is_static = true;
+            continue;
+        } else if (consume("const")) {
             continue;
         } else if (is_decl(token)) {
             Type *new = type_spec();
@@ -525,7 +527,7 @@ Type *type_array(Type *typ) {
 }
 
 // func_param = ')'
-//            | type_spec declarator ( ',' type_spec declarator )* ')'
+//            | decl_spec declarator ( ',' decl_spec declarator )* ')'
 Node *func_param(Node *node) {
     enter_scope(false, false);
     if (consume(")")) {
@@ -538,8 +540,9 @@ Node *func_param(Node *node) {
     head.next = NULL;
     Node *now = &head;
     while (1) {
-        Type *typ = type_spec();
+        Type *typ = decl_spec();
         assert_at(typ, token->str, "type declaration expected.");
+        assert_at(!(typ->is_typdef), token->str, "cannot use 'typedef' here");
         now->next = declarator(typ, LOCAL);
         now       = now->next;
         assert_at(!is_typ(now->typ, TP_VOID), token->str, "cannot use void here.");

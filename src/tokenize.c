@@ -248,6 +248,13 @@ Token *tokenize(char *p) {
             continue;
         }
 
+        if (strncmp(p, "const", 5) == 0 && !isalnum(p[5])) {
+            cur      = new_token(TK_RESERVED, cur, p);
+            cur->len = 5;
+            p += 5;
+            continue;
+        }
+
         if (strncmp(p, "break", 5) == 0 && !isalnum(p[5])) {
             cur      = new_token(TK_RESERVED, cur, p);
             cur->len = 5;

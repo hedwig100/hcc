@@ -16,6 +16,10 @@ int counter() {
     return i++;
 }
 
+int func(const int i, const char *s) {
+    return i;
+}
+
 int main() {
     ASSERT(3, ({ a = 3; a; }));
     ASSERT(4, ({int c;b = &c;*b = 4;c; }));
@@ -27,6 +31,10 @@ int main() {
     ASSERT(1, counter());
     ASSERT(2, counter());
     ASSERT(3, counter());
+
+    const int abc = 0;
+    ASSERT(0, abc);
+    ASSERT(10, func(10, 'g'));
 
     ok();
     return 0;
