@@ -71,6 +71,7 @@ struct Type {
     TypeKind kind;
     int size;
     bool is_typdef;
+    bool is_static;
 
     // ptr_to is valid when kind = TP_PTR.
     Type *ptr_to;
@@ -118,6 +119,7 @@ struct Object {
     // lvar,gvar
     int offset;
     Type *typ;
+    bool is_static;
 
     // enum
     Object *enum_list;
@@ -283,6 +285,7 @@ struct Node {
 };
 
 Node *code[100]; // AST
+Node *static_datas;
 
 /*
     parse_utils.c
@@ -311,6 +314,7 @@ Object *find_obj(Token *tok);
 bool can_defined_lvar(Token *tok);
 
 Object *find_gvar(Token *tok);
+Node *register_static_data(Node *node);
 
 void enter_scope(bool can_break, bool can_cont);
 void out_scope();

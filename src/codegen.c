@@ -540,15 +540,12 @@ void gen_program() {
 
     // data section
     int start = 1;
-    for (int i = 0; code[i]; i++) {
-        if (!code[i]) continue;
-        if (code[i]->kind == ND_GVAR || code[i]->kind == ND_INIT) {
-            if (start) {
-                printf(".data\n");
-                start = 0;
-            }
-            gen_ext_def(code[i]);
+    for (Node *data = static_datas; data; data = data->next) {
+        if (start) {
+            printf(".data\n");
+            start = 0;
         }
+        gen_ext_def(data);
     }
     for (Str *str = strs; str; str = str->next) {
         printf(".LC%d:\n", str->id);

@@ -27,8 +27,8 @@ bool lookahead(char *op, Token *tok) {
     return true;
 }
 
-bool is_type(Token *tok) {
-    return lookahead("int", tok) || lookahead("char", tok) || lookahead("struct", tok) || lookahead("void", tok) || lookahead("enum", tok) || lookahead("typedef", tok) || lookahead_typdef(tok);
+bool is_decl(Token *tok) {
+    return lookahead("int", tok) || lookahead("char", tok) || lookahead("struct", tok) || lookahead("void", tok) || lookahead("enum", tok) || lookahead("typedef", tok) || lookahead("static", tok) || lookahead_typdef(tok);
 }
 
 // consume_ident read a token and return the token if next token is identifier,
@@ -119,9 +119,11 @@ Node *new_node_lvar(Token *tok, Type *typ) {
     lvar->name   = tok->str;
     lvar->len    = tok->len;
     add_offset(scopes, typ->size, byte_align(typ));
-    node->offset = lvar->offset;
-    lvar->typ    = typ;
-    node->typ    = typ;
+    node->offset    = lvar->offset;
+    lvar->typ       = typ;
+    node->typ       = typ;
+    lvar->is_static = typ->is_static;
+    typ->is_static  = false;
     return node;
 }
 
@@ -150,15 +152,17 @@ Node *new_node_gvar(Token *tok, Type *typ) {
     Object *gvar = find_gvar(tok);
     assert_at(!gvar, token->str, "the same name global variable is defined ever.");
 
-    gvar       = new_object(OBJ_GVAR);
-    gvar->next = globals;
-    gvar->name = tok->str;
-    node->name = tok->str;
-    gvar->len  = tok->len;
-    node->len  = tok->len;
-    gvar->typ  = typ;
-    node->typ  = typ;
-    globals    = gvar;
+    gvar            = new_object(OBJ_GVAR);
+    gvar->next      = globals;
+    gvar->name      = tok->str;
+    node->name      = tok->str;
+    gvar->len       = tok->len;
+    node->len       = tok->len;
+    gvar->typ       = typ;
+    node->typ       = typ;
+    gvar->is_static = typ->is_static;
+    typ->is_static  = false;
+    globals         = gvar;
     return node;
 }
 
@@ -250,16 +254,16 @@ Node *ext_def() {
             expect(";");
             // array assignment is only possible during initialization.
             if (is_typ(node->typ, TP_ARRAY) && is_typ(rhs->typ, TP_ARRAY)) {
-                return new_node(ND_INIT, node, rhs, node->typ);
+                return register_static_data(new_node(ND_INIT, node, rhs, node->typ));
             } else {
                 Type *typ = can_assign(node->typ, rhs->typ);
                 assert_at(typ, token->str, "cannot initialize with this value.");
-                return new_node(ND_INIT, node, rhs, typ);
+                return register_static_data(new_node(ND_INIT, node, rhs, typ));
             }
         } else {
             // global variable declarator
             expect(";");
-            return node;
+            return register_static_data(node);
         }
     } else if (node->kind == ND_TYPEDEF) {
         // typedef
@@ -286,15 +290,21 @@ Node *ext_def() {
     return node;
 }
 
-// decl_spec = ( "typedef" | type_spec )*
+// decl_spec = ( "typedef" | "static" | type_spec )*
 Type *decl_spec() {
     Type *typ      = NULL;
     bool is_typdef = false;
+    bool is_static = false;
     for (;;) {
         if (consume("typedef")) {
+            assert_at(!is_static, token->str, "'static typedef' isn't valid.");
             is_typdef = true;
             continue;
-        } else if (is_type(token)) {
+        } else if (consume("static")) {
+            assert_at(!is_typdef, token->str, "'typedef static' isn't valid.");
+            is_static = true;
+            continue;
+        } else if (is_decl(token)) {
             Type *new = type_spec();
             assert_at(new, token->str, "type specifier expected.");
             assert_at(!typ, token->str, "two type specifier exists at the same time.");
@@ -305,6 +315,7 @@ Type *decl_spec() {
         }
     }
     typ->is_typdef = is_typdef;
+    typ->is_static = is_static;
     return typ;
 }
 
@@ -452,6 +463,7 @@ Type *pointer(Type *typ) {
     while (consume("*")) {
         Type *next      = new_type_ptr(typ);
         next->is_typdef = typ->is_typdef;
+        next->is_static = typ->is_static;
         typ             = next;
     }
     return typ;
@@ -486,7 +498,7 @@ Node *direct_decl(Type *typ, Param p) {
         return new_typdef(tok, typ);
     } else {
         // variable
-        return p == GLOBAL ? new_node_gvar(tok, typ) : new_node_lvar(tok, typ);
+        return (p == GLOBAL || typ->is_static) ? new_node_gvar(tok, typ) : new_node_lvar(tok, typ);
     }
 }
 
@@ -500,6 +512,7 @@ Type *type_array(Type *typ) {
         Type *next      = new_type(TP_ARRAY);
         next->ptr_to    = typ;
         next->is_typdef = typ->is_typdef;
+        next->is_static = typ->is_static;
         typ             = next;
     }
     Type *now = typ;
@@ -770,7 +783,7 @@ Node *stmt() {
         enter_scope(true, true);
         scopes->label = node->label;
         if (!consume(";")) {
-            if (is_type(token))
+            if (is_decl(token))
                 node->ini = declaration();
             else
                 node->ini = expr();
@@ -804,7 +817,7 @@ Node *stmt() {
         node = cmp_stmt();
         out_scope();
         return node;
-    } else if (is_type(token)) {
+    } else if (is_decl(token)) {
         node = declaration();
         expect(";");
         return node;
@@ -841,16 +854,28 @@ Node *declaration() {
         Node head;
         Node *now = &head;
         now->next = init_decl(typ);
-        now       = now->next;
-        now->next = NULL;
-        node->typ = now->typ;
+        if (now->next->kind != ND_INIT && now->next->kind != ND_GVAR) {
+            now       = now->next;
+            now->next = NULL;
+            node->typ = now->typ;
+        } else {
+            now->next = NULL;
+        }
         while (consume(",")) {
             now->next = init_decl(typ);
+            if (now->next->kind == ND_INIT || now->next->kind == ND_GVAR) {
+                now->next = NULL;
+                continue;
+            }
             now       = now->next;
             now->next = NULL;
             node->typ = now->typ;
         }
-        node->block = head.next;
+        if (!head.next) {
+            node->block = new_node_num(0); // meaningless node
+        } else {
+            node->block = head.next;
+        }
         return new_node(ND_STMTEXPR, node, NULL, node->typ);
     }
 }
@@ -861,7 +886,22 @@ Node *init_decl(Type *typ) {
     assert_at(!is_typ(node->typ, TP_VOID), token->str, "cannot use void here.");
     if (consume("=")) { // initiliazer
         assert_at(node->kind != ND_TYPEDEF, token->str, "cannot use '=' here.");
-        return eval(node, initializer(false));
+        if (node->kind == ND_LVAR)
+            // local variable
+            return eval(node, initializer(false));
+        else if (node->kind == ND_GVAR) {
+            // static local variable
+            Node *rhs = initializer(true);
+            // array assignment is only possible during initialization.
+            if (is_typ(node->typ, TP_ARRAY) && is_typ(rhs->typ, TP_ARRAY)) {
+                return register_static_data(new_node(ND_INIT, node, rhs, node->typ));
+            } else {
+                Type *typ = can_assign(node->typ, rhs->typ);
+                assert_at(typ, token->str, "cannot initialize with this value.");
+                return register_static_data(new_node(ND_INIT, node, rhs, typ));
+            }
+        } else
+            error_at(token->str, "not valid variable.");
     }
     return node;
 }
@@ -1130,7 +1170,7 @@ Node *mul() {
 //       | postfix
 Node *unary() {
     if (consume("sizeof")) {
-        if (lookahead("(", token) && is_type(token->next)) {
+        if (lookahead("(", token) && is_decl(token->next)) {
             expect("(");
             Type *typ = decl_spec();
             expect(")");

@@ -378,7 +378,7 @@ Func *find_func(Node *node) {
 Object *find_obj(Token *tok) {
     for (Scope *scp = scopes; scp; scp = scp->before) {
         for (Object *var = scp->lvar; var; var = var->next) {
-            if (var->len == tok->len && !memcmp(tok->str, var->name, var->len)) {
+            if (!(var->is_static) && var->len == tok->len && !memcmp(tok->str, var->name, var->len)) {
                 return var;
             }
         }
@@ -412,12 +412,26 @@ bool can_defined_lvar(Token *tok) {
 // find_gvar searches local variables,if exists return the global variable
 // otherwise return NULL
 Object *find_gvar(Token *tok) {
+    for (Scope *scp = scopes; scp; scp = scp->before) {
+        for (Object *var = scp->lvar; var; var = var->next) {
+            if (var->is_static && var->len == tok->len && !memcmp(tok->str, var->name, var->len)) {
+                return var;
+            }
+        }
+    }
     for (Object *var = globals; var; var = var->next) {
         if (var->len == tok->len && !memcmp(tok->str, var->name, var->len)) {
             return var;
         }
     }
     return NULL;
+}
+
+Node *register_static_data(Node *node) {
+    assert_at(node->kind == ND_GVAR || node->kind == ND_INIT || node->kind == ND_ARRAY, token->str, "cannot register as static data.");
+    node->next   = static_datas;
+    static_datas = node;
+    return node;
 }
 
 /*

@@ -24,6 +24,7 @@ int main(int argc, char **argv) {
     // construct AST
     infof("try to construct AST...");
     globals        = new_object(OBJ_GVAR);
+    static_datas   = NULL;
     strs           = NULL;
     funcs          = NULL;
     scopes         = calloc(1, sizeof(Scope));
