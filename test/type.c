@@ -10,6 +10,11 @@ struct Node {
     int label;
 };
 
+int (*x)(int a, int b);
+int (*signal(int a, void (*b)(int c)))(int d);
+int (*y(int x, void (*z)(char *a[4])))(int w);
+int *(*bfa)[30];
+
 int main() {
     A x = 10;
     ASSERT(10, x);

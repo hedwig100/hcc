@@ -473,30 +473,61 @@ Type *pointer(Type *typ) {
 // direct_decl = ident
 //             | ident typ_array
 //             | ident '(' func_param
+//             | '(' declarator ')'
+//             | '(' declarator ')' typ_array
+//             | '(' declarator ')' '(' func_param
 // if not,return NULL
 Node *direct_decl(Type *typ, Param p) {
     Node *node;
-    Token *tok = consume_ident();
-    if (!tok) {
-        return NULL;
+    Token *tok;
+    Type ptr_to;
+    ptr_to.is_static = false;
+    ptr_to.is_typdef = false;
+    Type *base       = NULL;
+
+    if (consume("(")) {
+        // tmporaly read void (**)x;
+        node     = declarator(&ptr_to, NEST_TYPE);
+        tok      = calloc(1, sizeof(Token));
+        tok->str = node->name;
+        tok->len = node->len;
+        base     = node->typ;
+        expect(")");
+    } else {
+        tok = consume_ident();
+        if (!tok) {
+            return NULL;
+        }
     }
     typ = type_array(typ);
 
     if (consume("(")) {
         // function definition or declaration
-        assert_at(p == GLOBAL, token->str, "function definition of declaration can't exist in function.");
+        // assert_at((p == GLOBAL || p == NEST_TYPE), token->str, "function definition of declaration can't exist in function.");
         assert_at(!(typ->is_typdef), token->str, "typedef cannot be used for function declaration.");
         node       = calloc(1, sizeof(Node));
         node->name = tok->str;
         node->len  = tok->len;
-        node->typ  = typ;
-        node       = func_param(node);
+        if (base) {
+            // nested type
+            ptr_to = *typ;
+            typ    = base;
+        }
+        node->typ = typ;
+        node      = func_param(node);
         return node;
     } else if (p == STRUCT) {
         // struct member
         return new_node_mem(tok, typ);
     } else if (typ->is_typdef) {
         return new_typdef(tok, typ);
+    } else if (p == NEST_TYPE) {
+        // *x of int (*x)(int a,int b)
+        node       = calloc(1, sizeof(Node));
+        node->name = tok->str;
+        node->len  = tok->len;
+        node->typ  = typ;
+        return node;
     } else {
         // variable
         return (p == GLOBAL || typ->is_static) ? new_node_gvar(tok, typ) : new_node_lvar(tok, typ);

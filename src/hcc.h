@@ -185,6 +185,7 @@ typedef enum {
     GLOBAL,
     LOCAL,
     STRUCT,
+    NEST_TYPE,
 } Param;
 
 // nodekind
