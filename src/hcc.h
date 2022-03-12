@@ -75,7 +75,7 @@ struct Type {
 
     // ptr_to is valid when kind = TP_PTR.
     Type *ptr_to;
-    size_t array_size;
+    int array_size;
 
     // if kind = TP_STRUCT or TP_ENUM
     char *name;
