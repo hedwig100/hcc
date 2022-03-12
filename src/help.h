@@ -1,20 +1,23 @@
 
-/////////////
-// stdio.h //
-/////////////
+typedef __builtin_va_list __gnuc_va_list;
+typedef __gnuc_va_list va_list;
+#define va_start(v, l) __builtin_va_start(v, l)
+#define va_end(v) __builtin_va_end(v)
 
-#define SEEK_END 2;
-#define SEEK_SET 0;
+#define SEEK_END 2
+#define SEEK_SET 0
 struct _IO_FILE;
 typedef struct _IO_FILE FILE;
 FILE *stderr;
 int printf(const char *__format, ...);
 int fprintf(FILE *__stream, const char *__format, ...);
-// int vfprintf(FILE *__s, const char *__format, __gnuc_va_list __arg);
+int vfprintf(FILE *__s, const char *__format, __gnuc_va_list __arg);
 FILE *fopen(const char *__filename, const char *__modes);
 int fread(void *__ptr, int __size, int __n, FILE *__stream);
 int fclose(FILE *__stream);
 int ftell(FILE *__stream);
+int *__errno_location();
+#define errno (*__errno_location())
 
 // extern int printf(const char *__restrict __format, ...);
 // extern int fprintf(FILE *__restrict __stream,
@@ -27,10 +30,7 @@ int ftell(FILE *__stream);
 //                     size_t __n, FILE *__restrict __stream);
 // extern int fclose(FILE *__stream);
 // extern long int ftell(FILE *__stream);
-
-//////////////
-// string.h //
-//////////////
+// extern int *__errno_location (void) __attribute__ ((__nothrow__ , __leaf__)) __attribute__ ((__const__));
 
 int memcmp(const void *__s1, const void *__s2, int __n);
 int strlen(const char *__s);
@@ -39,6 +39,7 @@ char *strstr(const char *__haystack, const char *__needle);
 int strtol(const char *__nptr, char **__endptr, int __base);
 int strcmp(const char *__s1, const char *__s2);
 void *memcpy(void *__dest, const void *__src, int __n);
+char *strerror(int __errnum);
 
 // extern int memcmp (const void *__s1, const void *__s2, size_t __n)
 //      __attribute__ ((__nothrow__ , __leaf__)) __attribute__ ((__pure__)) __attribute__ ((__nonnull__ (1, 2)));
@@ -55,10 +56,7 @@ void *memcpy(void *__dest, const void *__src, int __n);
 //     __attribute__((__nothrow__, __leaf__)) __attribute__((__pure__)) __attribute__((__nonnull__(1, 2)));
 // extern void *memcpy(void *__restrict __dest, const void *__restrict __src,
 //                     size_t __n) __attribute__((__nothrow__, __leaf__)) __attribute__((__nonnull__(1, 2)));
-
-//////////////
-// stdlib.h //
-//////////////
+// extern char *strerror(int __errnum) __attribute__((__nothrow__, __leaf__));
 
 int isalnum(int x);
 int isspace(int x);
@@ -75,19 +73,10 @@ void exit(int __status);
 //      __attribute__ ((__nothrow__ , __leaf__)) __attribute__ ((__malloc__)) __attribute__ ((__alloc_size__ (1, 2))) ;
 // extern void exit(int __status) __attribute__((__nothrow__, __leaf__)) __attribute__((__noreturn__));
 
-/////////////
-// errno.h //
-/////////////
-
-char *strerror(int __errnum);
-// extern char *strerror(int __errnum) __attribute__((__nothrow__, __leaf__));
-
 /* stddef.h */
-#define NULL 0;
+#define NULL 0
 
 /* stdbool */
-#define bool int;
-#define true 1;
-#define false 0;
-
-// va_list,va_start,va_end,errno?
+#define bool int
+#define true 1
+#define false 0
