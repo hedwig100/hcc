@@ -96,6 +96,7 @@ struct Func {
 
     Type *ret;
     int param_num;
+    bool is_varargs;
     Type *params;
 };
 
@@ -278,6 +279,7 @@ struct Node {
     // name(params),name(params) body
     Node *params;
     int param_num;
+    bool is_varargs;
     Node *body;
 
     // ND_ARRAY

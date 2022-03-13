@@ -177,6 +177,9 @@ void gen_expression(Node *node) {
         return;
     case ND_CALLFUNC:
         is_pop = gen_param_set(node);
+        if (node->is_varargs) {
+            printf("    mov al,0\n");
+        }
         printf("    call %s\n", to_str(node->name, node->len));
         for (int i = 0; i < node->param_num - 6; i++) {
             printf("    pop rdi # stack%d,stack param\n", --align);

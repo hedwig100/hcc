@@ -344,10 +344,11 @@ void register_func(Node *node) {
     if (node->kind != ND_FUNCDEF && node->kind != ND_FUNCDECL) {
         errorf("cannot register func when node->kind is neither FUNCDEF nor FUNCDECL.");
     }
-    Func *now = calloc(1, sizeof(Func));
-    now->name = node->name;
-    now->len  = node->len;
-    now->ret  = node->typ;
+    Func *now       = calloc(1, sizeof(Func));
+    now->name       = node->name;
+    now->len        = node->len;
+    now->ret        = node->typ;
+    now->is_varargs = node->is_varargs;
 
     Type head;
     head.next     = NULL;

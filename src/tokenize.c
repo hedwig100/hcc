@@ -129,6 +129,13 @@ Token *tokenize(char *p) {
             continue;
         }
 
+        if (strncmp(p, "...", 3) == 0) {
+            cur      = new_token(TK_RESERVED, cur, p);
+            cur->len = 3;
+            p += 3;
+            continue;
+        }
+
         if (*p == '+' || *p == '-' || *p == '*' || *p == '/' || *p == '(' ||
             *p == ')' || *p == '<' || *p == '>' || *p == ';' || *p == '=' ||
             *p == '{' || *p == '}' || *p == ',' || *p == '&' || *p == '[' ||

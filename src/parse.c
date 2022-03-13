@@ -557,7 +557,7 @@ Type *type_array(Type *typ) {
 }
 
 // func_param = ')'
-//            | decl_spec declarator ( ',' decl_spec declarator )* ')'
+//            | decl_spec declarator ( ',' decl_spec declarator )* ( ',' "...")?  ')'
 Node *func_param(Node *node) {
     enter_scope(false, false);
     if (consume(")")) {
@@ -567,9 +567,15 @@ Node *func_param(Node *node) {
     }
 
     Node head;
-    head.next = NULL;
-    Node *now = &head;
+    head.next       = NULL;
+    Node *now       = &head;
+    bool is_varargs = false;
     while (1) {
+        if (consume("...")) {
+            expect(")");
+            is_varargs = true;
+            break;
+        }
         Type *typ = decl_spec();
         assert_at(typ, token->str, "type declaration expected.");
         assert_at(!(typ->is_typdef), token->str, "cannot use 'typedef' here");
@@ -591,7 +597,8 @@ Node *func_param(Node *node) {
         // function declaration
         out_scope();
     }
-    node->params = head.next;
+    node->params     = head.next;
+    node->is_varargs = is_varargs;
     return node;
 }
 
@@ -1366,8 +1373,9 @@ Node *primary() {
             node->name = tok->str;
             node->len  = tok->len;
 
-            Func *func = find_func(node);
-            node->typ  = func->ret;
+            Func *func       = find_func(node);
+            node->typ        = func->ret;
+            node->is_varargs = func->is_varargs;
 
             if (consume(")")) {
                 return node;
