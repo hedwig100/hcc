@@ -15,6 +15,12 @@ int (*signal(int a, void (*b)(int c)))(int d);
 int (*y(int x, void (*z)(char *a[4])))(int w);
 int *(*bfa)[30];
 
+typedef int ABC[10];
+int f(ABC x) {
+    x[0] = 3;
+    return x[1];
+}
+
 int main() {
     A x = 10;
     ASSERT(10, x);
@@ -34,6 +40,8 @@ int main() {
     ASSERT(3, arr[1][0]);
     ASSERT(4, arr[1][1]);
     ASSERT(5, arr[1][2]);
+    ABC xyz = {0, 1, 2};
+    ASSERT(1, f(xyz));
     ok();
     return 0;
 }

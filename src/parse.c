@@ -367,7 +367,7 @@ Type *type_spec() {
         if (!tok) return NULL;
         Object *td = find_typdef(tok);
         if (!td) return NULL;
-        return td->typ;
+        return type_copy(td->typ);
     }
 }
 

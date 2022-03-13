@@ -304,6 +304,7 @@ Type *new_type_strct(Token *tok, Member *mem);
 Type *declare_type_strct(Token *tok);
 Type *define_type_strct(Struct *st, Member *mem);
 Type *new_type_enum(Object *en);
+Type *type_copy(Type *org);
 int byte_align(Type *typ);
 Type *can_assign(Type *typ1, Type *typ2);
 Type *can_add(Type *typ1, Type *typ2);

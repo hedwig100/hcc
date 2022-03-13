@@ -21,6 +21,9 @@ Type *new_type(TypeKind kind) {
         return typ;
     case TP_STRUCT:
         return typ;
+    case TP_ENUM:
+        typ->size = 4;
+        return typ;
     default:
         error_at(token->str, "kind isn't valid.");
     }
@@ -132,6 +135,54 @@ Type *new_type_enum(Object *en) {
     typ->len  = en->len;
     en->typ   = typ;
     return typ;
+}
+
+Type *type_copy(Type *org) {
+    Type *typ, *ptr_to;
+    switch (org->kind) {
+    case TP_INT:
+        return new_type(TP_INT);
+    case TP_CHAR:
+        return new_type(TP_CHAR);
+    case TP_VOID:
+        return new_type(TP_VOID);
+    case TP_PTR:
+        ptr_to = type_copy(org->ptr_to);
+        return new_type_ptr(ptr_to);
+    case TP_ARRAY:
+        ptr_to          = type_copy(org->ptr_to);
+        typ             = new_type(TP_ARRAY);
+        typ->ptr_to     = ptr_to;
+        typ->array_size = org->array_size;
+        typ->size       = typ->array_size * ptr_to->size;
+        return typ;
+    case TP_STRUCT:
+        typ       = new_type(TP_STRUCT);
+        typ->name = org->name;
+        typ->len  = org->len;
+        Type head;
+        head.next      = NULL;
+        Type *cur      = &head;
+        int min_offset = 0;
+        for (Type *mem = org->mem; mem; mem = mem->next) {
+            cur->next   = type_copy(mem);
+            cur         = cur->next;
+            int offset  = calc_aligment_offset(min_offset, byte_align(cur));
+            cur->offset = offset;
+            min_offset  = offset + cur->size;
+        }
+        typ->st   = org->st;
+        typ->mem  = head.next;
+        typ->size = min_offset;
+        return typ;
+    case TP_ENUM:
+        typ       = new_type(TP_ENUM);
+        typ->name = org->name;
+        typ->len  = org->len;
+        return typ;
+    default:
+        error_at(token->str, "invalid type kind.");
+    }
 }
 
 int byte_align(Type *typ) {
