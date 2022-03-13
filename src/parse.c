@@ -626,8 +626,34 @@ Node *func_param(Node *node) {
         // function declaration
         out_scope();
     }
-    node->params     = head.next;
-    node->is_varargs = is_varargs;
+
+    if (is_varargs) {
+        // min_offset is minimal offset for named parameters
+        // addpres space more than this offset is varargs
+        int min_offset = 0;
+        if (param_num < 6) {
+            min_offset += 8 * (6 - param_num);
+        }
+
+        node->params = head.next;
+        // NOTE: this process doesn't support function whose number of named parameter
+        // is more than 7 and that has variable length args.
+        scopes->offset = calc_offset(node->params, min_offset);
+        assert_at(scopes->offset == 48, token->str, "varargs error.");
+
+        // mofify local variable offset
+        Node *now = node->params;
+        for (Object *lvar = scopes->lvar; lvar && now; lvar = lvar->next) {
+            lvar->offset = now->offset;
+            now          = now->next;
+        }
+
+        node->is_varargs    = true;
+        scopes->named_param = param_num;
+    } else {
+        node->params     = head.next;
+        node->is_varargs = false;
+    }
     return node;
 }
 
@@ -1399,12 +1425,22 @@ Node *primary() {
 
         if (consume("(")) { // function call
             node->kind = ND_CALLFUNC;
-            node->name = tok->str;
-            node->len  = tok->len;
 
-            Func *func       = find_func(node);
-            node->typ        = func->ret;
-            node->is_varargs = func->is_varargs;
+            if (tok->len == 20 && !memcmp(tok->str, "__builtin_myva_start", 20)) {
+                // va_start
+                node->kind        = ND_VASTART;
+                node->name        = "__builtin_myva_start";
+                node->len         = 0;
+                node->typ         = new_type(TP_VOID);
+                node->named_param = scopes->named_param;
+                node->is_varargs  = false;
+            } else {
+                node->name       = tok->str;
+                node->len        = tok->len;
+                Func *func       = find_func(node);
+                node->typ        = func->ret;
+                node->is_varargs = func->is_varargs;
+            }
 
             if (consume(")")) {
                 return node;

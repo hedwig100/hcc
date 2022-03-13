@@ -24,6 +24,9 @@ Type *new_type(TypeKind kind) {
     case TP_ENUM:
         typ->size = 4;
         return typ;
+    case TP_PTR:
+        typ->size = 8;
+        return typ;
     default:
         error_at(token->str, "kind isn't valid.");
     }
@@ -531,6 +534,16 @@ void add_offset(Scope *scope, int size, int alignment) {
     int offset          = calc_aligment_offset(scope->offset + size, alignment);
     scope->offset       = offset;
     scope->lvar->offset = offset;
+}
+
+// this function is used for caluculate offset when varable length argments are used in function definition.
+int calc_offset(Node *node, int min_offset) {
+    if (!node) {
+        return min_offset;
+    }
+    int offset   = calc_offset(node->next, min_offset) + 8;
+    node->offset = offset;
+    return offset;
 }
 
 /*

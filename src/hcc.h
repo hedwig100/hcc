@@ -8,7 +8,8 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#define max(a, b) ((a) > (b) ? (a) : (b));
+#define max(a, b) ((a) > (b) ? (a) : (b))
+#define min(a, b) ((a) > (b) ? (b) : (a))
 
 char *user_input;
 char *filename;
@@ -158,6 +159,7 @@ struct Scope {
     bool can_break; // truee if you can break
     bool can_cont;  // true if you can continue
     int label;
+    int named_param; // in function definition its number of named parameter
 };
 
 Scope *scopes;
@@ -238,6 +240,7 @@ typedef enum {
     ND_RSHIFT,   // >>
     ND_QUESTION, // !
     ND_DOWHILE,  // do while
+    ND_VASTART,  // va_start
 } NodeKind;
 
 // node
@@ -289,6 +292,9 @@ struct Node {
 
     // if (ND_LVAR or ND_GVAR) and TP_STRUCT
     Struct *st;
+
+    // ND_VASTART
+    int named_param;
 };
 
 Node *code[100]; // AST
@@ -328,6 +334,7 @@ void enter_scope(bool can_break, bool can_cont);
 void out_scope();
 int calc_aligment_offset(int min_offset, int alignment);
 void add_offset(Scope *scope, int size, int alignment);
+int calc_offset(Node *node, int min_offset);
 
 Node *eval_const(Node *node);
 Node *eval(Node *lhs, Node *rhs);

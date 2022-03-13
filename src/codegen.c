@@ -119,12 +119,20 @@ int gen_param_set(Node *node) {
 }
 
 void gen_param_get(Node *node) {
-    int i = 0;
+    int i      = 0;
+    int offset = 0;
     for (Node *now = node->params; now && (i < 6); now = now->next) {
         printf("    mov rax,rbp\n");
         printf("    sub rax,%d\n", now->offset);
         gen_store(now->typ, PARAM_REG64[i], PARAM_REG32[i], PARAM_REG16[i], PARAM_REG8[i]);
         i++;
+        offset = now->offset;
+    }
+    if (node->is_varargs && i < 6) {
+        for (; i < 6; i++) {
+            offset -= 8;
+            printf("    mov qword ptr [rbp-%d],%s # ptr,arr\n", offset, PARAM_REG64[i]);
+        }
     }
 }
 
@@ -132,7 +140,7 @@ void gen_param_get(Node *node) {
 void gen_expression(Node *node) {
     char ident[101]; // TODO: support function name longer than 100
     int is_pop;
-    Node *now;
+    Node *now, *ap, *paramN;
 
     switch (node->kind) {
     case ND_NUM:
@@ -188,6 +196,21 @@ void gen_expression(Node *node) {
             printf("    pop rdi # stack%d,for 16byte alignment\n", --align);
         }
         printf("    push rax # stack%d\n", align++);
+        return;
+    case ND_VASTART:
+        paramN = node->params;
+        if (!paramN) errorf("va_start(ap,paramN) must have at least 2 arguments.");
+        Node *ap = node->params->next;
+        if (!ap) errorf("va_start(ap,paramN) must have at least 2 arguments.");
+        gen_addr(ap);
+        printf("    pop rax# stack%d\n", --align);
+        printf("    mov dword ptr [rax],%d\n", min(8 * node->named_param, 48));      // gp_offset
+        printf("    mov dword ptr [rax + 4],48\n");                                  // fp_offset
+        printf("    lea rdi, [rbp + %d]\n", 16 + 8 * max(node->named_param - 6, 0)); // over_flow_arg_area
+        printf("    mov qword ptr [rax + 8],rdi\n");                                 // over_flow_arg_area
+        printf("    lea rdi, [rbp - 48]\n");                                         // reg_saved_area
+        printf("    mov qword ptr [rax + 16],rdi\n");                                // reg_save_area
+        printf("    push 0 # stack%d\n", align++);
         return;
     case ND_ADDR:
         // &lvar is ok, &(x + y) is bad
