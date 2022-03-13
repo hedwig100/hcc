@@ -348,11 +348,19 @@ void register_func(Node *node) {
     now->name = node->name;
     now->len  = node->len;
     now->ret  = node->typ;
-    int i     = 0;
+
+    Type head;
+    head.next     = NULL;
+    Type *cur     = &head;
+    int param_num = 0;
     for (Node *param = node->params; param; param = param->next) {
-        now->params[i] = param->typ;
-        i++;
+        cur->next = param->typ;
+        cur       = cur->next;
+        param_num++;
     }
+    now->params    = head.next;
+    now->param_num = param_num;
+
     now->next = funcs;
     funcs     = now;
 }

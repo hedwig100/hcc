@@ -1373,19 +1373,21 @@ Node *primary() {
                 return node;
             }
 
-            Node head;
-            head.next = NULL;
-            Node *now = &head;
+            Node *param   = NULL;
+            int param_num = 0;
             while (1) {
-                now->next = assign();
-                now       = now->next;
+                Node *now = assign();
+                now->next = param;
+                param     = now;
+                param_num++;
                 // TODO:type check of argment
                 if (!consume(",")) {
                     expect(")");
                     break;
                 }
             }
-            node->params = head.next;
+            node->params    = param;
+            node->param_num = param_num;
             return node;
         }
 

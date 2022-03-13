@@ -17,3 +17,8 @@ int ok() {
 int printp(int *a) {
     printf("pointer: %p\n", a);
 }
+
+int print8(int a, int b, int c, int d, int e, int f, int g, int h) {
+    printf("%d %d %d %d %d %d %d %d\n", a, b, c, d, e, f, g, h);
+    return a - b + c - d + e - f + g - h;
+}

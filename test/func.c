@@ -43,6 +43,12 @@ int main() {
     ASSERT(1, ({{}int a;a = 0;a + 1; }));
     f(3);
     void *a;
+
+    // watch
+    ASSERT(-4, print8(0, 1, 2, 3, 4, 5, 6, 7));
+    ASSERT(-7, print8(2, 3, 5, 7, 11, 13, 17, 19));
+    ASSERT(0, print8(1, -43, 2, 31, 53, 3, 20, 85));
+    ASSERT(19, print8(fib(1), fib(2), fib(3), fib(1 + fib(1)), 10, 10, -3, -21));
     ok();
     return 0;
 }

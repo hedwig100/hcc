@@ -95,7 +95,8 @@ struct Func {
     int len;
 
     Type *ret;
-    Type *params[6];
+    int param_num;
+    Type *params;
 };
 
 Func *funcs;
@@ -276,6 +277,7 @@ struct Node {
     // ND_CALLFUNC,ND_FUNCDEF
     // name(params),name(params) body
     Node *params;
+    int param_num;
     Node *body;
 
     // ND_ARRAY

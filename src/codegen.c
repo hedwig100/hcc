@@ -100,20 +100,22 @@ void gen_load(Type *typ, const char *reg64) {
 }
 
 int gen_param_set(Node *node) {
-    int n_param = 0;
+    int param_stack_num = 0;
+    if (node->param_num > 6) param_stack_num = node->param_num - 6;
+    int is_pop = 0;
+    if ((align + param_stack_num) % 2 == 1) {
+        printf("    push 0 # stack%d,for 16byte alignment\n", align++); // dummy data
+        is_pop = 1;
+    }
+
     for (Node *now = node->params; now; now = now->next) {
         gen_expression(now);
-        n_param++;
     }
-    for (int i = n_param - 1; i >= 0; i--) {
+    for (int i = 0; (i < 6) && (i < node->param_num); i++) {
         printf("    pop %s # stack%d\n", PARAM_REG64[i], --align);
     }
 
-    if (align % 2 == 1) {
-        printf("    push 0 # stack%d,for 16byte alignment\n", align++); // dummy data
-        return 1;
-    }
-    return 0;
+    return is_pop;
 }
 
 void gen_param_get(Node *node) {
@@ -176,6 +178,9 @@ void gen_expression(Node *node) {
     case ND_CALLFUNC:
         is_pop = gen_param_set(node);
         printf("    call %s\n", to_str(node->name, node->len));
+        for (int i = 0; i < node->param_num - 6; i++) {
+            printf("    pop rdi # stack%d,stack param\n", --align);
+        }
         if (is_pop) {
             printf("    pop rdi # stack%d,for 16byte alignment\n", --align);
         }
