@@ -38,6 +38,27 @@ int param8(int a, int b, int c, int d, int e, int f, int g, int h) {
     return a - b + c - d + e - f + g - h;
 }
 
+int varargs(int a, ...) {
+    va_list ap;
+    va_start(ap, a);
+    va_end(ap);
+    return a;
+}
+
+int A(int x, int y[10]) {
+    return x + y[4];
+}
+
+int error_at(char *fmt, ...) {
+    va_list ap;
+    va_start(ap, fmt);
+    FILE *fp = fopen("a.txt", "w");
+    if (!fp) return 1;
+    vfprintf(fp, fmt, ap);
+    va_end(ap);
+    return 0;
+}
+
 int main() {
     ASSERT(55, fib(10));
     ASSERT(21, fib(fib(6)));
@@ -65,6 +86,13 @@ int main() {
     ASSERT(-7, param8(2, 3, 5, 7, 11, 13, 17, 19));
     ASSERT(0, param8(1, -43, 2, 31, 53, 3, 20, 85));
     ASSERT(19, param8(fib(1), fib(2), fib(3), fib(1 + fib(1)), 10, 10, -3, -21));
+
+    int x     = 10;
+    int y[10] = {1, 2, 3, 4, 5, 5};
+    ASSERT(15, A(x, y));
+
+    ASSERT(10, varargs(10, -3, -43, 4, 10, 3, -3));
+    ASSERT(0, error_at("this is error. %d %d %d\n", 0, 1, 2));
     ok();
     return 0;
 }
