@@ -131,7 +131,7 @@ void gen_param_get(Node *node) {
     if (node->is_varargs && i < 6) {
         for (; i < 6; i++) {
             offset -= 8;
-            printf("    mov qword ptr [rax-%d],%s # ptr,arr\n", offset, PARAM_REG64[i]);
+            printf("    mov qword ptr [rbp-%d],%s # ptr,arr\n", offset, PARAM_REG64[i]);
         }
     }
 }

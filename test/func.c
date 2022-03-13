@@ -91,8 +91,10 @@ int main() {
     int y[10] = {1, 2, 3, 4, 5, 5};
     ASSERT(15, A(x, y));
 
+    // watch
     ASSERT(10, varargs(10, -3, -43, 4, 10, 3, -3));
     ASSERT(0, error_at("this is error. %d %d %d\n", 0, 1, 2));
+    ASSERT(0, error_at("this is error. %d %d %d %d %d %d\n", 0, 1, 2, 3, 4, 5));
     ok();
     return 0;
 }
