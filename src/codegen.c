@@ -120,7 +120,7 @@ int gen_param_set(Node *node) {
 
 void gen_param_get(Node *node) {
     int i = 0;
-    for (Node *now = node->params; now; now = now->next) {
+    for (Node *now = node->params; now && (i < 6); now = now->next) {
         printf("    mov rax,rbp\n");
         printf("    sub rax,%d\n", now->offset);
         gen_store(now->typ, PARAM_REG64[i], PARAM_REG32[i], PARAM_REG16[i], PARAM_REG8[i]);

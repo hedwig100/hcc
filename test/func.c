@@ -30,6 +30,14 @@ void f(int a) {
     return;
 }
 
+int param7(int a, int b, int c, int d, int e, int f, int g) {
+    return a - b + c - d + e - f + g;
+}
+
+int param8(int a, int b, int c, int d, int e, int f, int g, int h) {
+    return a - b + c - d + e - f + g - h;
+}
+
 int main() {
     ASSERT(55, fib(10));
     ASSERT(21, fib(fib(6)));
@@ -50,6 +58,13 @@ int main() {
     ASSERT(0, print8(1, -43, 2, 31, 53, 3, 20, 85));
     ASSERT(19, print8(fib(1), fib(2), fib(3), fib(1 + fib(1)), 10, 10, -3, -21));
     printf("%d %d %d %d %d %d %d %d\n", 1, 2, 3, 4, 5, 6, 7, 8);
+
+    ASSERT(3, param7(0, 1, 2, 3, 4, 5, 6));
+    ASSERT(-18, param7(-3, 2, -32, 10, 23, -3, 3));
+    ASSERT(-4, param8(0, 1, 2, 3, 4, 5, 6, 7));
+    ASSERT(-7, param8(2, 3, 5, 7, 11, 13, 17, 19));
+    ASSERT(0, param8(1, -43, 2, 31, 53, 3, 20, 85));
+    ASSERT(19, param8(fib(1), fib(2), fib(3), fib(1 + fib(1)), 10, 10, -3, -21));
     ok();
     return 0;
 }

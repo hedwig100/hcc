@@ -454,6 +454,7 @@ void enter_scope(bool can_break, bool can_cont) {
     new->lvar         = new_object(OBJ_LVAR);
     new->lvar->next   = NULL;
     new->offset       = scopes->offset;
+    new->stack_offset = -16;
     new->lvar->offset = new->offset;
 
     // break or continue

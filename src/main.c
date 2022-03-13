@@ -23,15 +23,16 @@ int main(int argc, char **argv) {
 
     // construct AST
     infof("try to construct AST...");
-    globals        = new_object(OBJ_GVAR);
-    static_datas   = NULL;
-    strs           = NULL;
-    funcs          = NULL;
-    scopes         = calloc(1, sizeof(Scope));
-    scopes->before = NULL;
-    scopes->offset = 0;
-    scopes->lvar   = new_object(OBJ_LVAR);
-    scopes->strct  = calloc(1, sizeof(Struct));
+    globals              = new_object(OBJ_GVAR);
+    static_datas         = NULL;
+    strs                 = NULL;
+    funcs                = NULL;
+    scopes               = calloc(1, sizeof(Scope));
+    scopes->before       = NULL;
+    scopes->offset       = 0;
+    scopes->stack_offset = -16;
+    scopes->lvar         = new_object(OBJ_LVAR);
+    scopes->strct        = calloc(1, sizeof(Struct));
     program();
 
     // generate code

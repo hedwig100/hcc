@@ -153,6 +153,7 @@ struct Scope {
 
     // maximal offset in this scope
     int offset;
+    int stack_offset;
 
     bool can_break; // truee if you can break
     bool can_cont;  // true if you can continue
@@ -188,6 +189,7 @@ typedef enum {
     LOCAL,
     STRUCT,
     NEST_TYPE,
+    PARAM_STACK,
 } Param;
 
 // nodekind

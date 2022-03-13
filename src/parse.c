@@ -127,6 +127,30 @@ Node *new_node_lvar(Token *tok, Type *typ) {
     return node;
 }
 
+Node *new_node_param_stack(Token *tok, Type *typ) {
+    Node *node = calloc(1, sizeof(Node));
+    node->kind = ND_LVAR;
+
+    // check if the same name local variable isn't defined
+    if (!can_defined_lvar(tok)) {
+        error_at(token->str, "the same name local variable is defined in this scope.");
+    }
+
+    Object *lvar = new_object(OBJ_LVAR);
+    lvar->next   = scopes->lvar;
+    scopes->lvar = lvar;
+    lvar->name   = tok->str;
+    lvar->len    = tok->len;
+    lvar->offset = scopes->stack_offset;
+    scopes->stack_offset -= 8;
+    node->offset    = lvar->offset;
+    lvar->typ       = typ;
+    node->typ       = typ;
+    lvar->is_static = typ->is_static;
+    typ->is_static  = false;
+    return node;
+}
+
 Node *node_obj(Token *tok) {
     Object *obj = find_obj(tok);
     if (!obj) {
@@ -528,6 +552,8 @@ Node *direct_decl(Type *typ, Param p) {
         node->len  = tok->len;
         node->typ  = typ;
         return node;
+    } else if (p == PARAM_STACK) {
+        return new_node_param_stack(tok, typ);
     } else {
         // variable
         return (p == GLOBAL || typ->is_static) ? new_node_gvar(tok, typ) : new_node_lvar(tok, typ);
@@ -569,6 +595,7 @@ Node *func_param(Node *node) {
     Node head;
     head.next       = NULL;
     Node *now       = &head;
+    int param_num   = 0;
     bool is_varargs = false;
     while (1) {
         if (consume("...")) {
@@ -579,7 +606,7 @@ Node *func_param(Node *node) {
         Type *typ = decl_spec();
         assert_at(typ, token->str, "type declaration expected.");
         assert_at(!(typ->is_typdef), token->str, "cannot use 'typedef' here");
-        now->next = declarator(typ, LOCAL);
+        now->next = declarator(typ, param_num >= 6 ? PARAM_STACK : LOCAL);
         now       = now->next;
         assert_at(!is_typ(now->typ, TP_VOID), token->str, "cannot use void here.");
         if (now->typ->kind == TP_ARRAY) {
@@ -590,6 +617,8 @@ Node *func_param(Node *node) {
             expect(")");
             break;
         }
+
+        param_num++;
     }
 
     infof("finished until '(param)'.");
