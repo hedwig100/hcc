@@ -21,6 +21,8 @@ int func(const int i, const char *s) {
 }
 
 extern int global_extern;
+extern int hogehoge;
+int hogehoge = -4;
 
 int main() {
     ASSERT(3, ({ a = 3; a; }));
@@ -39,6 +41,7 @@ int main() {
     ASSERT(10, func(10, 'g'));
 
     ASSERT(20, global_extern);
+    ASSERT(-4, hogehoge);
 
     ok();
     return 0;

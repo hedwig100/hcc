@@ -184,6 +184,14 @@ Node *new_node_gvar(Token *tok, Type *typ) {
 
     // check if the same name global variable isn't defined
     Object *gvar = find_gvar(tok);
+    if (gvar && gvar->is_extern) {
+        gvar->is_extern = false;
+        node->name      = tok->str;
+        node->len       = tok->len;
+        node->typ       = typ;
+        node->gvar      = gvar;
+        return node;
+    }
     assert_at(!gvar, token->str, "the same name global variable is defined ever.");
 
     gvar       = new_object(OBJ_GVAR);
