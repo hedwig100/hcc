@@ -249,7 +249,7 @@ Type *can_assign(Type *typ1, Type *typ2) {
         case TP_INT:
         case TP_ENUM:
         case TP_CHAR:
-            error_at(token->str, "cannot assign here.");
+            return typ1;
         case TP_VOID:
             error_at(token->str, "cannot assign here.");
         case TP_PTR:
