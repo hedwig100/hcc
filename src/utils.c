@@ -1,5 +1,7 @@
 #include "hcc.h"
 
+FILE *err_file;
+
 char *add_quote(char *name, int len) {
     char *buf = calloc(1, sizeof(len + 2));
     buf[0]    = '"';

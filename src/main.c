@@ -1,5 +1,14 @@
 #include "hcc.h"
 
+char *user_input;
+char *filename;
+Func *funcs;
+Object *globals;
+Str *strs;
+Scope *scopes;
+Node *code[1000];
+Node *static_datas;
+
 int main(int argc, char **argv) {
     err_file = fopen("err.txt", "w");
     if (!err_file) printf("error opening err_file.");
@@ -27,9 +36,6 @@ int main(int argc, char **argv) {
     // construct AST
     infof("try to construct AST...");
     globals              = new_object(OBJ_GVAR);
-    static_datas         = NULL;
-    strs                 = NULL;
-    funcs                = NULL;
     scopes               = calloc(1, sizeof(Scope));
     scopes->before       = NULL;
     scopes->offset       = 0;

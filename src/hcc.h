@@ -17,8 +17,8 @@
 #define max(a, b) ((a) > (b) ? (a) : (b))
 #define min(a, b) ((a) > (b) ? (b) : (a))
 
-char *user_input;
-char *filename;
+extern char *user_input;
+extern char *filename;
 
 typedef struct Token Token;
 typedef struct Type Type;
@@ -53,7 +53,7 @@ struct Token {
 };
 
 // token sequence
-Token *token;
+extern Token *token;
 
 Token *tokenize(char *p);
 
@@ -112,7 +112,7 @@ struct Func {
     Type *params;
 };
 
-Func *funcs;
+extern Func *funcs;
 
 // Object kind
 typedef enum {
@@ -144,7 +144,7 @@ struct Object {
 };
 
 // global variables
-Object *globals;
+extern Object *globals;
 
 // string literal
 struct Str {
@@ -154,7 +154,7 @@ struct Str {
     int id;
 };
 
-Str *strs;
+extern Str *strs;
 
 // Scope
 struct Scope {
@@ -184,7 +184,7 @@ struct Scope {
     int len;
 };
 
-Scope *scopes;
+extern Scope *scopes;
 
 // Member
 struct Member {
@@ -323,8 +323,8 @@ struct Node {
     Object *gvar;
 };
 
-Node *code[1000]; // AST
-Node *static_datas;
+extern Node *code[1000]; // AST
+extern Node *static_datas;
 
 /*
     parse_utils.c
@@ -454,7 +454,7 @@ char *to_str(char *s, int len);
 void input_from_stdin();
 char *read_file(char *path);
 
-FILE *err_file;
+extern FILE *err_file;
 // NOTE: err_file should be stderr, however prepare this variable for not using stdio.h
 //       should change stderr after this compiler can parse stdio.h
 #define errorf(...) \

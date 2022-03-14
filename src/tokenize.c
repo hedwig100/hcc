@@ -1,5 +1,7 @@
 #include "hcc.h"
 
+Token *token;
+
 bool startwith(char *p, char *q) { return memcmp(p, q, strlen(q)) == 0; }
 
 bool is_alnum(char c) { return isalnum(c) || (c == '_'); }
