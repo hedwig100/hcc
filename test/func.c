@@ -60,7 +60,10 @@ int test_at(char *fmt, ...) {
 }
 
 char abcdefgh(int i) {
-    return __func__[i];
+    if (i < 8)
+        return __func__[i];
+    else
+        return 1000;
 }
 
 int main() {
@@ -102,6 +105,7 @@ int main() {
     ASSERT(97, abcdefgh(0));
     ASSERT(98, abcdefgh(1));
     ASSERT(99, abcdefgh(2));
+    ASSERT(1000, abcdefgh(10));
     ok();
     return 0;
 }

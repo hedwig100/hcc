@@ -522,10 +522,13 @@ void enter_scope(bool can_break, bool can_cont) {
     new->lvar->offset = new->offset;
 
     // break or continue
-    new->can_break = can_break | scopes->can_break;
-    new->can_cont  = can_cont | scopes->can_cont;
-    new->label     = scopes->label;
-    scopes         = new;
+    new->can_break   = can_break | scopes->can_break;
+    new->can_cont    = can_cont | scopes->can_cont;
+    new->label       = scopes->label;
+    new->named_param = scopes->named_param;
+    new->func_name   = scopes->func_name;
+    new->len         = scopes->len;
+    scopes           = new;
 }
 
 void out_scope() {
