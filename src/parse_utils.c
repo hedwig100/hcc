@@ -270,6 +270,68 @@ Type *can_assign(Type *typ1, Type *typ2) {
     }
 }
 
+// can_cast checks if (typ1)typ2 cast is valid.
+// if cast return result type
+Type *can_cast(Type *typ1, Type *typ2) {
+    switch (typ1->kind) {
+    case TP_INT:
+        switch (typ2->kind) {
+        case TP_INT:
+        case TP_ENUM:
+        case TP_CHAR:
+            return new_type(TP_INT);
+        case TP_VOID:
+        case TP_PTR:
+        case TP_ARRAY:
+        default:
+            error_at(token->str, "cannot cast here.");
+        }
+    case TP_ENUM:
+        switch (typ2->kind) {
+        case TP_INT:
+        case TP_ENUM:
+        case TP_CHAR:
+            return new_type(TP_CHAR);
+        case TP_VOID:
+        case TP_PTR:
+        case TP_ARRAY:
+        default:
+            error_at(token->str, "cannot cast here.");
+        }
+    case TP_CHAR:
+        switch (typ2->kind) {
+        case TP_INT:
+        case TP_ENUM:
+        case TP_CHAR:
+            return new_type(TP_CHAR);
+        case TP_VOID:
+        case TP_PTR:
+        case TP_ARRAY:
+        default:
+            error_at(token->str, "cannot cast here.");
+        }
+    case TP_VOID:
+        return typ1;
+    case TP_PTR:
+        switch (typ2->kind) {
+        case TP_INT:
+        case TP_ENUM:
+        case TP_CHAR:
+        case TP_VOID:
+            error_at(token->str, "cannot cast here.");
+        case TP_PTR:
+            return typ1;
+        case TP_ARRAY:
+        default:
+            error_at(token->str, "cannot cast here.");
+        }
+    case TP_ARRAY:
+    case TP_STRUCT:
+    default:
+        error_at(token->str, "cannot cast here.");
+    }
+}
+
 // can_add checks if "typ1 + typ2" or "typ1 - typ2" is valid. it is valid when either of type is not pointer,
 // return type after addition.
 Type *can_add(Type *typ1, Type *typ2, NodeKind kind) {

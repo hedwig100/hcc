@@ -1246,23 +1246,44 @@ Node *add() {
     }
 }
 
-// mul = unary ( '*' unary | '/' unary | '%' unary )*
+// mul = cast ( '*' cast | '/' cast | '%' cast )*
 Node *mul() {
-    Node *node = unary();
+    Node *node = cast();
 
     for (;;) {
         if (consume("*")) {
-            node      = new_node(ND_MUL, node, unary(), NULL);
+            node      = new_node(ND_MUL, node, cast(), NULL);
             node->typ = node->lhs->typ;
         } else if (consume("/")) {
-            node      = new_node(ND_DIV, node, unary(), NULL);
+            node      = new_node(ND_DIV, node, cast(), NULL);
             node->typ = node->lhs->typ;
         } else if (consume("%")) {
-            node = new_node(ND_MOD, node, unary(), node->typ);
+            node = new_node(ND_MOD, node, cast(), node->typ);
         } else {
             return node;
         }
     }
+}
+
+// type_name = type_spec
+Type *type_name() {
+    return type_spec();
+}
+
+// cast = ( '(' type_name ')')? unary
+Node *cast() {
+    Type *typ = NULL;
+    if (lookahead("(", token) && is_decl(token->next)) {
+        expect("(");
+        typ = type_name();
+        assert_at(typ, token->str, "type_name is required when cast.");
+        expect(")");
+    }
+    Node *node = unary();
+    if (typ) {
+        node->typ = can_cast(typ, node->typ);
+    }
+    return node;
 }
 
 // unary = "sizeof" unary

@@ -42,6 +42,11 @@ int main() {
     ASSERT(5, arr[1][2]);
     ABC xyz = {0, 1, 2};
     ASSERT(1, f(xyz));
+
+    int cast_a  = 10;
+    char cast_b = (int)cast_a;
+    ASSERT(10, cast_b);
+
     ok();
     return 0;
 }
