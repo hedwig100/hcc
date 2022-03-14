@@ -256,6 +256,8 @@ typedef enum {
     ND_QUESTION, // !
     ND_DOWHILE,  // do while
     ND_VASTART,  // va_start
+    ND_ANDAND,   // &&
+    ND_OROR,     // ||
 } NodeKind;
 
 // node

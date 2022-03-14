@@ -1111,9 +1111,8 @@ Node *log_or() {
             Node *rhs = log_and();
             assert_at(is_typ(lhs->typ, TP_INT) || is_typ(lhs->typ, TP_CHAR), token->str, "cannot use '||' here.");
             assert_at(is_typ(rhs->typ, TP_INT) || is_typ(rhs->typ, TP_CHAR), token->str, "cannot use '||' here.");
-            lhs  = new_node(ND_NEQ, lhs, new_node_num(0), new_type(TP_INT));
-            rhs  = new_node(ND_NEQ, rhs, new_node_num(0), new_type(TP_INT));
-            node = new_node(ND_OR, lhs, rhs, new_type(TP_INT));
+            node        = new_node(ND_OROR, lhs, rhs, new_type(TP_INT));
+            node->label = counter();
         } else {
             return node;
         }
@@ -1129,9 +1128,8 @@ Node *log_and() {
             Node *rhs = or_expr();
             assert_at(is_typ(lhs->typ, TP_INT) || is_typ(lhs->typ, TP_CHAR), token->str, "cannot use '&&' here.");
             assert_at(is_typ(rhs->typ, TP_INT) || is_typ(rhs->typ, TP_CHAR), token->str, "cannot use '&&' here.");
-            lhs  = new_node(ND_NEQ, lhs, new_node_num(0), new_type(TP_INT));
-            rhs  = new_node(ND_NEQ, rhs, new_node_num(0), new_type(TP_INT));
-            node = new_node(ND_AND, lhs, rhs, new_type(TP_INT));
+            node        = new_node(ND_ANDAND, lhs, rhs, new_type(TP_INT));
+            node->label = counter();
         } else {
             return node;
         }

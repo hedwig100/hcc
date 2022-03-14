@@ -272,6 +272,38 @@ void gen_expression(Node *node) {
         align++;
         printf(".Lend%d:\n", node->label);
         return;
+    case ND_ANDAND:
+        gen_expression(node->lhs);
+        printf("    pop rax # stack%d\n", --align);
+        printf("    cmp rax,0\n");
+        printf("    je .Lfalse%d\n", node->label);
+        gen_expression(node->rhs);
+        printf("    pop rax # stack%d\n", --align);
+        printf("    cmp rax,0\n");
+        printf("    je .Lfalse%d\n", node->label);
+        printf("    push 1 # stack%d\n", align);
+        printf("    jmp .Ltrue%d\n", node->label);
+        printf(".Lfalse%d:\n", node->label);
+        printf("    push 0 # stack%d\n", align);
+        printf(".Ltrue%d:\n", node->label);
+        align++;
+        return;
+    case ND_OROR:
+        gen_expression(node->lhs);
+        printf("    pop rax # stack%d\n", --align);
+        printf("    cmp rax,0\n");
+        printf("    jne .Ltrue%d\n", node->label);
+        gen_expression(node->rhs);
+        printf("    pop rax # stack%d\n", --align);
+        printf("    cmp rax,0\n");
+        printf("    jne .Ltrue%d\n", node->label);
+        printf("    push 0 # stack%d\n", align);
+        printf("    jmp .Lfalse%d\n", node->label);
+        printf(".Ltrue%d:\n", node->label);
+        printf("    push 1 # stack%d\n", align);
+        printf(".Lfalse%d:\n", node->label);
+        align++;
+        return;
     }
 
     gen_expression(node->lhs);

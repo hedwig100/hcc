@@ -83,6 +83,16 @@ int main() {
     ASSERT(10, a[i++]);
     ASSERT(12, a[++i]);
 
+    int arr[10] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
+    int ans     = 0;
+    for (int i = 0;; i++) {
+        if (i < 10 && arr[i] == 0) {
+            ans++;
+        } else {
+            break;
+        }
+    }
+    ASSERT(10, ans);
     ok();
     return 0;
 }
