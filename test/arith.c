@@ -93,6 +93,14 @@ int main() {
         }
     }
     ASSERT(10, ans);
+
+    struct A {
+        int a;
+    };
+    struct A *ptr_a = 0, *ptr_b = 1;
+    ASSERT(0, ptr_a && ptr_b);
+    ASSERT(1, ptr_a || ptr_b);
+
     ok();
     return 0;
 }
