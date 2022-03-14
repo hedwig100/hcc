@@ -164,140 +164,140 @@ Token *tokenize(char *p) {
             continue;
         }
 
-        if (strncmp(p, "return", 6) == 0 && !isalnum(p[6])) {
+        if (strncmp(p, "return", 6) == 0 && !is_alnum(p[6])) {
             cur      = new_token(TK_RESERVED, cur, p);
             cur->len = 6;
             p += 6;
             continue;
         }
 
-        if (strncmp(p, "struct", 6) == 0 && !isalnum(p[6])) {
+        if (strncmp(p, "struct", 6) == 0 && !is_alnum(p[6])) {
             cur      = new_token(TK_RESERVED, cur, p);
             cur->len = 6;
             p += 6;
             continue;
         }
 
-        if (strncmp(p, "switch", 6) == 0 && !isalnum(p[6])) {
+        if (strncmp(p, "switch", 6) == 0 && !is_alnum(p[6])) {
             cur      = new_token(TK_RESERVED, cur, p);
             cur->len = 6;
             p += 6;
             continue;
         }
 
-        if (strncmp(p, "static", 6) == 0 && !isalnum(p[6])) {
+        if (strncmp(p, "static", 6) == 0 && !is_alnum(p[6])) {
             cur      = new_token(TK_RESERVED, cur, p);
             cur->len = 6;
             p += 6;
             continue;
         }
 
-        if (strncmp(p, "continue", 8) == 0 && !isalnum(p[8])) {
+        if (strncmp(p, "continue", 8) == 0 && !is_alnum(p[8])) {
             cur      = new_token(TK_RESERVED, cur, p);
             cur->len = 8;
             p += 8;
             continue;
         }
 
-        if (strncmp(p, "default", 7) == 0 && !isalnum(p[7])) {
+        if (strncmp(p, "default", 7) == 0 && !is_alnum(p[7])) {
             cur      = new_token(TK_RESERVED, cur, p);
             cur->len = 7;
             p += 7;
             continue;
         }
 
-        if (strncmp(p, "typedef", 7) == 0 && !isalnum(p[7])) {
+        if (strncmp(p, "typedef", 7) == 0 && !is_alnum(p[7])) {
             cur      = new_token(TK_RESERVED, cur, p);
             cur->len = 7;
             p += 7;
             continue;
         }
 
-        if (strncmp(p, "if", 2) == 0 && !isalnum(p[2])) {
+        if (strncmp(p, "if", 2) == 0 && !is_alnum(p[2])) {
             cur      = new_token(TK_RESERVED, cur, p);
             cur->len = 2;
             p += 2;
             continue;
         }
 
-        if (strncmp(p, "else", 4) == 0 && !isalnum(p[4])) {
+        if (strncmp(p, "else", 4) == 0 && !is_alnum(p[4])) {
             cur      = new_token(TK_RESERVED, cur, p);
             cur->len = 4;
             p += 4;
             continue;
         }
 
-        if (strncmp(p, "void", 4) == 0 && !isalnum(p[4])) {
+        if (strncmp(p, "void", 4) == 0 && !is_alnum(p[4])) {
             cur      = new_token(TK_RESERVED, cur, p);
             cur->len = 4;
             p += 4;
             continue;
         }
 
-        if (strncmp(p, "enum", 4) == 0 && !isalnum(p[4])) {
+        if (strncmp(p, "enum", 4) == 0 && !is_alnum(p[4])) {
             cur      = new_token(TK_RESERVED, cur, p);
             cur->len = 4;
             p += 4;
             continue;
         }
 
-        if (strncmp(p, "case", 4) == 0 && !isalnum(p[4])) {
+        if (strncmp(p, "case", 4) == 0 && !is_alnum(p[4])) {
             cur      = new_token(TK_RESERVED, cur, p);
             cur->len = 4;
             p += 4;
             continue;
         }
 
-        if (strncmp(p, "while", 5) == 0 && !isalnum(p[5])) {
+        if (strncmp(p, "while", 5) == 0 && !is_alnum(p[5])) {
             cur      = new_token(TK_RESERVED, cur, p);
             cur->len = 5;
             p += 5;
             continue;
         }
 
-        if (strncmp(p, "const", 5) == 0 && !isalnum(p[5])) {
+        if (strncmp(p, "const", 5) == 0 && !is_alnum(p[5])) {
             cur      = new_token(TK_RESERVED, cur, p);
             cur->len = 5;
             p += 5;
             continue;
         }
 
-        if (strncmp(p, "break", 5) == 0 && !isalnum(p[5])) {
+        if (strncmp(p, "break", 5) == 0 && !is_alnum(p[5])) {
             cur      = new_token(TK_RESERVED, cur, p);
             cur->len = 5;
             p += 5;
             continue;
         }
 
-        if (strncmp(p, "for", 3) == 0 && !isalnum(p[3])) {
+        if (strncmp(p, "for", 3) == 0 && !is_alnum(p[3])) {
             cur      = new_token(TK_RESERVED, cur, p);
             cur->len = 3;
             p += 3;
             continue;
         }
 
-        if (strncmp(p, "int", 3) == 0 && !isalnum(p[3])) {
+        if (strncmp(p, "int", 3) == 0 && !is_alnum(p[3])) {
             cur      = new_token(TK_RESERVED, cur, p);
             cur->len = 3;
             p += 3;
             continue;
         }
 
-        if (strncmp(p, "do", 2) == 0 && !isalnum(p[2])) {
+        if (strncmp(p, "do", 2) == 0 && !is_alnum(p[2])) {
             cur      = new_token(TK_RESERVED, cur, p);
             cur->len = 2;
             p += 2;
             continue;
         }
 
-        if (strncmp(p, "sizeof", 6) == 0 && !isalnum(p[6])) {
+        if (strncmp(p, "sizeof", 6) == 0 && !is_alnum(p[6])) {
             cur      = new_token(TK_RESERVED, cur, p);
             cur->len = 6;
             p += 6;
             continue;
         }
 
-        if (strncmp(p, "char", 4) == 0 && !isalnum(p[4])) {
+        if (strncmp(p, "char", 4) == 0 && !is_alnum(p[4])) {
             cur      = new_token(TK_RESERVED, cur, p);
             cur->len = 4;
             p += 4;

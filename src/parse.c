@@ -250,9 +250,11 @@ void program() {
         Node *node     = ext_def();
         if (node) {
             code[i++] = node;
+            infof("finished ext definition(%d) %s()", cnt++, to_str(node->name, node->len));
             if (i == 100) error_at(token->str, "code[100] overflow.");
+        } else {
+            infof("finished ext definition(%d)", cnt++);
         }
-        infof("finished ext definition(%d)", cnt++);
     }
     code[i] = NULL;
 }
@@ -387,6 +389,7 @@ Type *struct_spec() {
             cur       = cur->next;
         }
         expect("}");
+        infof("finished until 'struct { struct_decl+ }'.");
         assert_at(head.next, token->str, "there is no struct member.");
         assert_at(can_define_strct(tok), token->str, "double definition of struct.");
         Struct *st = find_struct(tok->str, tok->len);
@@ -417,8 +420,11 @@ Member *struct_decl() {
         return NULL;
     }
     Node *node = declarator(typ, STRUCT);
+    assert_at(node, token->str, "there must be declarator");
+    infof("finished until 'type_spec declarator.'");
     assert_at(!is_typ(node->typ, TP_VOID), token->str, "cannot use void here.");
     Member *mem = new_mem(node);
+    infof("make new member %s\n", to_str(mem->name, mem->len));
     expect(";");
     return mem;
 }

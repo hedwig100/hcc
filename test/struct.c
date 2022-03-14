@@ -30,6 +30,30 @@ struct Name {
     int len;
 };
 
+typedef struct Object Object;
+typedef enum {
+    OBJ_LVAR,
+    OBJ_GVAR,
+    OBJ_STRUCT,
+    OBJ_ENUM,
+    OBJ_TYPEDEF,
+} ObjectKind;
+
+struct Object {
+    ObjectKind kind;
+    Object *next;
+    char *name;
+    int len;
+    // lvar,gvar
+    int offset;
+    // Type *typ;
+    int is_static;
+    // enum
+    Object *enum_list;
+    int val;
+    int is_init;
+};
+
 struct Name *name1;
 
 int main() {
