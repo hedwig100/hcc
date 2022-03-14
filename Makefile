@@ -1,6 +1,7 @@
 CFLAGS=-std=c11 -g
 SRCS=$(wildcard src/*.c) 
 OBJS=$(SRCS:.c=.o)
+HOSTS_OBJS=$(SRCS:.c=.exe)
 
 TESTSRCS=$(wildcard test/*.c)
 TESTOBJS=$(TESTSRCS:.c=.exe)
@@ -17,6 +18,15 @@ test/%.exe: hcc test/%.c
 
 test: $(TESTOBJS)
 	for i in $^; do echo $$i; ./$$i || exit 1; echo; done
+
+# for self-hosting
+hcc2: $(HOSTS_OBJS)
+	$(CC) -o hcc2 $(HOSTS_OBJS)
+
+src/%.exe: hcc src/%.c
+	$(CC) -o src/$*.i -E -P -C -D_HOST src/$*.c
+	./hcc src/$*.i > src/$*.s
+	$(CC) -o $@ src/$*.s
 
 clean:
 	rm -f src/*.o hcc tmp.s tmp cc.o test/*.exe test/*.s test/*.i

@@ -1,6 +1,10 @@
 #ifndef HCC_H
 #define HCC_H
 
+#if _HOST
+#include "help.h"
+#define stderr err_file
+#else
 #include <ctype.h>
 #include <errno.h>
 #include <stdarg.h>
@@ -8,6 +12,8 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#endif
+
 #define max(a, b) ((a) > (b) ? (a) : (b))
 #define min(a, b) ((a) > (b) ? (b) : (a))
 
@@ -430,12 +436,12 @@ FILE *err_file;
 // NOTE: err_file should be stderr, however prepare this variable for not using stdio.h
 //       should change stderr after this compiler can parse stdio.h
 #define errorf(...) \
-    lprintf(err_file, 'E', __FILE__, __LINE__, __func__, __VA_ARGS__)
+    lprintf(stderr, 'E', __FILE__, __LINE__, __func__, __VA_ARGS__)
 #define warnf(...) \
-    lprintf(err_file, 'W', __FILE__, __LINE__, __func__, __VA_ARGS__)
+    lprintf(stderr, 'W', __FILE__, __LINE__, __func__, __VA_ARGS__)
 #define infof(...) \
-    lprintf(err_file, 'I', __FILE__, __LINE__, __func__, __VA_ARGS__)
+    lprintf(stderr, 'I', __FILE__, __LINE__, __func__, __VA_ARGS__)
 #define debugf(...) \
-    lprintf(err_file, 'D', __FILE__, __LINE__, __func__, __VA_ARGS__)
+    lprintf(stderr, 'D', __FILE__, __LINE__, __func__, __VA_ARGS__)
 
 #endif

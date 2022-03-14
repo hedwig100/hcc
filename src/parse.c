@@ -243,14 +243,16 @@ Member *new_mem(Node *node) {
 
 // program = ext_def*
 void program() {
-    int i = 0;
+    int i   = 0;
+    int cnt = 0;
     while (!at_eof()) {
         scopes->offset = 0;
         Node *node     = ext_def();
         if (node) {
             code[i++] = node;
-            infof("finished ext definition(%d)", i);
+            if (i == 100) error_at(token->str, "code[100] overflow.");
         }
+        infof("finished ext definition(%d)", cnt++);
     }
     code[i] = NULL;
 }

@@ -12,5 +12,8 @@ hcc
 test/*.i
 test/*.s
 test/*.exe
+src/*.i
+src/*.s
+src/*.exe
 test.txt
 err.txt

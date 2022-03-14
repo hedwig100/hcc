@@ -31,13 +31,13 @@ void assert_at(bool cond, char *loc, char *fmt, ...) {
         if (*p == '\n') line_num++;
     }
 
-    int indent = fprintf(err_file, "%s:%d: ", filename, line_num);
-    fprintf(err_file, "%.*s\n", (int)(end - line), line);
+    int indent = fprintf(stderr, "%s:%d: ", filename, line_num);
+    fprintf(stderr, "%.*s\n", (int)(end - line), line);
     int pos = loc - line + indent;
-    fprintf(err_file, "%*s", pos, " ");
-    fprintf(err_file, "^ ");
-    vfprintf(err_file, fmt, ap);
-    fprintf(err_file, "\n");
+    fprintf(stderr, "%*s", pos, " ");
+    fprintf(stderr, "^ ");
+    vfprintf(stderr, fmt, ap);
+    fprintf(stderr, "\n");
     exit(1);
 }
 
@@ -59,13 +59,13 @@ void error_at(char *loc, char *fmt, ...) {
         if (*p == '\n') line_num++;
     }
 
-    int indent = fprintf(err_file, "%s:%d: ", filename, line_num);
-    fprintf(err_file, "%.*s\n", (int)(end - line), line);
+    int indent = fprintf(stderr, "%s:%d: ", filename, line_num);
+    fprintf(stderr, "%.*s\n", (int)(end - line), line);
     int pos = loc - line + indent;
-    fprintf(err_file, "%*s", pos, " ");
-    fprintf(err_file, "^ ");
-    vfprintf(err_file, fmt, ap);
-    fprintf(err_file, "\n");
+    fprintf(stderr, "%*s", pos, " ");
+    fprintf(stderr, "^ ");
+    vfprintf(stderr, fmt, ap);
+    fprintf(stderr, "\n");
     exit(1);
 }
 
