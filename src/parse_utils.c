@@ -270,9 +270,9 @@ Type *can_assign(Type *typ1, Type *typ2) {
     }
 }
 
-// can_add checks if "typ1 + typ2" is valid. it is valid when either of type is not pointer,
+// can_add checks if "typ1 + typ2" or "typ1 - typ2" is valid. it is valid when either of type is not pointer,
 // return type after addition.
-Type *can_add(Type *typ1, Type *typ2) {
+Type *can_add(Type *typ1, Type *typ2, NodeKind kind) {
     switch (typ1->kind) {
     case TP_INT:
         switch (typ2->kind) {
@@ -308,6 +308,11 @@ Type *can_add(Type *typ1, Type *typ2) {
             return typ1;
         case TP_PTR:
         case TP_ARRAY:
+            if (kind == ND_SUB) {
+                return new_type(TP_INT);
+            } else {
+                error_at(token->str, "type isn't valid.");
+            }
         default:
             error_at(token->str, "type isn't valid.");
         }
@@ -319,6 +324,11 @@ Type *can_add(Type *typ1, Type *typ2) {
             return typ1;
         case TP_PTR:
         case TP_ARRAY:
+            if (kind == ND_SUB) {
+                return new_type(TP_INT);
+            } else {
+                error_at(token->str, "type isn't valid.");
+            }
         default:
             error_at(token->str, "type isn't valid.");
         }
@@ -699,9 +709,13 @@ Node *eval(Node *lhs, Node *rhs) {
 
 Node *add_helper(Node *lhs, Node *rhs, NodeKind kind) {
     Node *node;
-    Type *typ = can_add(lhs->typ, rhs->typ);
+    Type *typ = can_add(lhs->typ, rhs->typ, kind);
     if (!is_ptr(typ)) {
         node = new_node(kind, lhs, rhs, typ);
+    } else if (is_ptr(lhs->typ) && is_ptr(rhs->typ) && kind == ND_SUB) {
+        node = new_node(ND_SUB, lhs, rhs, typ);
+        assert_at(lhs->typ->ptr_to->size == rhs->typ->ptr_to->size, token->str, "in 'ptr - ptr' ptr_to size must be the same.");
+        node = new_node(ND_DIV, node, new_node_num(lhs->typ->ptr_to->size), new_type(TP_INT));
     } else if (is_ptr(lhs->typ)) {
         rhs  = new_node(ND_MUL, rhs, new_node_num(lhs->typ->ptr_to->size), new_type(TP_INT));
         node = new_node(kind, lhs, rhs, typ);

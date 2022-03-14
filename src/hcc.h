@@ -319,7 +319,7 @@ Type *new_type_enum(Object *en);
 Type *type_copy(Type *org);
 int byte_align(Type *typ);
 Type *can_assign(Type *typ1, Type *typ2);
-Type *can_add(Type *typ1, Type *typ2);
+Type *can_add(Type *typ1, Type *typ2, NodeKind kind);
 bool is_ptr(Type *typ);
 bool is_typ(Type *typ, TypeKind kind);
 int type_size(Type *typ);

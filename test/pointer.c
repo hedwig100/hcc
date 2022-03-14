@@ -17,6 +17,10 @@ int main() {
     ASSERT(20, ({int a;int b;int c;int d;int *e;e = &d;e = e + 3;a = 20; *e; }));
     ASSERT(20, ({int a;int b;int c;int d;int *e;e = &d;e = e + 2;b = 10;*e = *e + 10; b; }));
 
+    char *x = "AIEIE";
+    char *y;
+    y = x + 3;
+    ASSERT(3, y - x);
     ok();
     return 0;
 }
