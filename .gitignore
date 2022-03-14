@@ -12,3 +12,4 @@ hcc
 test/*.i
 test/*.s
 test/*.exe
+test.txt

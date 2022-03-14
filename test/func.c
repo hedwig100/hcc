@@ -49,10 +49,10 @@ int A(int x, int y[10]) {
     return x + y[4];
 }
 
-int error_at(char *fmt, ...) {
+int test_at(char *fmt, ...) {
     va_list ap;
     va_start(ap, fmt);
-    FILE *fp = fopen("a.txt", "w");
+    FILE *fp = fopen("test.txt", "w");
     if (!fp) return 1;
     vfprintf(fp, fmt, ap);
     va_end(ap);
@@ -93,8 +93,8 @@ int main() {
 
     // watch
     ASSERT(10, varargs(10, -3, -43, 4, 10, 3, -3));
-    ASSERT(0, error_at("this is error. %d %d %d\n", 0, 1, 2));
-    ASSERT(0, error_at("this is error. %d %d %d %d %d %d\n", 0, 1, 2, 3, 4, 5));
+    ASSERT(0, test_at("this is error. %d %d %d\n", 0, 1, 2));
+    ASSERT(0, test_at("this is error. %d %d %d %d %d %d\n", 0, 1, 2, 3, 4, 5));
     ok();
     return 0;
 }
