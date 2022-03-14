@@ -420,8 +420,6 @@ Node *primary();
     codegen.c
 */
 
-int align;
-
 void gen_lval(Node *node);
 int gen_param_set(Node *node);
 void gen_param_get(Node *node);
