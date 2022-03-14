@@ -684,6 +684,12 @@ Node *func_param(Node *node) {
     if (consume(")")) {
         infof("finished until '()'.");
         node->params = NULL;
+        if (!lookahead("{", token)) {
+            // function declaration
+            out_scope();
+        }
+        scopes->func_name = node->name;
+        scopes->len       = node->len;
         return node;
     }
 
