@@ -594,6 +594,9 @@ void gen_ext_def(Node *node) {
         printf("    sub rsp,%d\n", node->offset);
         gen_param_get(node);
         gen_statement(node->body);
+        printf("    mov rsp,rbp\n");
+        printf("    pop rbp # stack%d \n", --align);
+        printf("    ret\n");
         return;
     case ND_GVAR:
         printf("%s:\n", to_str(node->name, node->len));
