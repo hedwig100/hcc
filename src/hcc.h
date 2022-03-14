@@ -77,8 +77,13 @@ typedef enum {
 struct Type {
     TypeKind kind;
     int size;
+
+    // these member is used for sending data to Object
+    // these data aren't valid after these data are passed to Object
     bool is_typdef;
     bool is_static;
+    bool is_const;
+    bool is_extern;
 
     // ptr_to is valid when kind = TP_PTR.
     Type *ptr_to;
@@ -129,6 +134,8 @@ struct Object {
     int offset;
     Type *typ;
     bool is_static;
+    bool is_const;
+    bool is_extern;
 
     // enum
     Object *enum_list;
@@ -312,6 +319,8 @@ struct Node {
 
     // ND_VASTART
     int named_param;
+
+    Object *gvar;
 };
 
 Node *code[1000]; // AST

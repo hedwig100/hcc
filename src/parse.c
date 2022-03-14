@@ -119,11 +119,16 @@ Node *new_node_lvar(Token *tok, Type *typ) {
     lvar->name   = tok->str;
     lvar->len    = tok->len;
     add_offset(scopes, typ->size, byte_align(typ));
-    node->offset    = lvar->offset;
-    lvar->typ       = typ;
-    node->typ       = typ;
+    node->offset = lvar->offset;
+    lvar->typ    = typ;
+    node->typ    = typ;
+
     lvar->is_static = typ->is_static;
+    lvar->is_const  = typ->is_const;
+    lvar->is_extern = typ->is_extern;
     typ->is_static  = false;
+    typ->is_const   = false;
+    typ->is_extern  = false;
     return node;
 }
 
@@ -143,11 +148,16 @@ Node *new_node_param_stack(Token *tok, Type *typ) {
     lvar->len    = tok->len;
     lvar->offset = scopes->stack_offset;
     scopes->stack_offset -= 8;
-    node->offset    = lvar->offset;
-    lvar->typ       = typ;
-    node->typ       = typ;
+    node->offset = lvar->offset;
+    lvar->typ    = typ;
+    node->typ    = typ;
+
     lvar->is_static = typ->is_static;
+    lvar->is_const  = typ->is_const;
+    lvar->is_extern = typ->is_extern;
     typ->is_static  = false;
+    typ->is_const   = false;
+    typ->is_extern  = false;
     return node;
 }
 
@@ -176,17 +186,23 @@ Node *new_node_gvar(Token *tok, Type *typ) {
     Object *gvar = find_gvar(tok);
     assert_at(!gvar, token->str, "the same name global variable is defined ever.");
 
-    gvar            = new_object(OBJ_GVAR);
-    gvar->next      = globals;
-    gvar->name      = tok->str;
-    node->name      = tok->str;
-    gvar->len       = tok->len;
-    node->len       = tok->len;
-    gvar->typ       = typ;
-    node->typ       = typ;
+    gvar       = new_object(OBJ_GVAR);
+    gvar->next = globals;
+    gvar->name = tok->str;
+    node->name = tok->str;
+    gvar->len  = tok->len;
+    node->len  = tok->len;
+    gvar->typ  = typ;
+    node->typ  = typ;
+
     gvar->is_static = typ->is_static;
+    gvar->is_const  = typ->is_const;
+    gvar->is_extern = typ->is_extern;
     typ->is_static  = false;
+    typ->is_const   = false;
+    typ->is_extern  = false;
     globals         = gvar;
+    node->gvar      = gvar;
     return node;
 }
 
@@ -282,16 +298,25 @@ Node *ext_def() {
             expect(";");
             // array assignment is only possible during initialization.
             if (is_typ(node->typ, TP_ARRAY) && is_typ(rhs->typ, TP_ARRAY)) {
-                return register_static_data(new_node(ND_INIT, node, rhs, node->typ));
+                if (node->gvar->is_extern)
+                    return new_node(ND_INIT, node, rhs, node->typ);
+                else
+                    return register_static_data(new_node(ND_INIT, node, rhs, node->typ));
             } else {
                 Type *typ = can_assign(node->typ, rhs->typ);
                 assert_at(typ, token->str, "cannot initialize with this value.");
-                return register_static_data(new_node(ND_INIT, node, rhs, typ));
+                if (node->gvar->is_extern)
+                    return new_node(ND_INIT, node, rhs, typ);
+                else
+                    return register_static_data(new_node(ND_INIT, node, rhs, typ));
             }
         } else {
             // global variable declarator
             expect(";");
-            return register_static_data(node);
+            if (node->gvar->is_extern)
+                return node;
+            else
+                return register_static_data(node);
         }
     } else if (node->kind == ND_TYPEDEF) {
         // typedef
@@ -317,21 +342,34 @@ Node *ext_def() {
     return node;
 }
 
-// decl_spec = ( "typedef" | "static" | "const" | type_spec )*
+// decl_spec = ( "typedef" | "static" | "const" | "extern" |type_spec )*
 Type *decl_spec() {
     Type *typ      = NULL;
     bool is_typdef = false;
     bool is_static = false;
+    bool is_const  = false;
+    bool is_extern = false;
     for (;;) {
         if (consume("typedef")) {
+            assert_at(!is_typdef, token->str, "'typedef typedef' isn't valid.");
             assert_at(!is_static, token->str, "'static typedef' isn't valid.");
+            assert_at(!is_extern, token->str, "'extern typedef' isn't valid.");
             is_typdef = true;
             continue;
         } else if (consume("static")) {
             assert_at(!is_typdef, token->str, "'typedef static' isn't valid.");
+            assert_at(!is_static, token->str, "'static static' isn't valid.");
+            assert_at(!is_extern, token->str, "'const static' isn't valid.");
             is_static = true;
             continue;
         } else if (consume("const")) {
+            is_const = true;
+            continue;
+        } else if (consume("extern")) {
+            assert_at(!is_typdef, token->str, "'typedef extern' isn't valid.");
+            assert_at(!is_static, token->str, "'static extern' isn't valid.");
+            assert_at(!is_extern, token->str, "'extern extern' isn't valid.");
+            is_extern = true;
             continue;
         } else if (is_decl(token)) {
             Type *new = type_spec();
@@ -345,6 +383,8 @@ Type *decl_spec() {
     }
     typ->is_typdef = is_typdef;
     typ->is_static = is_static;
+    typ->is_const  = is_const;
+    typ->is_extern = is_extern;
     return typ;
 }
 
@@ -497,6 +537,8 @@ Type *pointer(Type *typ) {
         Type *next      = new_type_ptr(typ);
         next->is_typdef = typ->is_typdef;
         next->is_static = typ->is_static;
+        next->is_const  = typ->is_const;
+        next->is_extern = typ->is_extern;
         typ             = next;
     }
     return typ;
@@ -579,6 +621,8 @@ Type *type_array(Type *typ) {
         next->ptr_to    = typ;
         next->is_typdef = typ->is_typdef;
         next->is_static = typ->is_static;
+        next->is_const  = typ->is_const;
+        next->is_extern = typ->is_extern;
         typ             = next;
     }
     Type *now = typ;

@@ -1,6 +1,8 @@
 #include <stdio.h>
 #include <stdlib.h>
 
+int global_extern = 20;
+
 int assert(int expected, int actual, char *code) {
     if (expected == actual) {
         printf("%s => %d\n", code, actual);

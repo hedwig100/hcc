@@ -20,6 +20,8 @@ int func(const int i, const char *s) {
     return i;
 }
 
+extern int global_extern;
+
 int main() {
     ASSERT(3, ({ a = 3; a; }));
     ASSERT(4, ({int c;b = &c;*b = 4;c; }));
@@ -35,6 +37,8 @@ int main() {
     const int abc = 0;
     ASSERT(0, abc);
     ASSERT(10, func(10, 'g'));
+
+    ASSERT(20, global_extern);
 
     ok();
     return 0;
