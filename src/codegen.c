@@ -606,8 +606,20 @@ void gen_program() {
     for (Node *data = static_datas; data; data = data->next) {
         if (start) {
             printf(".data\n");
+            if (data->kind == ND_GVAR)
+                printf(".globl %s", to_str(data->name, data->len));
+            else if (data->kind == ND_INIT)
+                printf(".globl %s", to_str(data->lhs->name, data->lhs->len));
             start = 0;
+        } else {
+            if (data->kind == ND_GVAR)
+                printf(",%s", to_str(data->name, data->len));
+            else if (data->kind == ND_INIT)
+                printf(",%s", to_str(data->lhs->name, data->lhs->len));
         }
+    }
+    printf("\n");
+    for (Node *data = static_datas; data; data = data->next) {
         gen_ext_def(data);
     }
     for (Str *str = strs; str; str = str->next) {

@@ -16,7 +16,6 @@ typedef __gnuc_va_list va_list;
 #define SEEK_SET 0
 struct _IO_FILE;
 typedef struct _IO_FILE FILE;
-FILE *stderr;
 int printf(const char *__format, ...);
 int fprintf(FILE *__stream, const char *__format, ...);
 int vfprintf(FILE *__s, const char *__format, __gnuc_va_list __arg);
