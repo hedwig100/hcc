@@ -5,6 +5,7 @@ int align = 0;
 
 // gen_lvar generates local variable address (expression)
 void gen_lvar(Node *node) {
+    debugf("start");
     if (node->kind != ND_LVAR) errorf("node kind is not ND_LVAR.");
     printf("    mov rax,rbp # local variable address\n");
     printf("    sub rax,%d\n", node->offset);
@@ -13,12 +14,14 @@ void gen_lvar(Node *node) {
 
 // gen_gvar generates global variable address (expression)
 void gen_gvar(Node *node) {
+    debugf("start");
     if (node->kind != ND_GVAR) errorf("node kind is not ND_GVAR.");
     printf("    lea rax, [%s + rip] # global variable address\n", to_str(node->name, node->len));
     printf("    push rax # stack%d\n", align++);
 }
 
 void gen_addr(Node *node) {
+    debugf("start");
     switch (node->kind) {
     case ND_LVAR:
         gen_lvar(node);
@@ -49,6 +52,7 @@ const char *PARAM_REG8[6]  = {"dil", "sil", "dl", "cl", "r8b", "r9b"};
 
 // gen_store stores data in reg in [rax]
 void gen_store(Type *typ, const char *reg64, const char *reg32, const char *reg16, const char *reg8) {
+    debugf("start");
     int before_offset = 0;
     switch (typ->kind) {
     case TP_INT:
@@ -80,6 +84,7 @@ void gen_store(Type *typ, const char *reg64, const char *reg32, const char *reg1
 
 // gen_load loads data in [rax] to reg
 void gen_load(Type *typ, const char *reg64) {
+    debugf("start");
     switch (typ->kind) {
     case TP_INT:
     case TP_ENUM:
@@ -100,6 +105,7 @@ void gen_load(Type *typ, const char *reg64) {
 }
 
 int gen_param_set(Node *node) {
+    debugf("start");
     int param_stack_num = 0;
     if (node->param_num > 6) param_stack_num = node->param_num - 6;
     int is_pop = 0;
@@ -119,6 +125,7 @@ int gen_param_set(Node *node) {
 }
 
 void gen_param_get(Node *node) {
+    debugf("start");
     int i      = 0;
     int offset = 0;
     for (Node *now = node->params; now && (i < 6); now = now->next) {
@@ -138,6 +145,7 @@ void gen_param_get(Node *node) {
 
 // gen_expression generates expression
 void gen_expression(Node *node) {
+    debugf("start");
     char ident[101]; // TODO: support function name longer than 100
     int is_pop;
     Node *now, *ap, *paramN;
@@ -378,6 +386,7 @@ void gen_expression(Node *node) {
 
 // gen_statement generates statement
 void gen_statement(Node *node) {
+    debugf("start");
     int i;
 
     switch (node->kind) {
@@ -516,6 +525,7 @@ void gen_statement(Node *node) {
 }
 
 void gen_initializer(Node *node, Type *typ) {
+    debugf("start");
     int zero;
 
     switch (node->kind) {
@@ -572,6 +582,7 @@ void gen_initializer(Node *node, Type *typ) {
 }
 
 void gen_ext_def(Node *node) {
+    debugf("start");
     switch (node->kind) {
     case ND_FUNCDEF:
         align = 0;
@@ -599,6 +610,7 @@ void gen_ext_def(Node *node) {
 }
 
 void gen_program() {
+    debugf("start");
     printf(".intel_syntax noprefix\n");
 
     // data section

@@ -2,6 +2,7 @@
 
 // counter create unique number
 int counter() {
+    debugf("start");
     static int count = 0;
     return count++;
 }
@@ -9,6 +10,7 @@ int counter() {
 // consume read a token and return true if next token is expected kind of token,
 // otherwise,return false
 bool consume(char *op) {
+    debugf("start");
     if (token->kind != TK_RESERVED || token->len != strlen(op) ||
         memcmp(token->str, op, token->len)) {
         return false;
@@ -20,6 +22,7 @@ bool consume(char *op) {
 // lookahead read a token and return true if next token is expected kind of token,
 // otherwise,return false. THIS FUNCTION DOESN'T CONSUME token.
 bool lookahead(char *op, Token *tok) {
+    debugf("start");
     if (tok->kind != TK_RESERVED || tok->len != strlen(op) ||
         memcmp(tok->str, op, tok->len)) {
         return false;
@@ -28,12 +31,14 @@ bool lookahead(char *op, Token *tok) {
 }
 
 bool is_decl(Token *tok) {
+    debugf("start");
     return lookahead("int", tok) || lookahead("char", tok) || lookahead("struct", tok) || lookahead("void", tok) || lookahead("enum", tok) || lookahead("typedef", tok) || lookahead("static", tok) || lookahead("const", tok) || lookahead_typdef(tok);
 }
 
 // consume_ident read a token and return the token if next token is identifier,
 // otherwise return NULL
 Token *consume_ident() {
+    debugf("start");
     if (token->kind != TK_IDENT) {
         return NULL;
     }
@@ -45,6 +50,7 @@ Token *consume_ident() {
 // consume_str read a token and return the token if next token is string literal,
 // otherwise return NULL
 Token *consume_str() {
+    debugf("start");
     if (token->kind != TK_STR) {
         return NULL;
     }
@@ -56,6 +62,7 @@ Token *consume_str() {
 // expect read a token if next token is expected kind of token,
 // otherwise print error
 void expect(char *op) {
+    debugf("start");
     if (token->kind != TK_RESERVED || token->len != strlen(op) ||
         memcmp(token->str, op, token->len)) {
         error_at(token->str, "not '%s'");
@@ -66,6 +73,7 @@ void expect(char *op) {
 // expect_number read a token if next token is number,
 // otherwise print error
 int expect_number() {
+    debugf("start");
     if (token->kind != TK_NUM) {
         error_at(token->str, "not number");
     }
@@ -75,6 +83,7 @@ int expect_number() {
 }
 
 Token *expect_ident() {
+    debugf("start");
     if (token->kind != TK_IDENT) {
         error_at(token->str, "not ident");
     }
@@ -83,11 +92,15 @@ Token *expect_ident() {
     return tok;
 }
 
-bool at_eof() { return token->kind == TK_EOF; }
+bool at_eof() {
+    debugf("start");
+    return token->kind == TK_EOF;
+}
 
 // construct AST
 
 Node *new_node(NodeKind kind, Node *lhs, Node *rhs, Type *typ) {
+    debugf("start");
     Node *node = calloc(1, sizeof(Node));
     node->kind = kind;
     node->lhs  = lhs;
@@ -97,6 +110,7 @@ Node *new_node(NodeKind kind, Node *lhs, Node *rhs, Type *typ) {
 }
 
 Node *new_node_num(int val) {
+    debugf("start");
     Node *node = calloc(1, sizeof(Node));
     node->kind = ND_NUM;
     node->val  = val;
@@ -105,6 +119,7 @@ Node *new_node_num(int val) {
 }
 
 Node *new_node_lvar(Token *tok, Type *typ) {
+    debugf("start");
     Node *node = calloc(1, sizeof(Node));
     node->kind = ND_LVAR;
 
@@ -133,6 +148,7 @@ Node *new_node_lvar(Token *tok, Type *typ) {
 }
 
 Node *new_node_param_stack(Token *tok, Type *typ) {
+    debugf("start");
     Node *node = calloc(1, sizeof(Node));
     node->kind = ND_LVAR;
 
@@ -162,6 +178,7 @@ Node *new_node_param_stack(Token *tok, Type *typ) {
 }
 
 Node *node_obj(Token *tok) {
+    debugf("start");
     Object *obj = find_obj(tok);
     if (!obj) {
         return NULL;
@@ -179,6 +196,7 @@ Node *node_obj(Token *tok) {
 }
 
 Node *new_node_gvar(Token *tok, Type *typ) {
+    debugf("start");
     Node *node = calloc(1, sizeof(Node));
     node->kind = ND_GVAR;
 
@@ -215,6 +233,7 @@ Node *new_node_gvar(Token *tok, Type *typ) {
 }
 
 Node *node_gvar(Token *tok) {
+    debugf("start");
     Object *gvar = find_gvar(tok);
     if (!gvar) {
         error_at(token->str, "this variable isn't defined.");
@@ -228,6 +247,7 @@ Node *node_gvar(Token *tok) {
 }
 
 Node *new_node_str(Token *tok) {
+    debugf("start");
     Node *node = calloc(1, sizeof(Node));
     node->kind = ND_STR;
     Str *str   = calloc(1, sizeof(Str));
@@ -249,6 +269,7 @@ Node *new_node_str(Token *tok) {
 }
 
 Node *new_node_mem(Token *tok, Type *typ) {
+    debugf("start");
     Node *node = calloc(1, sizeof(Node));
     node->kind = ND_MEMBER;
     node->name = tok->str;
@@ -258,6 +279,7 @@ Node *new_node_mem(Token *tok, Type *typ) {
 }
 
 Member *new_mem(Node *node) {
+    debugf("start");
     Member *mem = calloc(1, sizeof(Member));
     mem->name   = node->name;
     mem->len    = node->len;
@@ -267,6 +289,7 @@ Member *new_mem(Node *node) {
 
 // program = ext_def*
 void program() {
+    debugf("start");
     int i   = 0;
     int cnt = 0;
     while (!at_eof()) {
@@ -288,6 +311,7 @@ void program() {
 //         | decl_spec declarator '=' initializer ';'
 //         | decl_spec declarator '{' cmp_stmt
 Node *ext_def() {
+    debugf("start");
     Type *typ = decl_spec();
     assert_at(typ, token->str, "type declaration expected.");
     Node *node = declarator(typ, GLOBAL);
@@ -352,6 +376,7 @@ Node *ext_def() {
 
 // decl_spec = ( "typedef" | "static" | "const" | "extern" |type_spec )*
 Type *decl_spec() {
+    debugf("start");
     Type *typ      = NULL;
     bool is_typdef = false;
     bool is_static = false;
@@ -404,6 +429,7 @@ Type *decl_spec() {
 //           | typedef_name
 // if not,return NULL;
 Type *type_spec() {
+    debugf("start");
     if (consume("int")) {
         return new_type(TP_INT);
     } else if (consume("char")) {
@@ -426,6 +452,7 @@ Type *type_spec() {
 // struct_spec = ident
 //             | ident '{' struct_decl+ '}'
 Type *struct_spec() {
+    debugf("start");
     Token *tok = expect_ident();
     if (consume("{")) {
         // struct definition
@@ -463,6 +490,7 @@ Type *struct_spec() {
 // struct_decl = type_spec declarator ';'
 // if not,return NULL
 Member *struct_decl() {
+    debugf("start");
     Type *typ = type_spec();
     if (!typ) {
         return NULL;
@@ -480,6 +508,7 @@ Member *struct_decl() {
 // enum_spec = ident
 //           | ident? '{'( enumerator ',' )+ '}'
 Type *enum_spec() {
+    debugf("start");
     Token *tok = consume_ident();
     Object *en = new_object(OBJ_ENUM);
     if (tok) {
@@ -517,6 +546,7 @@ Type *enum_spec() {
 
 // enumerator = ( ident | ident '=' constant ) ','
 Object *enumerator() {
+    debugf("start");
     Token *tok  = expect_ident();
     Object *en  = new_object(OBJ_ENUM);
     en->name    = tok->str;
@@ -535,12 +565,14 @@ Object *enumerator() {
 
 // declarator = pointer direct_decl
 Node *declarator(Type *typ, Param p) {
+    debugf("start");
     typ = pointer(typ);
     return direct_decl(typ, p);
 }
 
 // pointer = '*' *
 Type *pointer(Type *typ) {
+    debugf("start");
     while (consume("*")) {
         Type *next      = new_type_ptr(typ);
         next->is_typdef = typ->is_typdef;
@@ -560,6 +592,7 @@ Type *pointer(Type *typ) {
 //             | '(' declarator ')' '(' func_param
 // if not,return NULL
 Node *direct_decl(Type *typ, Param p) {
+    debugf("start");
     Node *node;
     Token *tok;
     Type ptr_to;
@@ -620,6 +653,7 @@ Node *direct_decl(Type *typ, Param p) {
 
 // type_array = ( '[' num ']' )*
 Type *type_array(Type *typ) {
+    debugf("start");
     int arr_size[30]; // [] repeats at most 30
     int i = 0;
     while (consume("[")) {
@@ -645,6 +679,7 @@ Type *type_array(Type *typ) {
 // func_param = ')'
 //            | decl_spec declarator ( ',' decl_spec declarator )* ( ',' "...")?  ')'
 Node *func_param(Node *node) {
+    debugf("start");
     enter_scope(false, false);
     if (consume(")")) {
         infof("finished until '()'.");
@@ -727,6 +762,7 @@ Node *func_param(Node *node) {
 // initializer = assign
 //             | "{" initializer_list ','? "}"
 Node *initializer(bool is_constant) {
+    debugf("start");
     if (consume("{")) {
         Node *node = initializer_list(is_constant);
         consume(",");
@@ -739,6 +775,7 @@ Node *initializer(bool is_constant) {
 
 // initiaizer_list =  initializer (',' initializer)*
 Node *initializer_list(bool is_constant) {
+    debugf("start");
     Node *node = calloc(1, sizeof(Node));
     node->kind = ND_ARRAY;
     Node head;
@@ -756,6 +793,7 @@ Node *initializer_list(bool is_constant) {
 
 // cmp_stmt = stmt* "}"
 Node *cmp_stmt() {
+    debugf("start");
     Node *node = calloc(1, sizeof(Node));
     node->kind = ND_BLOCK;
     Node head;
@@ -775,6 +813,7 @@ Node *cmp_stmt() {
 // expr must be constant expression
 // otherwise return NULL
 Node *labeled_stmt() {
+    debugf("start");
     Node *node = calloc(1, sizeof(Node));
     Node head;
     head.next = NULL;
@@ -822,6 +861,7 @@ Node *labeled_stmt() {
 //      | declaration ';'
 //      | expr ';'
 Node *stmt() {
+    debugf("start");
     Node *node;
 
     if (consume("if")) {
@@ -999,6 +1039,7 @@ Node *stmt() {
 //
 // this is expression.
 Node *declaration() {
+    debugf("start");
     Type *typ = decl_spec();
     assert_at(typ, token->str, "declaration specifier expected.");
 
@@ -1048,6 +1089,8 @@ Node *declaration() {
 
 // init_decl = declarator | declarator '=' initializer
 Node *init_decl(Type *typ) {
+    debugf("start");
+
     Node *node = declarator(typ, LOCAL);
     assert_at(!is_typ(node->typ, TP_VOID), token->str, "cannot use void here.");
     if (consume("=")) { // initiliazer
@@ -1074,6 +1117,7 @@ Node *init_decl(Type *typ) {
 
 // expr = assign ( ',' assign )*
 Node *expr() {
+    debugf("start");
     Node *nd = assign();
     if (!lookahead(",", token)) {
         return nd;
@@ -1102,6 +1146,7 @@ Node *expr() {
 // assign = conditional
 //        | conditional ( '=' assign | "+=" assign | "-=" assign | "*=" assign | "/=" assign )
 Node *assign() {
+    debugf("start");
     Node *node = conditional();
     if (consume("=")) {
         node      = new_node(ND_ASSIGN, node, assign(), NULL);
@@ -1137,12 +1182,14 @@ Node *assign() {
 
 // constant = conditional
 Node *constant() {
+    debugf("start");
     return conditional();
 }
 
 // conditional = log_or
 //             | log_or '?' expr ':' conditional
 Node *conditional() {
+    debugf("start");
     Node *node = log_or();
     if (consume("?")) {
         Node *cond  = node;
@@ -1161,6 +1208,7 @@ Node *conditional() {
 
 // log_or = log_and ( "||" log_and )*
 Node *log_or() {
+    debugf("start");
     Node *node = log_and();
     for (;;) {
         if (consume("||")) {
@@ -1178,6 +1226,7 @@ Node *log_or() {
 
 // log_and = or_expr ( "&&" or_expr )*
 Node *log_and() {
+    debugf("start");
     Node *node = or_expr();
     for (;;) {
         if (consume("&&")) {
@@ -1195,6 +1244,7 @@ Node *log_and() {
 
 // or_expr = xor_expr ( '|' xor_expr )*
 Node *or_expr() {
+    debugf("start");
     Node *node = xor_expr();
     for (;;) {
         if (consume("|")) {
@@ -1209,6 +1259,7 @@ Node *or_expr() {
 
 // xor_expr = and_expr ( '^' and_expr )*
 Node *xor_expr() {
+    debugf("start");
     Node *node = and_expr();
     for (;;) {
         if (consume("^")) {
@@ -1223,6 +1274,7 @@ Node *xor_expr() {
 
 // and_expr = equality ( '&' equality )*
 Node *and_expr() {
+    debugf("start");
     Node *node = equality();
     for (;;) {
         if (consume("&")) {
@@ -1237,6 +1289,7 @@ Node *and_expr() {
 
 // equality = relational ( "==" relational | "!=" relational )*
 Node *equality() {
+    debugf("start");
     Node *node = relational();
 
     for (;;) {
@@ -1252,6 +1305,7 @@ Node *equality() {
 
 // relational = shift ( '<' shift | "<=" shift | '>' shift | ">=" shift )*
 Node *relational() {
+    debugf("start");
     Node *node = shift();
 
     for (;;) {
@@ -1271,6 +1325,7 @@ Node *relational() {
 
 // shift = add ( "<<" add | ">>" add )*
 Node *shift() {
+    debugf("start");
     Node *node = add();
 
     for (;;) {
@@ -1290,6 +1345,7 @@ Node *shift() {
 
 // add = mul ( '+' mul | '-' mul)*
 Node *add() {
+    debugf("start");
     Node *node = mul();
 
     for (;;) {
@@ -1305,6 +1361,7 @@ Node *add() {
 
 // mul = cast ( '*' cast | '/' cast | '%' cast )*
 Node *mul() {
+    debugf("start");
     Node *node = cast();
 
     for (;;) {
@@ -1324,11 +1381,13 @@ Node *mul() {
 
 // type_name = type_spec
 Type *type_name() {
+    debugf("start");
     return type_spec();
 }
 
 // cast = ( '(' type_name ')')? unary
 Node *cast() {
+    debugf("start");
     Type *typ = NULL;
     if (lookahead("(", token) && is_decl(token->next)) {
         expect("(");
@@ -1354,6 +1413,7 @@ Node *cast() {
 //       | '!' unary
 //       | postfix
 Node *unary() {
+    debugf("start");
     if (consume("sizeof")) {
         if (lookahead("(", token) && is_decl(token->next)) {
             expect("(");
@@ -1420,6 +1480,7 @@ Node *unary() {
 
 // postfix = primary ( '[' expr ']' | '.' ident | "->" ident | "++" | "--" )*
 Node *postfix() {
+    debugf("start");
     Node *node = primary();
     for (;;) {
         if (consume("[")) {
@@ -1485,6 +1546,7 @@ Node *postfix() {
 //         | num
 // otherwise return NULL
 Node *primary() {
+    debugf("start");
     Node *node;
     Token *tok;
 

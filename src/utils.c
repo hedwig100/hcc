@@ -3,6 +3,7 @@
 FILE *err_file;
 
 char *add_quote(char *name, int len) {
+    debugf("start");
     char *buf = calloc(1, sizeof(len + 2));
     buf[0]    = '"';
     memcpy(buf + 1, name, len);
@@ -81,6 +82,7 @@ void error_at(char *loc, char *fmt, ...) {
 }
 
 char *to_str(char *s, int len) {
+    debugf("start");
     char *ret = calloc(len + 1, sizeof(char));
     memcpy(ret, s, len);
     ret[len] = '\0';

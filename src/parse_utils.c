@@ -5,6 +5,7 @@
 */
 
 Type *new_type(TypeKind kind) {
+    debugf("start");
     Type *typ = calloc(1, sizeof(Type));
     typ->kind = kind;
     switch (kind) {
@@ -34,6 +35,7 @@ Type *new_type(TypeKind kind) {
 }
 
 Type *new_type_ptr(Type *ptr_to) {
+    debugf("start");
     Type *typ   = calloc(1, sizeof(Type));
     typ->kind   = TP_PTR;
     typ->size   = 8;
@@ -42,6 +44,7 @@ Type *new_type_ptr(Type *ptr_to) {
 }
 
 Type *new_type_strct(Token *tok, Member *mem) {
+    debugf("start");
     // register struct
     Struct *strct     = calloc(1, sizeof(Struct));
     strct->name       = tok->str;
@@ -80,6 +83,7 @@ Type *new_type_strct(Token *tok, Member *mem) {
 }
 
 Type *declare_type_strct(Token *tok) {
+    debugf("start");
     // register struct declaration
     Struct *strct     = calloc(1, sizeof(Struct));
     strct->name       = tok->str;
@@ -102,6 +106,7 @@ Type *declare_type_strct(Token *tok) {
 }
 
 Type *define_type_strct(Struct *st, Member *mem) {
+    debugf("start");
     st->mem        = mem;
     st->is_defined = true;
 
@@ -126,6 +131,7 @@ Type *define_type_strct(Struct *st, Member *mem) {
 }
 
 Type *new_type_enum(Object *en) {
+    debugf("start");
     // register enum
     en->next   = scopes->en;
     scopes->en = en;
@@ -141,6 +147,7 @@ Type *new_type_enum(Object *en) {
 }
 
 Type *type_copy(Type *org) {
+    debugf("start");
     Type *typ, *ptr_to;
     switch (org->kind) {
     case TP_INT:
@@ -189,6 +196,7 @@ Type *type_copy(Type *org) {
 }
 
 int byte_align(Type *typ) {
+    debugf("start");
     int aligment;
 
     switch (typ->kind) {
@@ -216,6 +224,7 @@ int byte_align(Type *typ) {
 // type_cmp checks when 'typ1 = typ2' is valid.
 // if it isn't valid, raise error else return assign type;
 Type *can_assign(Type *typ1, Type *typ2) {
+    debugf("start");
     switch (typ1->kind) {
     case TP_INT:
     case TP_ENUM:
@@ -273,6 +282,7 @@ Type *can_assign(Type *typ1, Type *typ2) {
 // can_cast checks if (typ1)typ2 cast is valid.
 // if cast return result type
 Type *can_cast(Type *typ1, Type *typ2) {
+    debugf("start");
     switch (typ1->kind) {
     case TP_INT:
         switch (typ2->kind) {
@@ -335,6 +345,7 @@ Type *can_cast(Type *typ1, Type *typ2) {
 // can_add checks if "typ1 + typ2" or "typ1 - typ2" is valid. it is valid when either of type is not pointer,
 // return type after addition.
 Type *can_add(Type *typ1, Type *typ2, NodeKind kind) {
+    debugf("start");
     switch (typ1->kind) {
     case TP_INT:
         switch (typ2->kind) {
@@ -400,15 +411,18 @@ Type *can_add(Type *typ1, Type *typ2, NodeKind kind) {
 }
 
 bool is_ptr(Type *typ) {
+    debugf("start");
     return typ->kind == TP_ARRAY || typ->kind == TP_PTR;
 }
 
 bool is_typ(Type *typ, TypeKind kind) {
+    debugf("start");
     return typ->kind == kind;
 }
 
 // type_size decide type size of array recursively
 int type_size(Type *typ) {
+    debugf("start");
     if (is_typ(typ, TP_ARRAY)) {
         typ->size = type_size(typ->ptr_to) * typ->array_size;
         return typ->size;
@@ -417,6 +431,7 @@ int type_size(Type *typ) {
 }
 
 Node *new_typdef(Token *tok, Type *typ) {
+    debugf("start");
     assert_at(typ->is_typdef, token->str, "must be typedef");
     typ->is_typdef = false;
 
@@ -436,6 +451,7 @@ Node *new_typdef(Token *tok, Type *typ) {
 }
 
 bool lookahead_typdef(Token *tok) {
+    debugf("start");
     for (Scope *scp = scopes; scp; scp = scp->before) {
         for (Object *lvar = scp->lvar; lvar; lvar = lvar->next) {
             if (lvar->len == tok->len && !memcmp(lvar->name, tok->str, lvar->len)) {
@@ -452,6 +468,7 @@ bool lookahead_typdef(Token *tok) {
 }
 
 Object *find_typdef(Token *tok) {
+    debugf("start");
     for (Scope *scp = scopes; scp; scp = scp->before) {
         for (Object *td = scp->td; td; td = td->next) {
             if (td->len == tok->len && !memcmp(td->name, tok->str, td->len)) {
@@ -467,6 +484,7 @@ Object *find_typdef(Token *tok) {
 */
 
 void register_func(Node *node) {
+    debugf("start");
     if (node->kind != ND_FUNCDEF && node->kind != ND_FUNCDECL) {
         errorf("cannot register func when node->kind is neither FUNCDEF nor FUNCDECL.");
     }
@@ -493,6 +511,7 @@ void register_func(Node *node) {
 }
 
 Func *find_func(Node *node) {
+    debugf("start");
     if (node->kind != ND_CALLFUNC) {
         errorf("cannot register func when node->kind is not FUNCDEF");
     }
@@ -511,6 +530,7 @@ Func *find_func(Node *node) {
 // find_obj searches local variables or enum,if exists return the local variable or enum
 // otherwise return NULL
 Object *find_obj(Token *tok) {
+    debugf("start");
     for (Scope *scp = scopes; scp; scp = scp->before) {
         for (Object *var = scp->lvar; var; var = var->next) {
             if (!(var->is_static) && var->len == tok->len && !memcmp(tok->str, var->name, var->len)) {
@@ -532,6 +552,7 @@ Object *find_obj(Token *tok) {
 // if OK (the same name local variable is not defined), return true;
 // else return false;
 bool can_defined_lvar(Token *tok) {
+    debugf("start");
     for (Object *var = scopes->lvar; var; var = var->next) {
         if (var->len == tok->len && !memcmp(tok->str, var->name, var->len)) {
             return false;
@@ -547,6 +568,7 @@ bool can_defined_lvar(Token *tok) {
 // find_gvar searches local variables,if exists return the global variable
 // otherwise return NULL
 Object *find_gvar(Token *tok) {
+    debugf("start");
     for (Scope *scp = scopes; scp; scp = scp->before) {
         for (Object *var = scp->lvar; var; var = var->next) {
             if (var->is_static && var->len == tok->len && !memcmp(tok->str, var->name, var->len)) {
@@ -563,6 +585,7 @@ Object *find_gvar(Token *tok) {
 }
 
 Node *register_static_data(Node *node) {
+    debugf("start");
     assert_at(node->kind == ND_GVAR || node->kind == ND_INIT || node->kind == ND_ARRAY, token->str, "cannot register as static data.");
     node->next   = static_datas;
     static_datas = node;
@@ -574,6 +597,7 @@ Node *register_static_data(Node *node) {
 */
 
 void enter_scope(bool can_break, bool can_cont) {
+    debugf("start");
     Scope *new        = calloc(1, sizeof(Scope));
     new->before       = scopes;
     scopes->next      = new;
@@ -594,6 +618,7 @@ void enter_scope(bool can_break, bool can_cont) {
 }
 
 void out_scope() {
+    debugf("start");
     if (scopes->before == NULL) {
         error_at(token->str, "cannot get out of this scope.");
     }
@@ -602,10 +627,12 @@ void out_scope() {
 }
 
 int calc_aligment_offset(int min_offset, int alignment) {
+    debugf("start");
     return (min_offset + alignment - 1) / alignment * alignment;
 }
 
 void add_offset(Scope *scope, int size, int alignment) {
+    debugf("start");
     int offset          = calc_aligment_offset(scope->offset + size, alignment);
     scope->offset       = offset;
     scope->lvar->offset = offset;
@@ -613,6 +640,7 @@ void add_offset(Scope *scope, int size, int alignment) {
 
 // this function is used for caluculate offset when varable length argments are used in function definition.
 int calc_offset(Node *node, int min_offset) {
+    debugf("start");
     if (!node) {
         return min_offset;
     }
@@ -629,6 +657,7 @@ int calc_offset(Node *node, int min_offset) {
 // ok-example) 4,(2+3)-2,(1*3)*3,&x+2,x-43
 // ng-example) &x*2,(&x + 1) - 1
 Node *eval_const(Node *node) {
+    debugf("start");
     Node *lhs;
     Node *rhs;
 
@@ -741,6 +770,7 @@ Node *eval_const(Node *node) {
 // to
 // int x[4];x[0]=0;x[1]=1;x[2]=3;x[3]=3;
 Node *eval(Node *lhs, Node *rhs) {
+    debugf("start");
     Type *typ;
     if (!is_typ(lhs->typ, TP_ARRAY) || !is_typ(rhs->typ, TP_ARRAY)) {
         typ = can_assign(lhs->typ, rhs->typ);
@@ -773,6 +803,7 @@ Node *eval(Node *lhs, Node *rhs) {
 */
 
 Node *add_helper(Node *lhs, Node *rhs, NodeKind kind) {
+    debugf("start");
     Node *node;
     Type *typ = can_add(lhs->typ, rhs->typ, kind);
     if (!is_ptr(typ)) {
@@ -793,6 +824,7 @@ Node *add_helper(Node *lhs, Node *rhs, NodeKind kind) {
 
 // access parse ptr[expr] -> *(ptr + expr)
 Node *access(Node *ptr, Node *expr) {
+    debugf("start");
     Node *node = add_helper(ptr, expr, ND_ADD);
     node       = new_node(ND_DEREF, node, NULL, NULL);
     if (!is_ptr(ptr->typ)) {
@@ -804,6 +836,7 @@ Node *access(Node *ptr, Node *expr) {
 
 // access_member parse expr.ident -> *( expr + 'offset of ident' ) (expr must be struct)
 Node *access_member(Node *expr, int offset, Type *typ) {
+    debugf("start");
     if (!is_typ(expr->typ, TP_STRUCT)) {
         error_at(token->str, "cannot access member when expr is not struct.");
     }
@@ -815,6 +848,7 @@ Node *access_member(Node *expr, int offset, Type *typ) {
 // otherwise return NULL
 // this is used when struct variable is defined
 Struct *find_struct(char *name, int len) {
+    debugf("start");
     for (Scope *scp = scopes; scp; scp = scp->before) {
         for (Struct *strct = scp->strct; strct; strct = strct->next) {
             if (len == strct->len && !memcmp(name, strct->name, strct->len)) {
@@ -829,6 +863,7 @@ Struct *find_struct(char *name, int len) {
 // if OK (the same name struct is not defined), return true;
 // else return false
 bool can_define_strct(Token *tok) {
+    debugf("start");
     for (Struct *st = scopes->strct; st; st = st->next) {
         if (st->len == tok->len && !memcmp(tok->str, st->name, st->len) && st->is_defined) {
             return false;
@@ -838,12 +873,14 @@ bool can_define_strct(Token *tok) {
 }
 
 Object *new_object(ObjectKind kind) {
+    debugf("start");
     Object *obj = calloc(1, sizeof(Object));
     obj->kind   = kind;
     return obj;
 }
 
 Object *find_enum(Token *tok) {
+    debugf("start");
     for (Scope *scp = scopes; scp; scp = scp->before) {
         for (Object *ens = scp->en; ens; ens = ens->next) {
             if (ens->len == tok->len && !memcmp(ens->name, tok->str, tok->len)) {

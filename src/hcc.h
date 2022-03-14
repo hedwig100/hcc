@@ -463,7 +463,12 @@ extern FILE *err_file;
     lprintf(stderr, 'W', __FILE__, __LINE__, __func__, __VA_ARGS__)
 #define infof(...) \
     lprintf(stderr, 'I', __FILE__, __LINE__, __func__, __VA_ARGS__)
+
+#if _HOST
 #define debugf(...) \
     lprintf(stderr, 'D', __FILE__, __LINE__, __func__, __VA_ARGS__)
+#else
+#define debugf(...) 0
+#endif
 
 #endif
