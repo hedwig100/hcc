@@ -24,6 +24,7 @@ int fread(void *__ptr, int __size, int __n, FILE *__stream);
 int fclose(FILE *__stream);
 int ftell(FILE *__stream);
 int fseek(FILE *__stream, int __off, int __whence);
+int fflush(FILE *__stream);
 int *__errno_location();
 #define errno (*__errno_location())
 
@@ -40,6 +41,7 @@ int *__errno_location();
 // extern long int ftell(FILE *__stream);
 // extern int *__errno_location (void) __attribute__ ((__nothrow__ , __leaf__)) __attribute__ ((__const__));
 // extern int fseek (FILE *__stream, long int __off, int __whence);
+// extern int fflush (FILE *__stream);
 
 int memcmp(const void *__s1, const void *__s2, int __n);
 int strlen(const char *__s);
