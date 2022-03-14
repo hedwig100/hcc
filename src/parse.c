@@ -662,6 +662,8 @@ Node *func_param(Node *node) {
         node->params     = head.next;
         node->is_varargs = false;
     }
+    scopes->func_name = node->name;
+    scopes->len       = node->len;
     return node;
 }
 
@@ -1402,6 +1404,7 @@ Node *postfix() {
 //         | ident
 //         | ident "()"
 //         | ident '(' assign ( ',' assign )* ')'
+//         | "__func__"
 //         | string
 //         | num
 // otherwise return NULL
@@ -1478,6 +1481,14 @@ Node *primary() {
         }
         node = node_gvar(tok);
         return node;
+    }
+
+    if (consume("__func__")) {
+        assert_at(scopes->func_name, token->str, "__func__ cannot be used out of function.");
+        tok      = calloc(1, sizeof(Token));
+        tok->str = add_quote(scopes->func_name, scopes->len);
+        tok->len = scopes->len + 2;
+        return new_node_str(tok);
     }
 
     tok = consume_str();

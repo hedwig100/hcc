@@ -59,6 +59,10 @@ int test_at(char *fmt, ...) {
     return 0;
 }
 
+char abcdefgh(int i) {
+    return __func__[i];
+}
+
 int main() {
     ASSERT(55, fib(10));
     ASSERT(21, fib(fib(6)));
@@ -95,6 +99,9 @@ int main() {
     ASSERT(10, varargs(10, -3, -43, 4, 10, 3, -3));
     ASSERT(0, test_at("this is error. %d %d %d\n", 0, 1, 2));
     ASSERT(0, test_at("this is error. %d %d %d %d %d %d\n", 0, 1, 2, 3, 4, 5));
+    ASSERT(97, abcdefgh(0));
+    ASSERT(98, abcdefgh(1));
+    ASSERT(99, abcdefgh(2));
     ok();
     return 0;
 }

@@ -199,6 +199,13 @@ Token *tokenize(char *p) {
             continue;
         }
 
+        if (strncmp(p, "__func__", 8) == 0 && !is_alnum(p[8])) {
+            cur      = new_token(TK_RESERVED, cur, p);
+            cur->len = 8;
+            p += 8;
+            continue;
+        }
+
         if (strncmp(p, "default", 7) == 0 && !is_alnum(p[7])) {
             cur      = new_token(TK_RESERVED, cur, p);
             cur->len = 7;

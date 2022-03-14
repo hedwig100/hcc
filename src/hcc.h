@@ -165,7 +165,16 @@ struct Scope {
     bool can_break; // truee if you can break
     bool can_cont;  // true if you can continue
     int label;
-    int named_param; // in function definition its number of named parameter
+
+    /*
+        in function definitions,
+        named_param : the number of named parameter
+        func_name : function name
+        len : length of func_name
+    */
+    int named_param;
+    char *func_name;
+    int len;
 };
 
 Scope *scopes;
@@ -423,6 +432,7 @@ void gen_program();
     utils.c
 */
 
+char *add_quote(char *name, int len);
 // log for debug
 int lprintf(FILE *fp, int level, const char *file, int line, const char *func,
             const char *fmt, ...);

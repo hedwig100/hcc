@@ -1,5 +1,13 @@
 #include "hcc.h"
 
+char *add_quote(char *name, int len) {
+    char *buf = calloc(1, sizeof(len + 2));
+    buf[0]    = '"';
+    memcpy(buf + 1, name, len);
+    buf[len + 1] = '"';
+    return buf;
+}
+
 int lprintf(FILE *fp, int level, const char *file, int line, const char *func,
             const char *fmt, ...) {
     int n = 0;
