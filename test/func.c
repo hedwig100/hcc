@@ -66,6 +66,20 @@ char abcdefgh(int i) {
         return 1000;
 }
 
+int str_f(char *str) {
+    return str[0];
+}
+
+int var_f(int a, int b, int c, int d, char *fmt, ...) {
+    va_list ap;
+    va_start(ap, fmt);
+    FILE *fp = fopen("test.txt", "w");
+    if (!fp) return 1;
+    vfprintf(fp, fmt, ap);
+    va_end(ap);
+    return a + b;
+}
+
 int main() {
     ASSERT(55, fib(10));
     ASSERT(21, fib(fib(6)));
@@ -101,11 +115,14 @@ int main() {
     // watch
     ASSERT(10, varargs(10, -3, -43, 4, 10, 3, -3));
     ASSERT(0, test_at("this is error. %d %d %d\n", 0, 1, 2));
-    ASSERT(0, test_at("this is error. %d %d %d %d %d %d\n", 0, 1, 2, 3, 4, 5));
+    ASSERT(0, test_at("this is error. %d %d %d %d %d %d %d %d\n", 0, 1, 2, 3, 4, 5, 6, 7));
     ASSERT(97, abcdefgh(0));
     ASSERT(98, abcdefgh(1));
     ASSERT(99, abcdefgh(2));
     ASSERT(1000, abcdefgh(10));
+
+    ASSERT(97, str_f("aige"));
+    ASSERT(10, var_f(3, 7, 0, 1, "oooo %d\n", 10));
     ok();
     return 0;
 }

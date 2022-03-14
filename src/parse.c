@@ -702,10 +702,15 @@ Node *func_param(Node *node) {
         assert_at(scopes->offset == 48, token->str, "varargs error.");
 
         // mofify local variable offset
-        Node *now = node->params;
-        for (Object *lvar = scopes->lvar; lvar && now; lvar = lvar->next) {
+        int cnt = param_num - 1;
+        for (Object *lvar = scopes->lvar; lvar; lvar = lvar->next) {
+            Node *now = node->params;
+            for (int i = 0; i < cnt; i++) {
+                now = now->next;
+                assert_at(now, token->str, "number of params isn't correct.");
+            }
             lvar->offset = now->offset;
-            now          = now->next;
+            cnt--;
         }
 
         node->is_varargs    = true;
