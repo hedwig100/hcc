@@ -303,7 +303,7 @@ struct Node {
     int named_param;
 };
 
-Node *code[100]; // AST
+Node *code[1000]; // AST
 Node *static_datas;
 
 /*

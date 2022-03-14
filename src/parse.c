@@ -251,7 +251,7 @@ void program() {
         if (node) {
             code[i++] = node;
             infof("finished ext definition(%d) %s()", cnt++, to_str(node->name, node->len));
-            if (i == 100) error_at(token->str, "code[100] overflow.");
+            if (i == 1000) error_at(token->str, "code[100] overflow.");
         } else {
             infof("finished ext definition(%d)", cnt++);
         }
