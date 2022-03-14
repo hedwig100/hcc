@@ -56,6 +56,18 @@ struct Object {
 
 struct Name *name1;
 
+typedef struct Type Type;
+typedef struct Node Node;
+struct Node {
+    Node *lhs;
+    Node *rhs;
+    Type *typ;
+};
+
+struct Type {
+    int a;
+};
+
 int main() {
     struct A x;
     x.a = 10;
@@ -151,17 +163,27 @@ int main() {
     ASSERT(4, xyz.abc);
 
     struct ABDOE;
-    struct Node {
-        struct Node *next;
+    struct Node2 {
+        struct Node2 *next;
         int label;
     };
-    struct Node *node;
-    struct Node xyx;
+    struct Node2 *node;
+    struct Node2 xyx;
     node        = &xyx;
     node->label = 5;
     node->next  = node;
     ASSERT(5, xyx.label);
     ASSERT(5, (node->next)->label);
+
+    ASSERT(10, ({
+               Node *node = calloc(1, sizeof(Node));
+               Node *lhs  = calloc(1, sizeof(Node));
+               Type *typ  = calloc(1, sizeof(Type));
+               node->lhs  = lhs;
+               lhs->typ   = typ;
+               typ->a     = 10;
+               lhs->typ->a;
+           }));
 
     ok();
     return 0;

@@ -10,7 +10,7 @@ int counter() {
 // consume read a token and return true if next token is expected kind of token,
 // otherwise,return false
 bool consume(char *op) {
-    debugf("start");
+    debugf("start, now: \n\n %s \n\n", to_str(token->str, 10));
     if (token->kind != TK_RESERVED || token->len != strlen(op) ||
         memcmp(token->str, op, token->len)) {
         return false;
@@ -189,6 +189,7 @@ Node *node_obj(Token *tok) {
         node->kind   = ND_LVAR;
         node->offset = obj->offset;
         node->typ    = obj->typ;
+        return node;
     } else if (obj->kind == OBJ_ENUM) {
         // enum
         return new_node_num(obj->val);
@@ -1155,7 +1156,8 @@ Node *assign() {
     debugf("start");
     Node *node = conditional();
     if (consume("=")) {
-        node      = new_node(ND_ASSIGN, node, assign(), NULL);
+        node = new_node(ND_ASSIGN, node, assign(), NULL);
+        if (!node->lhs->typ) infof("AIAIA");
         node->typ = can_assign(node->lhs->typ, node->rhs->typ);
         return node;
     } else if (consume("+=")) {

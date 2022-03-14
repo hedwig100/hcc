@@ -18,6 +18,7 @@ typedef struct _IO_FILE FILE;
 FILE *stderr;
 FILE *fopen(const char *__filename, const char *__modes);
 int vfprintf(FILE *__s, const char *__format, __gnuc_va_list __arg);
+void *calloc(int __nmemb, int __size);
 
 int assert(int expected, int actual, char *code);
 int ok();
