@@ -1,6 +1,9 @@
 #include "hcc.h"
 
 int main(int argc, char **argv) {
+    err_file = fopen("err.txt", "w");
+    if (!err_file) printf("error opening err_file.");
+
     if (argc == 2) {
         filename   = argv[1];
         user_input = read_file(filename);

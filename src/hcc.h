@@ -426,13 +426,16 @@ char *to_str(char *s, int len);
 void input_from_stdin();
 char *read_file(char *path);
 
+FILE *err_file;
+// NOTE: err_file should be stderr, however prepare this variable for not using stdio.h
+//       should change stderr after this compiler can parse stdio.h
 #define errorf(...) \
-    lprintf(stderr, 'E', __FILE__, __LINE__, __func__, __VA_ARGS__)
+    lprintf(err_file, 'E', __FILE__, __LINE__, __func__, __VA_ARGS__)
 #define warnf(...) \
-    lprintf(stderr, 'W', __FILE__, __LINE__, __func__, __VA_ARGS__)
+    lprintf(err_file, 'W', __FILE__, __LINE__, __func__, __VA_ARGS__)
 #define infof(...) \
-    lprintf(stderr, 'I', __FILE__, __LINE__, __func__, __VA_ARGS__)
+    lprintf(err_file, 'I', __FILE__, __LINE__, __func__, __VA_ARGS__)
 #define debugf(...) \
-    lprintf(stderr, 'D', __FILE__, __LINE__, __func__, __VA_ARGS__)
+    lprintf(err_file, 'D', __FILE__, __LINE__, __func__, __VA_ARGS__)
 
 #endif

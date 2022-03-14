@@ -13,3 +13,4 @@ test/*.i
 test/*.s
 test/*.exe
 test.txt
+err.txt
