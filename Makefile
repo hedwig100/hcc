@@ -56,11 +56,11 @@ test3: $(TESTOBJS3)
 
 # check if binary is the same
 testb: hcc2 hcc3
-	./test_bin.sh
+	diff hcc2 hcc3; if [ $$? -eq 0 ]; then echo "OK"; else echo "hcc2 and hcc3 aren't the same."; exit 1; fi 
 
 test: test1 test2 test3 testb
 
 clean:
-	rm -f src/*.o hcc tmp.s tmp cc.o test/*.exe test/*.s test/*.i
+	rm -f src/*.o src/*.s src/*.i hcc tmp.s tmp cc.o test/*.exe test/*.s test/*.i
 
 .PHONY: test clean
