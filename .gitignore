@@ -15,5 +15,7 @@ test/*.exe
 src/*.i
 src/*.s
 src/*.exe
+example/*.i
+example/*.s
 test.txt
 err.txt
