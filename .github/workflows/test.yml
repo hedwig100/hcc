@@ -1,0 +1,16 @@
+name: Test
+
+on:
+    push: 
+        branches:
+            - main 
+
+jobs:
+    selfhost:
+        runs-on: ubuntu-20.04
+        steps:
+            - uses: actions/checkout@v2
+            - name: docker-setup
+              run: docker build -t hcc .
+            - name: test
+              run: docker run hcc make test
