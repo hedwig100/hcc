@@ -291,20 +291,21 @@ Member *new_mem(Node *node) {
 // program = ext_def*
 void program() {
     debugf("start");
-    int i   = 0;
-    int cnt = 0;
+
+    int number_of_function   = 0;
+    int number_of_definition = 0;
     while (!at_eof()) {
         scopes->offset = 0;
         Node *node     = ext_def();
         if (node) {
-            code[i++] = node;
-            infof("finished ext definition(%d) %s()", cnt++, to_str(node->name, node->len));
-            if (i == 1000) error_at(token->str, "code[100] overflow.");
+            code[number_of_function++] = node;
+            infof("finished ext definition(%d) %s()", number_of_definition++, to_str(node->name, node->len));
+            if (number_of_function == 1000) error_at(token->str, "code[1000] overflow.");
         } else {
-            infof("finished ext definition(%d)", cnt++);
+            infof("finished ext definition(%d)", number_of_definition++);
         }
     }
-    code[i] = NULL;
+    code[number_of_function] = NULL;
 }
 
 // ext_def = decl_spec ';'
@@ -313,6 +314,7 @@ void program() {
 //         | decl_spec declarator '{' cmp_stmt
 Node *ext_def() {
     debugf("start");
+
     Type *typ = decl_spec();
     assert_at(typ, token->str, "type declaration expected.");
     Node *node = declarator(typ, GLOBAL);
@@ -375,9 +377,10 @@ Node *ext_def() {
     return node;
 }
 
-// decl_spec = ( "typedef" | "static" | "const" | "extern" |type_spec )*
+// decl_spec = ( "typedef" | "static" | "const" | "extern" | type_spec )*
 Type *decl_spec() {
     debugf("start");
+
     Type *typ      = NULL;
     bool is_typdef = false;
     bool is_static = false;
@@ -415,6 +418,8 @@ Type *decl_spec() {
             break;
         }
     }
+
+    assert_at(typ, token->str, "type specifier expected.");
     typ->is_typdef = is_typdef;
     typ->is_static = is_static;
     typ->is_const  = is_const;
@@ -431,6 +436,7 @@ Type *decl_spec() {
 // if not,return NULL;
 Type *type_spec() {
     debugf("start");
+
     if (consume("int")) {
         return new_type(TP_INT);
     } else if (consume("char")) {
@@ -1393,7 +1399,7 @@ Type *type_name() {
     return type_spec();
 }
 
-// cast = ( '(' type_name ')')? unary
+// cast = ( '(' type_name ')' )? unary
 Node *cast() {
     debugf("start");
     Type *typ = NULL;

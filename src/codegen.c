@@ -645,7 +645,6 @@ void gen_program() {
     // text section
     start = 1;
     for (int i = 0; code[i]; i++) { // finish if code[i] is NULL
-        if (!code[i]) continue;
         if (code[i]->kind == ND_FUNCDEF) {
             if (start) {
                 printf(".text\n");

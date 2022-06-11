@@ -63,7 +63,7 @@ char *read_string_end(char *start) {
     return p;
 }
 
-int count_escase(char *start) {
+int count_escape(char *start) {
     char *p = start + 1;
     int ans = 0;
     while ((*p) != '"') {
@@ -82,12 +82,11 @@ int count_escase(char *start) {
 Token *read_string(Token *cur, char *p) {
     Token *tok    = calloc(1, sizeof(Token));
     tok->kind     = TK_STR;
-    tok->str      = p;
     char *start   = p;
     char *end     = read_string_end(p);
     tok->len      = end - start + 1;
     tok->str      = p;
-    tok->type_len = tok->len - 2 - count_escase(p);
+    tok->type_len = tok->len - 2 - count_escape(p);
     cur->next     = tok;
     return tok;
 }
